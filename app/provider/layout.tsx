@@ -11,7 +11,7 @@ const nav = [
 
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell role="Homecare provider" user={{ name: "Sarah Kim, RT", email: "skim@northside.com" }} nav={nav}>
+    <PortalShell role="Homecare Provider" user={{ name: "Northside Homecare", email: "skim@northside.com" }} nav={nav}>
       {children}
     </PortalShell>
   );

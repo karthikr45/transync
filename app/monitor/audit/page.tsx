@@ -6,7 +6,7 @@ export default function AuditPage() {
     <>
       <PageHeader
         title="Audit log"
-        subtitle="Every PHI access is logged. Required for HIPAA compliance."
+        subtitle="Every access to patient data is logged. Required for HIPAA compliance."
       />
 
       <div className="card overflow-hidden">

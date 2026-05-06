@@ -1,15 +1,15 @@
 import PageHeader from "@/components/PageHeader";
 import { Download, FileText } from "lucide-react";
 
-export default function InsuranceReports() {
+export default function MonitorReports() {
   const recent = [
-    { id: "r1", name: "Compliance audit — BlueCross cohort (Apr 2026)", date: "2026-05-01", size: "2.1 MB" },
-    { id: "r2", name: "Claims-ready compliance — John Carter (Jan-Apr 2026)", date: "2026-05-01", size: "188 KB" },
+    { id: "r1", name: "Compliance audit — Shared cohort (Apr 2026)", date: "2026-05-01", size: "2.1 MB" },
+    { id: "r2", name: "Patient compliance — John Carter (Jan-Apr 2026)", date: "2026-05-01", size: "188 KB" },
     { id: "r3", name: "Cohort summary — March 2026", date: "2026-04-02", size: "1.6 MB" },
   ];
   return (
     <>
-      <PageHeader title="Reports" subtitle="Generate compliance audit reports for claims and quality monitoring." />
+      <PageHeader title="Reports" subtitle="Generate compliance audit reports for your monitoring use case." />
 
       <div className="card p-5">
         <h2 className="text-base font-semibold text-slate-900 mb-3">Build a new report</h2>
@@ -17,7 +17,7 @@ export default function InsuranceReports() {
           <div>
             <label className="label">Cohort</label>
             <select className="input">
-              <option>All consented patients</option>
+              <option>All shared patients</option>
               <option>Non-compliant only</option>
               <option>Single patient</option>
             </select>
@@ -30,7 +30,12 @@ export default function InsuranceReports() {
           </div>
           <div>
             <label className="label">Threshold</label>
-            <select className="input"><option>BlueCross (4h / 70% / 30d)</option><option>Custom</option></select>
+            <select className="input">
+              <option>Medicare (4h / 70% / 30d)</option>
+              <option>BlueCross (4h / 70% / 30d)</option>
+              <option>Aetna (4h / 65% / 30d)</option>
+              <option>Custom</option>
+            </select>
           </div>
           <div className="flex items-end">
             <button className="btn-primary w-full"><Download className="w-4 h-4" /> Generate</button>

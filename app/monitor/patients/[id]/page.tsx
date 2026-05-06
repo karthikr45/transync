@@ -7,7 +7,7 @@ import ComplianceBadge from "@/components/ComplianceBadge";
 import { patients, generateSessions, insuranceThresholds } from "@/lib/mock-data";
 import { ArrowLeft, Download, Lock } from "lucide-react";
 
-export default function InsurancePatientDetail({ params }: { params: { id: string } }) {
+export default function MonitorPatientDetail({ params }: { params: { id: string } }) {
   const p = patients.find((x) => x.id === params.id);
   if (!p || !p.consentedInsurer) notFound();
   const sessions = generateSessions(30);
@@ -17,12 +17,12 @@ export default function InsurancePatientDetail({ params }: { params: { id: strin
 
   return (
     <>
-      <Link href="/insurance/patients" className="text-sm text-slate-500 inline-flex items-center gap-1 mb-3 hover:text-slate-800">
+      <Link href="/monitor/patients" className="text-sm text-slate-500 inline-flex items-center gap-1 mb-3 hover:text-slate-800">
         <ArrowLeft className="w-4 h-4" /> Back to patients
       </Link>
       <PageHeader
         title={p.name}
-        subtitle={`${p.payer} · DOB ${p.dob}`}
+        subtitle={`Shared by ${p.provider} · DOB ${p.dob}`}
         actions={
           <>
             <ComplianceBadge status={p.status} />
@@ -47,7 +47,7 @@ export default function InsurancePatientDetail({ params }: { params: { id: strin
           tone={meets ? "good" : "bad"}
         />
         <StatCard label="AHI" value={p.ahi.toFixed(1)} hint="events/hr" />
-        <StatCard label="Plan threshold" value={`${t.minHoursPerNight}h`} hint={`${t.windowDays}-day window`} />
+        <StatCard label="Threshold" value={`${t.minHoursPerNight}h`} hint={`${t.windowDays}-day window`} />
       </div>
 
       <div className="card p-5 mt-6">
@@ -58,7 +58,7 @@ export default function InsurancePatientDetail({ params }: { params: { id: strin
       <div className="card p-5 mt-6">
         <h2 className="text-base font-semibold text-slate-900 mb-3">Compliance summary</h2>
         <p className={`text-sm ${meets ? "text-green-700" : "text-red-700"} font-medium`}>
-          {meets ? "Patient meets plan compliance threshold." : "Patient does not currently meet plan compliance threshold."}
+          {meets ? "Patient meets compliance threshold." : "Patient does not currently meet compliance threshold."}
         </p>
         <dl className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
           <Row label="Device" value={p.device} />

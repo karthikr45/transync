@@ -4,13 +4,13 @@ import PageHeader from "@/components/PageHeader";
 import { Plus, Stethoscope, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 
-type Share = { id: string; name: string; type: "Provider" | "Insurance"; granted: string; status: "active" | "pending" };
+type Share = { id: string; name: string; type: "Homecare Provider" | "Authorized Monitor"; granted: string; status: "active" | "pending" };
 
 export default function PatientSharing() {
   const [shares, setShares] = useState<Share[]>([
-    { id: "s1", name: "Northside Homecare", type: "Provider", granted: "2026-01-12", status: "active" },
-    { id: "s2", name: "BlueCross — claims", type: "Insurance", granted: "2026-02-04", status: "active" },
-    { id: "s3", name: "Dr. Lin (consulting)", type: "Provider", granted: "2026-04-22", status: "pending" },
+    { id: "s1", name: "Northside Homecare", type: "Homecare Provider", granted: "2026-01-12", status: "active" },
+    { id: "s2", name: "BlueCross — claims", type: "Authorized Monitor", granted: "2026-02-04", status: "active" },
+    { id: "s3", name: "Dr. Lin (consulting)", type: "Authorized Monitor", granted: "2026-04-22", status: "pending" },
   ]);
   const [showInvite, setShowInvite] = useState(false);
 
@@ -45,7 +45,7 @@ export default function PatientSharing() {
             {shares.map((s) => (
               <tr key={s.id} className="border-t border-slate-100">
                 <td className="px-5 py-3 flex items-center gap-2 text-slate-800">
-                  {s.type === "Provider" ? (
+                  {s.type === "Homecare Provider" ? (
                     <Stethoscope className="w-4 h-4 text-slate-400" />
                   ) : (
                     <ShieldCheck className="w-4 h-4 text-slate-400" />
@@ -74,10 +74,10 @@ export default function PatientSharing() {
             <h2 className="text-lg font-semibold text-slate-900">Invite recipient</h2>
             <p className="text-sm text-slate-500 mt-1">They&apos;ll get an email to access your therapy data.</p>
             <div className="mt-4 space-y-3">
-              <div><label className="label">Type</label>
+              <div><label className="label">Recipient type</label>
                 <select className="input">
-                  <option>Homecare provider</option>
-                  <option>Insurance / payer</option>
+                  <option>Homecare Provider</option>
+                  <option>Authorized Monitor</option>
                 </select>
               </div>
               <div><label className="label">Email or invite code</label><input className="input" placeholder="name@clinic.com" /></div>

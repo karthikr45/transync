@@ -12,7 +12,7 @@ const nav = [
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell role="Patient" user={{ name: currentPatient.name, email: currentPatient.email }} nav={nav}>
+    <PortalShell role="Individual User" user={{ name: currentPatient.name, email: currentPatient.email }} nav={nav}>
       {children}
     </PortalShell>
   );
