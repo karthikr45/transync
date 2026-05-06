@@ -1,0 +1,68 @@
+import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
+import ComplianceBadge from "@/components/ComplianceBadge";
+import { Users, ShieldCheck, AlertTriangle, FileCheck } from "lucide-react";
+import { patients, insuranceThresholds } from "@/lib/mock-data";
+
+export default function InsuranceDashboard() {
+  const consented = patients.filter((p) => p.consentedInsurer);
+  const compliant = consented.filter((p) => p.status === "compliant").length;
+  const nonCompliant = consented.filter((p) => p.status === "non-compliant").length;
+  const t = insuranceThresholds.BlueCross;
+
+  return (
+    <>
+      <PageHeader
+        title="Insurance dashboard"
+        subtitle="BlueCross — patients with active consent. View-only."
+      />
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Consented patients" value={consented.length} icon={<Users className="w-5 h-5" />} />
+        <StatCard label="Compliant" value={compliant} hint={`${Math.round((compliant / consented.length) * 100)}% of cohort`} tone="good" icon={<ShieldCheck className="w-5 h-5" />} />
+        <StatCard label="Non-compliant" value={nonCompliant} tone="bad" icon={<AlertTriangle className="w-5 h-5" />} />
+        <StatCard label="Reports this month" value={42} icon={<FileCheck className="w-5 h-5" />} />
+      </div>
+
+      <div className="card p-5 mt-6">
+        <h2 className="text-base font-semibold text-slate-900 mb-2">Active compliance threshold</h2>
+        <p className="text-sm text-slate-600">
+          Patients must use therapy ≥ <strong>{t.minHoursPerNight} hours</strong> on at least <strong>{t.minNightsPercent}%</strong> of nights
+          in any <strong>{t.windowDays}-day</strong> rolling window.
+        </p>
+      </div>
+
+      <div className="card p-5 mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-slate-900">Cohort summary</h2>
+          <Link href="/insurance/patients" className="text-sm text-brand-600">View all patients</Link>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="text-xs text-slate-500">
+            <tr>
+              <th className="text-left font-medium py-1">Patient</th>
+              <th className="text-right font-medium py-1">30d avg</th>
+              <th className="text-right font-medium py-1">Days ≥4h</th>
+              <th className="text-right font-medium py-1">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {consented.slice(0, 5).map((p) => (
+              <tr key={p.id} className="border-t border-slate-100">
+                <td className="py-2">
+                  <Link href={`/insurance/patients/${p.id}`} className="text-slate-800 font-medium hover:text-brand-600">
+                    {p.name}
+                  </Link>
+                </td>
+                <td className="py-2 text-right">{p.usageLast30d}h</td>
+                <td className="py-2 text-right">{p.complianceDays}/30</td>
+                <td className="py-2 text-right"><ComplianceBadge status={p.status} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
