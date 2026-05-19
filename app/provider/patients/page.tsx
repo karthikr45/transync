@@ -5,7 +5,7 @@ import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import { Search, Plus, FileBarChart } from "lucide-react";
-import { patients, patientExtras, ComplianceStatus } from "@/lib/mock-data";
+import { patients, patientExtras, deactivatedPatients, ComplianceStatus } from "@/lib/mock-data";
 
 export default function ProviderPatients() {
   const [q, setQ] = useState("");
@@ -92,6 +92,37 @@ export default function ProviderPatients() {
           </tbody>
         </table>
       </div>
+
+      {showInactive && (
+        <div className="card overflow-hidden mt-6">
+          <div className="px-5 py-4 border-b border-slate-200">
+            <h2 className="text-base font-semibold text-slate-900">Inactive patients</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Soft-deleted records, retained for audit. Device associations were removed on deactivation.</p>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-xs text-slate-500">
+              <tr>
+                <th className="text-left font-medium px-5 py-2">Patient ID</th>
+                <th className="text-left font-medium px-5 py-2">Name</th>
+                <th className="text-left font-medium px-5 py-2">Deactivated</th>
+                <th className="text-left font-medium px-5 py-2">Reason</th>
+                <th className="text-right font-medium px-5 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deactivatedPatients.map((d) => (
+                <tr key={d.id} className="border-t border-slate-100">
+                  <td className="px-5 py-3 font-mono text-xs text-slate-600">{d.patientId}</td>
+                  <td className="px-5 py-3 text-slate-700">{d.name}</td>
+                  <td className="px-5 py-3 text-slate-600">{d.deactivatedOn}</td>
+                  <td className="px-5 py-3 text-slate-600">{d.reason}</td>
+                  <td className="px-5 py-3 text-right"><button className="btn-secondary">Reactivate</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

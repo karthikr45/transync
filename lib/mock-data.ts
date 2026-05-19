@@ -537,3 +537,81 @@ export function groupCompliance(period: GroupPeriod) {
       };
     });
 }
+
+// ---------- v2/v3: sub-accounts, sharing handshake, audit, lifecycle ----------
+
+export type SubAccount = {
+  id: string;
+  name: string;
+  location: string;
+  admin: string;
+  patients: number;
+  status: "active" | "suspended";
+};
+
+export const subAccounts: SubAccount[] = [
+  { id: "sa1", name: "Northside — West Branch", location: "Denver, CO", admin: "jrivera@northside.com", patients: 18, status: "active" },
+  { id: "sa2", name: "Northside — South Clinic", location: "Pueblo, CO", admin: "dwebb@northside.com", patients: 7, status: "active" },
+];
+
+// Inbound share requests on the Authorized Monitor side
+export type MonitorShare = {
+  id: string;
+  patientName: string;
+  patientRef: string;
+  fromProvider: string;
+  requestedOn: string;
+  status: "pending" | "active" | "declined";
+};
+
+export const monitorShares: MonitorShare[] = [
+  { id: "ms1", patientName: "John Carter", patientRef: "NS-1001", fromProvider: "Northside Homecare", requestedOn: "2026-02-04", status: "active" },
+  { id: "ms2", patientName: "Maria Lopez", patientRef: "NS-1002", fromProvider: "Northside Homecare", requestedOn: "2026-02-10", status: "active" },
+  { id: "ms3", patientName: "Robert Hayes", patientRef: "NS-1005", fromProvider: "Northside Homecare", requestedOn: "2026-03-01", status: "active" },
+  { id: "ms4", patientName: "Karen Diaz", patientRef: "NS-1101", fromProvider: "Apria Healthcare", requestedOn: "2026-05-17", status: "pending" },
+  { id: "ms5", patientName: "Tom Becker", patientRef: "AP-2207", fromProvider: "Apria Healthcare", requestedOn: "2026-05-18", status: "pending" },
+];
+
+export type NoteType = "Clinical" | "Equipment" | "Billing" | "Follow-up";
+export const noteTypes: NoteType[] = ["Clinical", "Equipment", "Billing", "Follow-up"];
+
+export type DeactivatedPatient = { id: string; name: string; patientId: string; deactivatedOn: string; reason: string };
+export const deactivatedPatients: DeactivatedPatient[] = [
+  { id: "d001", name: "Gary Holt", patientId: "NS-0912", deactivatedOn: "2026-03-22", reason: "Therapy discontinued by physician" },
+  { id: "d002", name: "Susan Frye", patientId: "NS-0945", deactivatedOn: "2026-04-09", reason: "Transferred to another provider" },
+];
+
+export type AlertRule = {
+  id: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+  threshold: string;
+};
+
+export const alertRules: AlertRule[] = [
+  { id: "ar1", label: "Low usage", description: "Average nightly use below threshold over a rolling window", enabled: true, threshold: "< 2h avg over 5 days" },
+  { id: "ar2", label: "Missed sync", description: "No data uploaded for N days", enabled: true, threshold: "≥ 3 days no sync" },
+  { id: "ar3", label: "High leak", description: "Average mask leak above threshold", enabled: true, threshold: "> 30 L/min avg" },
+  { id: "ar4", label: "High AHI", description: "AHI trending above threshold", enabled: false, threshold: "> 10 events/hr" },
+  { id: "ar5", label: "Compliance window at risk", description: "Patient will miss the 30-day window if usage continues", enabled: true, threshold: "Projected < required nights" },
+];
+
+export type Integration = { id: string; name: string; category: string; status: "connected" | "available"; description: string };
+export const integrations: Integration[] = [
+  { id: "i1", name: "Brightree", category: "DME billing", status: "connected", description: "Sync patients and compliance status to Brightree for billing & resupply." },
+  { id: "i2", name: "HL7 / FHIR API", category: "EHR", status: "available", description: "Push therapy summaries to an EHR via FHIR resources." },
+  { id: "i3", name: "Webhooks", category: "Automation", status: "available", description: "Receive events (new data, alert fired, consent approved) at your endpoint." },
+  { id: "i4", name: "REST API keys", category: "Developer", status: "connected", description: "Programmatic access to patients, devices, and compliance reports." },
+];
+
+export const dataRegions = ["United States (us-east)", "European Union (eu-central)", "Australia (ap-southeast)", "Canada (ca-central)"];
+
+export const providerAuditLog: AuditEntry[] = [
+  { id: "pl1", user: "skim@northside.com", role: "IT Administrator", action: "Granted Authorized Monitor (BlueCross Claims)", patientId: "p001", patientName: "John Carter", timestamp: "2026-05-18 14:22" },
+  { id: "pl2", user: "jrivera@northside.com", role: "Full Access User", action: "Created patient", patientId: "p006", patientName: "Linda Schmidt", timestamp: "2026-05-18 11:05" },
+  { id: "pl3", user: "jrivera@northside.com", role: "Full Access User", action: "Assigned device TR-MC3-90211", patientId: "p004", patientName: "Aisha Patel", timestamp: "2026-05-17 16:40" },
+  { id: "pl4", user: "skim@northside.com", role: "IT Administrator", action: "Edited Medicare replacement schedule", patientId: "—", patientName: "—", timestamp: "2026-05-17 09:31" },
+  { id: "pl5", user: "dwebb@northside.com", role: "Read-Only User", action: "Exported Group Compliance Report (30d)", patientId: "—", patientName: "—", timestamp: "2026-05-16 17:12" },
+  { id: "pl6", user: "skim@northside.com", role: "IT Administrator", action: "Deactivated patient", patientId: "d001", patientName: "Gary Holt", timestamp: "2026-03-22 10:08" },
+];

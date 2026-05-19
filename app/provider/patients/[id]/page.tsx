@@ -9,13 +9,13 @@ import UsageChart from "@/components/UsageChart";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import ThirtyDayWindow from "@/components/ThirtyDayWindow";
 import {
-  patients, patientExtras, generateSessions, devices, careMonitors, alerts,
+  patients, patientExtras, generateSessions, devices, careMonitors, alerts, noteTypes,
 } from "@/lib/mock-data";
 import {
   ArrowLeft, FileBarChart, Plus, X, Clock, CalendarCheck, ArrowRightLeft, Ban, Mail,
 } from "lucide-react";
 
-type Modal = null | "assign" | "monitor" | "transfer" | "deactivate";
+type Modal = null | "assign" | "monitor" | "deactivate";
 
 export default function ProviderPatientDetail() {
   const params = useParams();
@@ -32,6 +32,22 @@ export default function ProviderPatientDetail() {
   const [modal, setModal] = useState<Modal>(null);
   const [showWindow, setShowWindow] = useState(false);
   const [noteText, setNoteText] = useState("");
+  const [noteType, setNoteType] = useState(noteTypes[0]);
+  const [followUp, setFollowUp] = useState("");
+  const [monitorQuery, setMonitorQuery] = useState("");
+
+  const monitorResults = monitorQuery.trim()
+    ? [
+        { id: "r1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H" },
+        { id: "r2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "MON-4F1-20A" },
+        { id: "r3", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B" },
+      ].filter(
+        (m) =>
+          m.name.toLowerCase().includes(monitorQuery.toLowerCase()) ||
+          m.institution.toLowerCase().includes(monitorQuery.toLowerCase()) ||
+          m.upi.toLowerCase().includes(monitorQuery.toLowerCase())
+      )
+    : [];
 
   const cm = (cid?: string) => careMonitors.find((c) => c.id === cid);
 
@@ -145,9 +161,9 @@ export default function ProviderPatientDetail() {
             <button className="btn-secondary w-full justify-start" onClick={() => setShowWindow(true)} disabled={pending}>
               <CalendarCheck className="w-4 h-4" /> View 30-day compliance window
             </button>
-            <button className="btn-secondary w-full justify-start" onClick={() => setModal("transfer")}>
+            <Link href={`/provider/patients/${p.id}/transfer`} className="btn-secondary w-full justify-start">
               <ArrowRightLeft className="w-4 h-4" /> Transfer patient
-            </button>
+            </Link>
             <button className="btn-danger w-full justify-start" onClick={() => setModal("deactivate")}>
               <Ban className="w-4 h-4" /> Deactivate patient
             </button>
@@ -158,6 +174,18 @@ export default function ProviderPatientDetail() {
       {/* Notes */}
       <div className="card p-5 mt-6">
         <h2 className="text-base font-semibold text-slate-900 mb-3">Notes</h2>
+        <div className="grid md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="label">Note type</label>
+            <select className="input" value={noteType} onChange={(e) => setNoteType(e.target.value as typeof noteType)}>
+              {noteTypes.map((t) => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label">Follow-up date (optional)</label>
+            <input className="input" type="date" value={followUp} onChange={(e) => setFollowUp(e.target.value)} />
+          </div>
+        </div>
         <textarea
           className="input min-h-[80px]"
           maxLength={500}
@@ -167,12 +195,15 @@ export default function ProviderPatientDetail() {
         />
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-slate-400">{noteText.length}/500</span>
-          <button className="btn-primary" onClick={() => setNoteText("")}>Save note</button>
+          <button className="btn-primary" onClick={() => { setNoteText(""); setFollowUp(""); }}>Save note</button>
         </div>
         <ul className="mt-4 space-y-3">
           {(ex?.notes ?? []).map((n) => (
             <li key={n.id} className="border-t border-slate-100 pt-3">
-              <div className="text-xs text-slate-500">{n.date} · {n.author}</div>
+              <div className="text-xs text-slate-500 flex items-center gap-2">
+                <span className="badge badge-slate">Clinical</span>
+                {n.date} · {n.author}
+              </div>
               <p className="text-sm text-slate-800 mt-0.5">{n.text}</p>
             </li>
           ))}
@@ -210,22 +241,31 @@ export default function ProviderPatientDetail() {
             <>
               <h2 className="text-lg font-semibold text-slate-900">Add authorized monitor</h2>
               <p className="text-sm text-slate-500 mt-1">The monitor must already have a registered Authorized Monitor account. Search by Provider ID, name, or institution.</p>
-              <input className="input mt-4" placeholder="e.g. MON-7K3-92H or 'BlueCross'" />
-              <DialogActions onClose={() => setModal(null)} confirm="Grant access" />
-            </>
-          )}
-          {modal === "transfer" && (
-            <>
-              <h2 className="text-lg font-semibold text-slate-900">Transfer patient</h2>
-              <p className="text-sm text-slate-500 mt-1">Choose the destination account.</p>
-              <select className="input mt-4">
-                <option>Sub-account: Northside — West Branch (you keep control)</option>
-                <option>Other provider: Apria Healthcare (permanent — you lose access)</option>
-              </select>
-              <label className="flex gap-2 items-start mt-3 text-xs text-slate-600">
-                <input type="checkbox" className="mt-0.5" /> I accept the Terms of Use for patient transfer.
-              </label>
-              <DialogActions onClose={() => setModal(null)} confirm="Confirm transfer" danger />
+              <input
+                className="input mt-4"
+                placeholder="e.g. MON-7K3-92H or 'BlueCross'"
+                value={monitorQuery}
+                onChange={(e) => setMonitorQuery(e.target.value)}
+                autoFocus
+              />
+              <div className="mt-3 space-y-2 max-h-56 overflow-auto">
+                {monitorResults.map((m) => (
+                  <div key={m.id} className="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">{m.name}</div>
+                      <div className="text-xs text-slate-500">{m.institution} · {m.upi}</div>
+                    </div>
+                    <button className="btn-primary !py-1 !px-3 text-xs" onClick={() => setModal(null)}>Grant</button>
+                  </div>
+                ))}
+                {monitorQuery && monitorResults.length === 0 && (
+                  <p className="text-sm text-slate-500 py-2">No registered monitors match. They must register an Authorized Monitor account first.</p>
+                )}
+                {!monitorQuery && <p className="text-xs text-slate-400 py-2">Start typing to search registered monitors.</p>}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button className="btn-secondary" onClick={() => setModal(null)}>Close</button>
+              </div>
             </>
           )}
           {modal === "deactivate" && (
