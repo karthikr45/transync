@@ -25,6 +25,17 @@ export default function MonitorDashboard() {
         </div>
       </div>
 
+      <div className="card p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-slate-500 font-medium">Your Monitor ID</div>
+          <div className="mt-1 text-2xl font-mono font-semibold text-slate-900 tracking-widest">MON-7K3-92H</div>
+          <p className="text-xs text-slate-500 mt-1">
+            Give this to a Homecare Provider so they can grant you access to specific patients.
+          </p>
+        </div>
+        <button className="btn-secondary">Copy ID</button>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Shared patients" value={consented.length} icon={<Users className="w-5 h-5" />} />
         <StatCard label="Compliant" value={compliant} hint={`${Math.round((compliant / consented.length) * 100)}% of cohort`} tone="good" icon={<ShieldCheck className="w-5 h-5" />} />

@@ -1,19 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
-import StatCard from "@/components/StatCard";
-import UsageChart from "@/components/UsageChart";
+import ComplianceReport from "@/components/ComplianceReport";
+import ThirtyDayWindow from "@/components/ThirtyDayWindow";
 import ComplianceBadge from "@/components/ComplianceBadge";
-import { patients, generateSessions, insuranceThresholds } from "@/lib/mock-data";
-import { ArrowLeft, Download, Lock } from "lucide-react";
+import { patients, patientExtras, generateSessions, insuranceProviders } from "@/lib/mock-data";
+import { ArrowLeft, Printer, Lock } from "lucide-react";
 
 export default function MonitorPatientDetail({ params }: { params: { id: string } }) {
   const p = patients.find((x) => x.id === params.id);
   if (!p || !p.consentedInsurer) notFound();
-  const sessions = generateSessions(30);
-  const t = (insuranceThresholds as Record<string, { minHoursPerNight: number; minNightsPercent: number; windowDays: number }>)[p.payer ?? "Medicare"] ?? insuranceThresholds.Medicare;
-  const requiredDays = Math.ceil((t.minNightsPercent / 100) * t.windowDays);
-  const meets = p.complianceDays >= requiredDays;
+  const ex = patientExtras[p.id];
+  const sessions = generateSessions(90);
+  const ins = insuranceProviders.find((i) => i.name === p.payer) ?? insuranceProviders[0];
 
   return (
     <>
@@ -22,11 +21,11 @@ export default function MonitorPatientDetail({ params }: { params: { id: string 
       </Link>
       <PageHeader
         title={p.name}
-        subtitle={`Shared by ${p.provider} · DOB ${p.dob}`}
+        subtitle={`Shared by ${p.provider} · DOB ${p.dob} · ${p.payer}`}
         actions={
           <>
             <ComplianceBadge status={p.status} />
-            <button className="btn-primary"><Download className="w-4 h-4" /> Export PDF</button>
+            <button className="btn-primary"><Printer className="w-4 h-4" /> Print to PDF</button>
           </>
         }
       />
@@ -38,46 +37,16 @@ export default function MonitorPatientDetail({ params }: { params: { id: string 
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="30d avg use" value={`${p.usageLast30d}h`} hint="hours/night" />
-        <StatCard
-          label="Days ≥ 4h"
-          value={`${p.complianceDays}/${t.windowDays}`}
-          hint={`${t.minNightsPercent}% required (${requiredDays} nights)`}
-          tone={meets ? "good" : "bad"}
-        />
-        <StatCard label="AHI" value={p.ahi.toFixed(1)} hint="events/hr" />
-        <StatCard label="Threshold" value={`${t.minHoursPerNight}h`} hint={`${t.windowDays}-day window`} />
+      <div className="mb-5">
+        <ThirtyDayWindow sessions={sessions} rule={ins.compliance} />
       </div>
 
-      <div className="card p-5 mt-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-2">Usage trend (30 days)</h2>
-        <UsageChart sessions={sessions} threshold={t.minHoursPerNight} />
-      </div>
+      <ComplianceReport sessions={sessions} />
 
-      <div className="card p-5 mt-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-3">Compliance summary</h2>
-        <p className={`text-sm ${meets ? "text-green-700" : "text-red-700"} font-medium`}>
-          {meets ? "Patient meets compliance threshold." : "Patient does not currently meet compliance threshold."}
-        </p>
-        <dl className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-          <Row label="Device" value={p.device} />
-          <Row label="Serial" value={p.serial} />
-          <Row label="Prescription" value={p.prescription} />
-          <Row label="Last sync" value={p.lastSync} />
-          <Row label="Window" value={`${t.windowDays} days`} />
-          <Row label="Required nights" value={`${requiredDays}/${t.windowDays}`} />
-        </dl>
-      </div>
+      <p className="text-xs text-slate-400 mt-4">
+        Patient ID {ex?.patientId} · Device {p.device} {p.serial}. As an Authorized Monitor you cannot edit
+        patient records, manage devices, or change sharing.
+      </p>
     </>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-xs text-slate-500">{label}</dt>
-      <dd className="text-slate-900 font-medium mt-0.5">{value}</dd>
-    </div>
   );
 }

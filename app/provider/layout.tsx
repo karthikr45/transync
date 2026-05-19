@@ -1,12 +1,13 @@
-import { LayoutDashboard, Users, Bell, FileText, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, HardDrive, FileText, Bell, Settings } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
 
 const nav = [
   { href: "/provider/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { href: "/provider/patients", label: "Patients", icon: <Users className="w-4 h-4" /> },
-  { href: "/provider/alerts", label: "Alerts", icon: <Bell className="w-4 h-4" /> },
+  { href: "/provider/devices", label: "Devices", icon: <HardDrive className="w-4 h-4" /> },
   { href: "/provider/reports", label: "Reports", icon: <FileText className="w-4 h-4" /> },
-  { href: "/provider/invite", label: "Invite patient", icon: <UserPlus className="w-4 h-4" /> },
+  { href: "/provider/alerts", label: "Alerts", icon: <Bell className="w-4 h-4" /> },
+  { href: "/provider/settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
 ];
 
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
