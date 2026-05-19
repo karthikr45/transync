@@ -16,14 +16,14 @@ export default function InvitePatient() {
             <div><label className="label">Patient email</label><input className="input" type="email" placeholder="patient@example.com" /></div>
             <div><label className="label">First name</label><input className="input" /></div>
             <div><label className="label">Last name</label><input className="input" /></div>
-            <div><label className="label">Note (optional)</label><textarea className="input min-h-[80px]" placeholder="Hi! Please connect your TranSync data so we can monitor your therapy." /></div>
+            <div><label className="label">Note (optional)</label><textarea className="input min-h-[80px]" placeholder="Hi! Please connect your Transcend data so we can monitor your therapy." /></div>
             <button className="btn-primary"><Mail className="w-4 h-4" /> Send invite</button>
           </div>
         </div>
 
         <div className="card p-5">
           <h2 className="text-base font-semibold text-slate-900 mb-3">By invite code</h2>
-          <p className="text-sm text-slate-600 mb-4">Generate a code to share verbally or in person. Patient enters it in the TranSync app to connect.</p>
+          <p className="text-sm text-slate-600 mb-4">Generate a code to share verbally or in person. Patient enters it in the Transcend app to connect.</p>
           <div className="bg-slate-50 border border-dashed border-slate-300 rounded-lg p-6 text-center">
             <div className="text-3xl font-mono font-semibold text-slate-900 tracking-widest">7K3-92H</div>
             <div className="text-xs text-slate-500 mt-2">Expires in 24 hours</div>

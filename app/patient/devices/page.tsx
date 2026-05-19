@@ -7,7 +7,7 @@ export default function PatientDevices() {
     <>
       <PageHeader
         title="My devices"
-        subtitle="Devices linked to your account. Pairing happens in the TranSync mobile app."
+        subtitle="Devices linked to your account. Pairing happens in the Transcend mobile app."
       />
 
       <div className="card p-5 flex items-start gap-4">
@@ -41,7 +41,7 @@ export default function PatientDevices() {
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Add a new device</h3>
             <p className="text-sm text-slate-600 mt-1">
-              Pairing a Transcend miniCPAP requires Bluetooth and is done from the TranSync mobile app on your phone.
+              Pairing a Transcend miniCPAP requires Bluetooth and is done from the Transcend mobile app on your phone.
               Once paired, it will appear here automatically.
             </p>
           </div>

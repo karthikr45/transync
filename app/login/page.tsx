@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Activity } from "lucide-react";
+import Logo from "@/components/Logo";
 
 type Role = "individual" | "provider" | "monitor";
 
@@ -21,11 +21,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center">
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-semibold text-slate-900">TranSync</span>
+        <Link href="/" className="flex items-center justify-center mb-6">
+          <Logo className="h-9 w-auto" />
         </Link>
         <div className="card p-6">
           <h1 className="text-xl font-semibold text-slate-900">Log on</h1>
@@ -73,11 +70,11 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-5 text-sm text-center text-slate-600">
-            New to TranSync? <Link href="/register" className="text-brand-600 font-medium">Register</Link>
+            New to Transcend? <Link href="/register" className="text-brand-600 font-medium">Register</Link>
           </div>
         </div>
         <div className="text-center text-xs text-slate-500 mt-4">
-          By continuing you agree to TranSync&apos;s Terms and HIPAA Notice.
+          By continuing you agree to Transcend&apos;s Terms and HIPAA Notice.
         </div>
       </div>
     </div>

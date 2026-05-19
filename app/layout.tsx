@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TranSync",
-  description: "TranSync compliance management for Transcend miniCPAP",
+  title: "Transcend",
+  description: "Transcend compliance management for Transcend miniCPAP",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

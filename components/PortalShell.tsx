@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { LogOut, Activity } from "lucide-react";
+import { LogOut } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export type NavItem = {
   href: string;
@@ -27,14 +28,9 @@ export default function PortalShell({
     <div className="min-h-screen flex">
       <aside className="w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col">
         <div className="px-5 py-5 border-b border-slate-200">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-slate-900">TranSync</div>
-              <div className="text-xs text-slate-500">{role}</div>
-            </div>
+          <Link href="/" className="block">
+            <Logo className="h-7 w-auto" />
+            <div className="text-xs text-slate-500 mt-1.5">{role}</div>
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-1">

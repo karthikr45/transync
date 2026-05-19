@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Activity, ArrowRight, Check, Building2, Eye, User } from "lucide-react";
+import { ArrowRight, Check, Building2, Eye, User } from "lucide-react";
+import Logo from "@/components/Logo";
 
 type AccountType = "provider" | "monitor" | "individual";
 
@@ -29,11 +30,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-2xl">
-        <Link href="/" className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center">
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-semibold text-slate-900">TranSync</span>
+        <Link href="/" className="flex items-center justify-center mb-6">
+          <Logo className="h-9 w-auto" />
         </Link>
         <div className="card p-6">
           <Stepper step={step} />
@@ -233,7 +231,7 @@ function IndividualDetails() {
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold text-slate-900">Your details</h2>
-      <p className="text-sm text-slate-500">We&apos;ll use these to link to your TranSync mobile data.</p>
+      <p className="text-sm text-slate-500">We&apos;ll use these to link to your Transcend mobile data.</p>
       <div className="grid grid-cols-2 gap-3">
         <div><label className="label">First name</label><input className="input" /></div>
         <div><label className="label">Last name</label><input className="input" /></div>
@@ -257,7 +255,7 @@ function Consent({ type }: { type: AccountType | null }) {
       <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
         <input type="checkbox" defaultChecked className="mt-1" />
         <div>
-          <div className="text-sm font-medium text-slate-900">I accept the TranSync Terms of Use</div>
+          <div className="text-sm font-medium text-slate-900">I accept the Transcend Terms of Use</div>
           <div className="text-xs text-slate-500">Including acceptable use and account responsibilities.</div>
         </div>
       </label>
@@ -265,7 +263,7 @@ function Consent({ type }: { type: AccountType | null }) {
         <input type="checkbox" defaultChecked className="mt-1" />
         <div>
           <div className="text-sm font-medium text-slate-900">I acknowledge the HIPAA Privacy Notice</div>
-          <div className="text-xs text-slate-500">How TranSync handles protected health information.</div>
+          <div className="text-xs text-slate-500">How Transcend handles protected health information.</div>
         </div>
       </label>
       {type === "individual" && (

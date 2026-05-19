@@ -1,19 +1,15 @@
 import Link from "next/link";
-import { Activity, User, Building2, Eye, ArrowRight } from "lucide-react";
+import { User, Building2, Eye, ArrowRight } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-slate-200 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-900">TranSync</div>
-              <div className="text-xs text-slate-500">Cloud Compliance Reporting</div>
-            </div>
+          <div className="flex items-center gap-3">
+            <Logo className="h-8 w-auto" />
+            <div className="text-xs text-slate-500 border-l border-slate-200 pl-3">Cloud Compliance Reporting</div>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="btn-secondary">Log on</Link>
@@ -28,7 +24,7 @@ export default function LandingPage() {
             Manage Transcend miniCPAP compliance from anywhere.
           </h1>
           <p className="mt-4 text-slate-600">
-            TranSync is the cloud companion to your Transcend miniCPAP. Patients view their therapy. Homecare providers
+            Transcend is the cloud companion to your Transcend miniCPAP. Patients view their therapy. Homecare providers
             track populations. Authorized monitors review compliance for clinical or insurance purposes.
           </p>
           <div className="mt-6 flex gap-3">
@@ -39,7 +35,7 @@ export default function LandingPage() {
 
         <div className="mt-14">
           <h2 className="text-lg font-semibold text-slate-900">Three account types</h2>
-          <p className="text-sm text-slate-600 mt-1">Pick the one that matches how you&apos;ll use TranSync.</p>
+          <p className="text-sm text-slate-600 mt-1">Pick the one that matches how you&apos;ll use Transcend.</p>
           <div className="mt-5 grid md:grid-cols-3 gap-5">
             <RoleCard
               icon={<Building2 className="w-6 h-6" />}
@@ -68,7 +64,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-slate-200 mt-16">
         <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-slate-500 flex justify-between">
-          <span>© 2026 TranSync. For demo purposes only.</span>
+          <span>© 2026 Transcend. For demo purposes only.</span>
           <span>HIPAA · GDPR ready</span>
         </div>
       </footer>
