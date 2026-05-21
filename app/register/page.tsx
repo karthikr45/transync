@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, Check, Building2, Eye, User } from "lucide-react";
+import { ArrowRight, Check, Building2, Eye, User, Clock, Mail } from "lucide-react";
 import Logo from "@/components/Logo";
 
 type AccountType = "provider" | "monitor" | "individual";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<AccountType | null>(null);
 
@@ -23,8 +21,7 @@ export default function RegisterPage() {
       setStep(3);
       return;
     }
-    const dest = type === "provider" ? "/provider/dashboard" : type === "monitor" ? "/monitor/dashboard" : "/patient/dashboard";
-    router.push(dest);
+    setStep(4); // completion — role-specific
   }
 
   return (
@@ -33,31 +30,94 @@ export default function RegisterPage() {
         <Link href="/" className="flex items-center justify-center mb-6">
           <Logo className="h-9 w-auto" />
         </Link>
-        <div className="card p-6">
-          <Stepper step={step} />
-          {step === 1 && <PickType type={type} setType={setType} />}
-          {step === 2 && type && <DetailsForm type={type} />}
-          {step === 3 && <Consent type={type} />}
-          <div className="mt-6 flex justify-between">
-            <button
-              onClick={() => setStep(Math.max(1, step - 1))}
-              disabled={step === 1}
-              className="btn-secondary disabled:opacity-50"
-            >
-              Back
-            </button>
-            <button onClick={next} disabled={step === 1 && !type} className="btn-primary disabled:opacity-50">
-              {step < 3 ? (
-                <>Continue Registration <ArrowRight className="w-4 h-4" /></>
-              ) : (
-                <>Finish <Check className="w-4 h-4" /></>
-              )}
-            </button>
+        {step === 4 ? (
+          <Completion type={type} />
+        ) : (
+          <div className="card p-6">
+            <Stepper step={step} />
+            {step === 1 && <PickType type={type} setType={setType} />}
+            {step === 2 && type && <DetailsForm type={type} />}
+            {step === 3 && <Consent type={type} />}
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => setStep(Math.max(1, step - 1))}
+                disabled={step === 1}
+                className="btn-secondary disabled:opacity-50"
+              >
+                Back
+              </button>
+              <button onClick={next} disabled={step === 1 && !type} className="btn-primary disabled:opacity-50">
+                {step < 3 ? (
+                  <>Continue Registration <ArrowRight className="w-4 h-4" /></>
+                ) : (
+                  <>Finish <Check className="w-4 h-4" /></>
+                )}
+              </button>
+            </div>
           </div>
+        )}
+        {step !== 4 && (
+          <div className="text-center text-sm text-slate-600 mt-4">
+            Already have an account? <Link href="/login" className="text-brand-600 font-medium">Log on</Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Completion({ type }: { type: AccountType | null }) {
+  if (type === "provider") {
+    return (
+      <div className="card p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+          <Clock className="w-6 h-6" />
         </div>
-        <div className="text-center text-sm text-slate-600 mt-4">
-          Already have an account? <Link href="/login" className="text-brand-600 font-medium">Log on</Link>
+        <h2 className="mt-4 text-xl font-semibold text-slate-900">Account submitted for review</h2>
+        <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+          Homecare Provider accounts are verified by Transcend before activation. We&apos;ll review your business license,
+          accreditation and Business Associate Agreement (BAA) — typically within 1–2 business days. You&apos;ll get an
+          email once approved, and the first user becomes your IT Administrator.
+        </p>
+        <div className="mt-6 flex gap-2 justify-center">
+          <Link href="/" className="btn-secondary">Back to home</Link>
+          <Link href="/provider/dashboard" className="btn-primary">Preview provider portal (demo)</Link>
         </div>
+      </div>
+    );
+  }
+  if (type === "monitor") {
+    return (
+      <div className="card p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
+          <Mail className="w-6 h-6" />
+        </div>
+        <h2 className="mt-4 text-xl font-semibold text-slate-900">Verify your email</h2>
+        <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+          Check your inbox to verify your address. Once verified you&apos;ll receive a <strong>Monitor ID</strong>. Note:
+          you won&apos;t see any patient data until a Homecare Provider shares a patient with you and that patient has
+          consented. Clinicians may be granted read-write access; payers receive read-only.
+        </p>
+        <div className="mt-6 flex gap-2 justify-center">
+          <Link href="/" className="btn-secondary">Back to home</Link>
+          <Link href="/monitor/dashboard" className="btn-primary">Preview monitor portal (demo)</Link>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="card p-8 text-center">
+      <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
+        <Mail className="w-6 h-6" />
+      </div>
+      <h2 className="mt-4 text-xl font-semibold text-slate-900">Verify your email</h2>
+      <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
+        Check your inbox and click the confirmation link to activate your account, then pair your Transcend device in the
+        mobile app to start seeing your therapy data.
+      </p>
+      <div className="mt-6 flex gap-2 justify-center">
+        <Link href="/" className="btn-secondary">Back to home</Link>
+        <Link href="/patient/dashboard" className="btn-primary">Open my portal (demo)</Link>
       </div>
     </div>
   );

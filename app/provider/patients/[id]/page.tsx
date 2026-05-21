@@ -12,7 +12,7 @@ import {
   patients, patientExtras, generateSessions, devices, careMonitors, alerts, noteTypes,
 } from "@/lib/mock-data";
 import {
-  ArrowLeft, FileBarChart, Plus, X, Clock, CalendarCheck, ArrowRightLeft, Ban, Mail,
+  ArrowLeft, FileBarChart, Plus, X, Clock, CalendarCheck, ArrowRightLeft, Ban, Mail, BadgeCheck,
 } from "lucide-react";
 
 type Modal = null | "assign" | "monitor" | "deactivate";
@@ -39,9 +39,9 @@ export default function ProviderPatientDetail() {
 
   const monitorResults = monitorQuery.trim()
     ? [
-        { id: "r1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H" },
-        { id: "r2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "MON-4F1-20A" },
-        { id: "r3", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B" },
+        { id: "r1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H", verified: true },
+        { id: "r2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "MON-4F1-20A", verified: true },
+        { id: "r3", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B", verified: false },
       ].filter(
         (m) =>
           m.name.toLowerCase().includes(monitorQuery.toLowerCase()) ||
@@ -281,7 +281,12 @@ export default function ProviderPatientDetail() {
                 {monitorResults.map((m) => (
                   <div key={m.id} className="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2">
                     <div>
-                      <div className="text-sm font-medium text-slate-900">{m.name}</div>
+                      <div className="text-sm font-medium text-slate-900 flex items-center gap-1.5">
+                        {m.name}
+                        {m.verified
+                          ? <span className="badge badge-green inline-flex items-center gap-1"><BadgeCheck className="w-3 h-3" /> Verified</span>
+                          : <span className="badge badge-amber">Unverified</span>}
+                      </div>
                       <div className="text-xs text-slate-500">{m.institution} · {m.upi}</div>
                     </div>
                     <button className="btn-primary !py-1 !px-3 text-xs" onClick={() => setModal(null)}>Grant</button>

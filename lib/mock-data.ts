@@ -612,6 +612,41 @@ export const integrations: Integration[] = [
 
 export const dataRegions = ["United States (us-east)", "European Union (eu-central)", "Australia (ap-southeast)", "Canada (ca-central)"];
 
+// ---------- Platform-operator approval (Transcend back-office) ----------
+
+export type OrgType = "Homecare Provider" | "Authorized Monitor";
+export type ApprovalStatus = "pending" | "approved" | "rejected";
+
+export type OrgRegistration = {
+  id: string;
+  type: OrgType;
+  name: string;
+  contact: string;
+  email: string;
+  country: string;
+  submittedOn: string;
+  status: ApprovalStatus;
+  // Homecare Provider credentials (hard gate)
+  license?: string;
+  accreditation?: string;
+  baaSigned?: boolean;
+  // Authorized Monitor identity (light verification)
+  orgKind?: string;
+  npi?: string;
+  verified?: boolean;
+};
+
+export const orgRegistrations: OrgRegistration[] = [
+  { id: "reg1", type: "Homecare Provider", name: "Summit Respiratory Care", contact: "Dana Wells", email: "dwells@summitresp.com", country: "United States", submittedOn: "2026-05-19", status: "pending", license: "DME-CO-77120", accreditation: "ACHC", baaSigned: true },
+  { id: "reg2", type: "Homecare Provider", name: "CoastalCPAP Ltd", contact: "Ben Ortiz", email: "ben@coastalcpap.co.uk", country: "United Kingdom", submittedOn: "2026-05-18", status: "pending", license: "Awaiting upload", accreditation: "—", baaSigned: false },
+  { id: "reg3", type: "Authorized Monitor", name: "Dr. Aaron Blake", contact: "Dr. Aaron Blake", email: "ablake@sleepwell.com", country: "United States", submittedOn: "2026-05-19", status: "pending", orgKind: "Clinician", npi: "1356789021", verified: false },
+  { id: "reg4", type: "Authorized Monitor", name: "Meridian Health Plan", contact: "Claims Dept", email: "claims@meridian.com", country: "United States", submittedOn: "2026-05-17", status: "pending", orgKind: "Insurance", npi: "—", verified: false },
+  { id: "reg5", type: "Homecare Provider", name: "Northside Homecare", contact: "Sarah Kim", email: "skim@northside.com", country: "United States", submittedOn: "2026-01-04", status: "approved", license: "DME-CO-44120", accreditation: "ACHC", baaSigned: true },
+  { id: "reg6", type: "Homecare Provider", name: "Apria Healthcare", contact: "Ops", email: "ops@apria.com", country: "United States", submittedOn: "2026-02-11", status: "approved", license: "DME-TX-90551", accreditation: "JCAHO", baaSigned: true },
+  { id: "reg7", type: "Authorized Monitor", name: "BlueCross Claims", contact: "Claims", email: "claims@bluecross.com", country: "United States", submittedOn: "2026-01-30", status: "approved", orgKind: "Insurance", npi: "—", verified: true },
+  { id: "reg8", type: "Authorized Monitor", name: "Lakeside Sleep Center", contact: "Dr. Helen Park", email: "hpark@lakeside.com", country: "United States", submittedOn: "2026-02-02", status: "approved", orgKind: "Clinician", npi: "1841299104", verified: true },
+];
+
 // The current Authorized Monitor's access level per patient (prototype: the
 // logged-in monitor is read-write on its own clinical patients, read-only elsewhere).
 const monitorAccessByPatient: Record<string, MonitorAccess> = {
