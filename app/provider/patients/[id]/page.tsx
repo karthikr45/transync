@@ -35,6 +35,7 @@ export default function ProviderPatientDetail() {
   const [noteType, setNoteType] = useState(noteTypes[0]);
   const [followUp, setFollowUp] = useState("");
   const [monitorQuery, setMonitorQuery] = useState("");
+  const [grantAccess, setGrantAccess] = useState<"read-only" | "read-write">("read-only");
 
   const monitorResults = monitorQuery.trim()
     ? [
@@ -142,7 +143,12 @@ export default function ProviderPatientDetail() {
               {ex.authorizedMonitors.map((m) => (
                 <li key={m.id} className="flex items-center justify-between text-sm border-t border-slate-100 pt-2 first:border-0 first:pt-0">
                   <div>
-                    <div className="text-slate-800 font-medium">{m.name}</div>
+                    <div className="text-slate-800 font-medium flex items-center gap-2">
+                      {m.name}
+                      <span className={`badge ${m.access === "read-write" ? "badge-amber" : "badge-slate"}`}>
+                        {m.access === "read-write" ? "Read-write" : "Read-only"}
+                      </span>
+                    </div>
                     <div className="text-xs text-slate-500">{m.institution} · granted {m.grantedOn}</div>
                   </div>
                   <button className="text-slate-400 hover:text-red-600"><X className="w-4 h-4" /></button>
@@ -241,6 +247,29 @@ export default function ProviderPatientDetail() {
             <>
               <h2 className="text-lg font-semibold text-slate-900">Add authorized monitor</h2>
               <p className="text-sm text-slate-500 mt-1">The monitor must already have a registered Authorized Monitor account. Search by Provider ID, name, or institution.</p>
+
+              <div className="mt-4">
+                <label className="label">Access level</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setGrantAccess("read-only")}
+                    className={`text-left rounded-lg border p-3 transition ${grantAccess === "read-only" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
+                  >
+                    <div className="text-sm font-medium text-slate-900">Read-only</div>
+                    <div className="text-xs text-slate-500 mt-0.5">View compliance & reports. For payers / monitoring services.</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGrantAccess("read-write")}
+                    className={`text-left rounded-lg border p-3 transition ${grantAccess === "read-write" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
+                  >
+                    <div className="text-sm font-medium text-slate-900">Read-write (clinical)</div>
+                    <div className="text-xs text-slate-500 mt-0.5">Plus notes, prescription & setting-change requests. For clinicians.</div>
+                  </button>
+                </div>
+              </div>
+
               <input
                 className="input mt-4"
                 placeholder="e.g. MON-7K3-92H or 'BlueCross'"

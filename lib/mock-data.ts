@@ -374,6 +374,8 @@ export const devices: Device[] = [
 
 export type ConsentStatus = "pending" | "approved";
 
+export type MonitorAccess = "read-only" | "read-write";
+
 export type PatientExtra = {
   patientId: string; // DME internal reference
   endOfDayCutoff: string; // e.g. "12:00 PM"
@@ -381,7 +383,7 @@ export type PatientExtra = {
   referringPhysicianId?: string;
   prescribingPhysicianId?: string;
   otherMonitorId?: string;
-  authorizedMonitors: { id: string; name: string; institution: string; grantedOn: string }[];
+  authorizedMonitors: { id: string; name: string; institution: string; grantedOn: string; access: MonitorAccess }[];
   notes: { id: string; author: string; date: string; text: string }[];
 };
 
@@ -389,7 +391,10 @@ export const patientExtras: Record<string, PatientExtra> = {
   p001: {
     patientId: "NS-1001", endOfDayCutoff: "12:00 PM", consent: "approved",
     referringPhysicianId: "cm2", prescribingPhysicianId: "cm1",
-    authorizedMonitors: [{ id: "am1", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-04" }],
+    authorizedMonitors: [
+      { id: "am1", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-04", access: "read-only" },
+      { id: "am1b", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", grantedOn: "2026-02-05", access: "read-write" },
+    ],
     notes: [
       { id: "n1", author: "Sarah Kim", date: "2026-04-15", text: "Reviewed pressure setting; patient reports better sleep." },
     ],
@@ -397,7 +402,7 @@ export const patientExtras: Record<string, PatientExtra> = {
   p002: {
     patientId: "NS-1002", endOfDayCutoff: "12:00 PM", consent: "approved",
     prescribingPhysicianId: "cm3",
-    authorizedMonitors: [{ id: "am2", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-10" }],
+    authorizedMonitors: [{ id: "am2", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-10", access: "read-only" }],
     notes: [{ id: "n2", author: "Sarah Kim", date: "2026-04-30", text: "Called patient about mask leak. Replacing cushion on next visit." }],
   },
   p003: {
@@ -412,7 +417,7 @@ export const patientExtras: Record<string, PatientExtra> = {
   p005: {
     patientId: "NS-1005", endOfDayCutoff: "12:00 PM", consent: "approved",
     prescribingPhysicianId: "cm1",
-    authorizedMonitors: [{ id: "am3", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-03-01" }],
+    authorizedMonitors: [{ id: "am3", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-03-01", access: "read-only" }],
     notes: [],
   },
   p006: {
@@ -606,6 +611,18 @@ export const integrations: Integration[] = [
 ];
 
 export const dataRegions = ["United States (us-east)", "European Union (eu-central)", "Australia (ap-southeast)", "Canada (ca-central)"];
+
+// The current Authorized Monitor's access level per patient (prototype: the
+// logged-in monitor is read-write on its own clinical patients, read-only elsewhere).
+const monitorAccessByPatient: Record<string, MonitorAccess> = {
+  p001: "read-write",
+  p002: "read-only",
+  p005: "read-only",
+};
+
+export function currentMonitorAccess(patientId: string): MonitorAccess {
+  return monitorAccessByPatient[patientId] ?? "read-only";
+}
 
 export const providerAuditLog: AuditEntry[] = [
   { id: "pl1", user: "skim@northside.com", role: "IT Administrator", action: "Granted Authorized Monitor (BlueCross Claims)", patientId: "p001", patientName: "John Carter", timestamp: "2026-05-18 14:22" },

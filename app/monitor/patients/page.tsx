@@ -5,7 +5,7 @@ import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import { Search, Download } from "lucide-react";
-import { patients } from "@/lib/mock-data";
+import { patients, currentMonitorAccess } from "@/lib/mock-data";
 
 export default function MonitorPatients() {
   const [q, setQ] = useState("");
@@ -33,6 +33,7 @@ export default function MonitorPatients() {
             <tr>
               <th className="text-left font-medium px-5 py-2">Patient</th>
               <th className="text-left font-medium px-5 py-2">Shared by</th>
+              <th className="text-left font-medium px-5 py-2">Access</th>
               <th className="text-right font-medium px-5 py-2">30d avg</th>
               <th className="text-right font-medium px-5 py-2">Days ≥4h</th>
               <th className="text-left font-medium px-5 py-2">Last sync</th>
@@ -49,6 +50,11 @@ export default function MonitorPatients() {
                   <div className="text-xs text-slate-500">DOB {p.dob}</div>
                 </td>
                 <td className="px-5 py-3 text-slate-600">{p.provider}</td>
+                <td className="px-5 py-3">
+                  {currentMonitorAccess(p.id) === "read-write"
+                    ? <span className="badge badge-amber">Read-write</span>
+                    : <span className="badge badge-slate">Read-only</span>}
+                </td>
                 <td className="px-5 py-3 text-right">{p.usageLast30d}h</td>
                 <td className="px-5 py-3 text-right">{p.complianceDays}/30</td>
                 <td className="px-5 py-3 text-slate-600">{p.lastSync}</td>
@@ -56,7 +62,7 @@ export default function MonitorPatients() {
               </tr>
             ))}
             {list.length === 0 && (
-              <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">No patients match search.</td></tr>
+              <tr><td colSpan={7} className="px-5 py-8 text-center text-slate-500">No patients match search.</td></tr>
             )}
           </tbody>
         </table>
