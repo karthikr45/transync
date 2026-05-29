@@ -9,7 +9,7 @@ import UsageChart from "@/components/UsageChart";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import ThirtyDayWindow from "@/components/ThirtyDayWindow";
 import {
-  patients, patientExtras, generateSessions, devices, careMonitors, alerts, noteTypes,
+  patients, patientExtras, generateSessions, devices, careMonitors, alerts, noteTypes, searchMonitorDirectory,
 } from "@/lib/mock-data";
 import {
   ArrowLeft, FileBarChart, Plus, X, Clock, CalendarCheck, ArrowRightLeft, Ban, Mail, BadgeCheck,
@@ -37,18 +37,7 @@ export default function ProviderPatientDetail() {
   const [monitorQuery, setMonitorQuery] = useState("");
   const [grantAccess, setGrantAccess] = useState<"read-only" | "read-write">("read-only");
 
-  const monitorResults = monitorQuery.trim()
-    ? [
-        { id: "r1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H", verified: true },
-        { id: "r2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "MON-4F1-20A", verified: true },
-        { id: "r3", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B", verified: false },
-      ].filter(
-        (m) =>
-          m.name.toLowerCase().includes(monitorQuery.toLowerCase()) ||
-          m.institution.toLowerCase().includes(monitorQuery.toLowerCase()) ||
-          m.upi.toLowerCase().includes(monitorQuery.toLowerCase())
-      )
-    : [];
+  const monitorResults = searchMonitorDirectory(monitorQuery);
 
   const cm = (cid?: string) => careMonitors.find((c) => c.id === cid);
 
@@ -272,30 +261,35 @@ export default function ProviderPatientDetail() {
 
               <input
                 className="input mt-4"
-                placeholder="e.g. MON-7K3-92H or 'BlueCross'"
+                placeholder="Search the network: name, institution, ID/NPI, country…"
                 value={monitorQuery}
                 onChange={(e) => setMonitorQuery(e.target.value)}
                 autoFocus
               />
-              <div className="mt-3 space-y-2 max-h-56 overflow-auto">
+              <div className="mt-3 space-y-2 max-h-64 overflow-auto">
                 {monitorResults.map((m) => (
                   <div key={m.id} className="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2">
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-sm font-medium text-slate-900 flex items-center gap-1.5">
                         {m.name}
                         {m.verified
                           ? <span className="badge badge-green inline-flex items-center gap-1"><BadgeCheck className="w-3 h-3" /> Verified</span>
                           : <span className="badge badge-amber">Unverified</span>}
                       </div>
-                      <div className="text-xs text-slate-500">{m.institution} · {m.upi}</div>
+                      <div className="text-xs text-slate-500 truncate">{m.institution} · {m.kind} · {m.country}</div>
+                      <div className="text-xs text-slate-400 font-mono">{m.upi}</div>
                     </div>
-                    <button className="btn-primary !py-1 !px-3 text-xs" onClick={() => setModal(null)}>Grant</button>
+                    <button className="btn-primary !py-1 !px-3 text-xs shrink-0" onClick={() => setModal(null)}>Grant</button>
                   </div>
                 ))}
                 {monitorQuery && monitorResults.length === 0 && (
                   <p className="text-sm text-slate-500 py-2">No registered monitors match. They must register an Authorized Monitor account first.</p>
                 )}
-                {!monitorQuery && <p className="text-xs text-slate-400 py-2">Start typing to search registered monitors.</p>}
+                {!monitorQuery && (
+                  <p className="text-xs text-slate-400 py-2">
+                    Search the global directory of approved Authorized Monitors across all organizations and countries.
+                  </p>
+                )}
               </div>
               <div className="mt-4 flex justify-end">
                 <button className="btn-secondary" onClick={() => setModal(null)}>Close</button>

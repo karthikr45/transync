@@ -740,3 +740,46 @@ export const platformFeatureFlags = [
   { id: "ff4", label: "Background auto-sync", desc: "Push session data from the mobile app automatically.", on: true },
   { id: "ff5", label: "Brightree integration", desc: "Platform-wide billing integration availability.", on: true },
 ];
+
+// ---------- Global Authorized Monitor directory (network-wide, like AirView sharing) ----------
+
+export type DirectoryMonitor = {
+  id: string;
+  name: string;
+  institution: string;
+  upi: string; // Unique Provider Identifier / NPI
+  kind: "Clinician" | "Insurance" | "Monitoring service";
+  country: string;
+  verified: boolean;
+};
+
+// Approved Authorized Monitor accounts from many organizations & countries.
+export const monitorDirectory: DirectoryMonitor[] = [
+  { id: "md1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H", kind: "Insurance", country: "United States", verified: true },
+  { id: "md2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "NPI-1841299104", kind: "Clinician", country: "United States", verified: true },
+  { id: "md3", name: "Dr. Alan Cho", institution: "Northgate Pulmonology", upi: "NPI-1730455821", kind: "Clinician", country: "United States", verified: true },
+  { id: "md4", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B", kind: "Monitoring service", country: "United States", verified: false },
+  { id: "md5", name: "Aetna Compliance", institution: "Aetna", upi: "MON-3T1-77P", kind: "Insurance", country: "United States", verified: true },
+  { id: "md6", name: "Dr. Priya Nair", institution: "Lakeside Sleep Center", upi: "NPI-1992017345", kind: "Clinician", country: "United States", verified: true },
+  { id: "md7", name: "NHS Sleep Services", institution: "NHS Greater Manchester", upi: "GMC-7720104", kind: "Clinician", country: "United Kingdom", verified: true },
+  { id: "md8", name: "Dr. Klaus Berger", institution: "Charité Schlafmedizin", upi: "DE-LANR-554120", kind: "Clinician", country: "Germany", verified: true },
+  { id: "md9", name: "Medibank Compliance", institution: "Medibank", upi: "AU-PAY-30021", kind: "Insurance", country: "Australia", verified: true },
+  { id: "md10", name: "Dr. Sarah Lin", institution: "Toronto Sleep Institute", upi: "CA-CPSO-88210", kind: "Clinician", country: "Canada", verified: true },
+  { id: "md11", name: "RespCare Telemonitoring", institution: "RespCare Ltd", upi: "MON-5R9-11Q", kind: "Monitoring service", country: "United Kingdom", verified: true },
+  { id: "md12", name: "Meridian Health Plan", institution: "Meridian", upi: "MON-2M4-08K", kind: "Insurance", country: "United States", verified: false },
+  { id: "md13", name: "Apollo Sleep Clinic", institution: "Apollo Hospitals", upi: "IN-NMC-440021", kind: "Clinician", country: "India", verified: true },
+  { id: "md14", name: "United Compliance", institution: "UnitedHealthcare", upi: "MON-8U2-63D", kind: "Insurance", country: "United States", verified: true },
+];
+
+export function searchMonitorDirectory(q: string): DirectoryMonitor[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return [];
+  return monitorDirectory.filter(
+    (m) =>
+      m.name.toLowerCase().includes(s) ||
+      m.institution.toLowerCase().includes(s) ||
+      m.upi.toLowerCase().includes(s) ||
+      m.kind.toLowerCase().includes(s) ||
+      m.country.toLowerCase().includes(s)
+  );
+}
