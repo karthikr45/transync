@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Check, Building2, Eye, User, Clock, Mail } from "lucide-react";
+import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle } from "lucide-react";
 import Logo from "@/components/Logo";
 
 type AccountType = "provider" | "monitor" | "individual";
@@ -26,7 +26,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-2xl">
+      <div className={`w-full ${step === 2 ? "max-w-4xl" : "max-w-2xl"}`}>
         <Link href="/" className="flex items-center justify-center mb-6">
           <Logo className="h-9 w-auto" />
         </Link>
@@ -235,55 +235,125 @@ function DetailsForm({ type }: { type: AccountType }) {
 
 function ProviderDetails() {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg font-semibold text-slate-900">Homecare provider details</h2>
-      <p className="text-sm text-slate-500">Tell us about your institution.</p>
-      <div><label className="label">Institution / company name</label><input className="input" placeholder="Northside Homecare" /></div>
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="label">Country</label>
-          <select className="input">
-            <option>United States</option><option>Canada</option><option>United Kingdom</option>
-            <option>Germany</option><option>France</option><option>Australia</option><option>India</option>
-          </select>
+    <div>
+      <h2 className="text-lg font-semibold text-slate-900">Account Information</h2>
+      <p className="text-sm text-slate-500 mb-5">Homecare Provider account. Fields marked * are required.</p>
+      <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">Corporate Information</h3>
+          <div className="space-y-3">
+            <Field label="Company Name" required><input className="input" /></Field>
+            <Field label="Account Number" required help="Your Transcend account number, found on your invoice or welcome email.">
+              <input className="input" />
+            </Field>
+            <Field label="Address 1" required><input className="input" /></Field>
+            <Field label="Address 2"><input className="input" /></Field>
+            <Field label="City" required><input className="input" /></Field>
+            <Field label="Country" required><CountrySelect /></Field>
+            <Field label="State/Province" required><StateSelect /></Field>
+            <Field label="Postal Code" required><input className="input" /></Field>
+            <Field label="Phone" required><input className="input" type="tel" /></Field>
+          </div>
         </div>
-        <div><label className="label">State / region</label><input className="input" /></div>
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">User Information</h3>
+          <div className="space-y-3">
+            <Field label="First Name" required><input className="input" /></Field>
+            <Field label="Last Name" required><input className="input" /></Field>
+            <Field label="Title"><input className="input" /></Field>
+            <Field label="User Name" required><input className="input" /></Field>
+            <Field label="Email" required><input className="input" type="email" /></Field>
+            <Field label="Confirm Email" required><input className="input" type="email" /></Field>
+            <Field label="Time Zone" required><TimeZoneSelect /></Field>
+          </div>
+        </div>
       </div>
-      <div><label className="label">Business address</label><input className="input" /></div>
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="label">Primary contact name</label><input className="input" /></div>
-        <div><label className="label">Phone</label><input className="input" /></div>
-      </div>
-      <div><label className="label">Email (used to log in)</label><input className="input" type="email" /></div>
-      <div><label className="label">Password</label><input className="input" type="password" /></div>
     </div>
   );
 }
 
 function MonitorDetails() {
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg font-semibold text-slate-900">Authorized monitor details</h2>
-      <p className="text-sm text-slate-500">Used to verify your identity before Homecare Providers can share patients with you.</p>
-      <div><label className="label">Organization name</label><input className="input" placeholder="BlueCross Claims / Dr. Park clinic / etc." /></div>
-      <div>
-        <label className="label">Organization type</label>
-        <select className="input">
-          <option>Clinician / Sleep specialist</option>
-          <option>Insurance / Payer</option>
-          <option>Monitoring service</option>
-          <option>Other</option>
-        </select>
+    <div>
+      <h2 className="text-lg font-semibold text-slate-900">Account Information</h2>
+      <p className="text-sm text-slate-500 mb-5">Authorized Monitor account. Fields marked * are required.</p>
+      <div className="grid md:grid-cols-2 gap-x-8 gap-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">User Information</h3>
+          <div className="space-y-3">
+            <Field label="First Name" required><input className="input" /></Field>
+            <Field label="Last Name" required><input className="input" /></Field>
+            <Field label="Title"><input className="input" /></Field>
+            <Field label="Unique Identifier" required help="Your Unique Provider Identifier (e.g. NPI). Homecare Providers use this to find and grant you access.">
+              <input className="input" />
+            </Field>
+            <Field label="User Name" required><input className="input" /></Field>
+            <Field label="Email" required><input className="input" type="email" /></Field>
+            <Field label="Confirm Email" required><input className="input" type="email" /></Field>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 mb-3">Contact Information</h3>
+          <div className="space-y-3">
+            <Field label="Institution Name" required><input className="input" /></Field>
+            <Field label="Address 1" required><input className="input" /></Field>
+            <Field label="Address 2"><input className="input" /></Field>
+            <Field label="City" required><input className="input" /></Field>
+            <Field label="Country" required><CountrySelect /></Field>
+            <Field label="State/Province" required><StateSelect /></Field>
+            <Field label="Postal Code" required><input className="input" /></Field>
+            <Field label="Phone" required><input className="input" type="tel" /></Field>
+            <Field label="Time Zone" required><TimeZoneSelect /></Field>
+          </div>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="label">First name</label><input className="input" /></div>
-        <div><label className="label">Last name</label><input className="input" /></div>
-      </div>
-      <div><label className="label">Country</label>
-        <select className="input"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Germany</option><option>France</option><option>Australia</option></select>
-      </div>
-      <div><label className="label">Email (used to log in)</label><input className="input" type="email" /></div>
-      <div><label className="label">Password</label><input className="input" type="password" /></div>
     </div>
+  );
+}
+
+function Field({ label, required, help, children }: { label: string; required?: boolean; help?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="label flex items-center gap-1">
+        {label} {required && <span className="text-red-500">*</span>}
+        {help && (
+          <span title={help} className="inline-flex cursor-help">
+            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+          </span>
+        )}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function CountrySelect() {
+  return (
+    <select className="input" defaultValue="United States">
+      <option>United States</option><option>Canada</option><option>United Kingdom</option>
+      <option>Germany</option><option>France</option><option>Australia</option><option>India</option>
+    </select>
+  );
+}
+
+function StateSelect() {
+  return (
+    <select className="input" defaultValue="">
+      <option value="">-- Select State/Province --</option>
+      <option>California</option><option>Colorado</option><option>Florida</option><option>New York</option>
+      <option>Texas</option><option>Washington</option>
+    </select>
+  );
+}
+
+function TimeZoneSelect() {
+  return (
+    <select className="input" defaultValue="">
+      <option value="">-- Select Time Zone --</option>
+      <option>America/New_York (ET)</option><option>America/Chicago (CT)</option>
+      <option>America/Denver (MT)</option><option>America/Los_Angeles (PT)</option>
+      <option>UTC</option><option>Europe/London</option><option>Australia/Sydney</option>
+    </select>
   );
 }
 
