@@ -77,7 +77,7 @@ export default function LoginPage() {
           By continuing you agree to Transcend&apos;s Terms and HIPAA Notice.
         </div>
         <div className="text-center text-xs text-slate-400 mt-3 border-t border-slate-200 pt-3">
-          Transcend staff? <Link href="/admin/dashboard" className="text-slate-600 font-medium">Platform admin</Link>
+          Transcend staff? <Link href="/admin/dashboard" className="text-slate-600 font-medium">Super Admin sign in</Link>
         </div>
       </div>
     </div>

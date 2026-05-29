@@ -667,3 +667,76 @@ export const providerAuditLog: AuditEntry[] = [
   { id: "pl5", user: "dwebb@northside.com", role: "Read-Only User", action: "Exported Group Compliance Report (30d)", patientId: "—", patientName: "—", timestamp: "2026-05-16 17:12" },
   { id: "pl6", user: "skim@northside.com", role: "IT Administrator", action: "Deactivated patient", patientId: "d001", patientName: "Gary Holt", timestamp: "2026-03-22 10:08" },
 ];
+
+// ---------- Super Admin (platform-wide) ----------
+
+export type AdminRole = "Super Admin" | "Approver" | "Support" | "Read-only";
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  status: "active" | "invited";
+  lastActive: string;
+};
+
+export const adminUsers: AdminUser[] = [
+  { id: "au1", name: "Alex Mercer", email: "amercer@transcend.com", role: "Super Admin", status: "active", lastActive: "2026-05-19 09:40" },
+  { id: "au2", name: "Priya Shah", email: "pshah@transcend.com", role: "Approver", status: "active", lastActive: "2026-05-19 08:55" },
+  { id: "au3", name: "Tom Reyes", email: "treyes@transcend.com", role: "Support", status: "active", lastActive: "2026-05-18 17:20" },
+  { id: "au4", name: "Nina Patel", email: "npatel@transcend.com", role: "Read-only", status: "invited", lastActive: "—" },
+];
+
+export type PlatformAudit = { id: string; actor: string; action: string; target: string; timestamp: string };
+
+export const platformAuditLog: PlatformAudit[] = [
+  { id: "sa1", actor: "amercer@transcend.com", action: "Approved Homecare Provider", target: "Summit Respiratory Care", timestamp: "2026-05-19 09:42" },
+  { id: "sa2", actor: "pshah@transcend.com", action: "Verified Authorized Monitor", target: "Dr. Aaron Blake", timestamp: "2026-05-19 09:10" },
+  { id: "sa3", actor: "amercer@transcend.com", action: "Updated compliance default", target: "Country: Germany", timestamp: "2026-05-18 15:02" },
+  { id: "sa4", actor: "treyes@transcend.com", action: "Suspended organization", target: "OldCare DME (fraud review)", timestamp: "2026-05-17 11:48" },
+  { id: "sa5", actor: "amercer@transcend.com", action: "Pushed firmware v3.2.1", target: "Fleet: miniCPAP 3 (1,204 devices)", timestamp: "2026-05-16 13:30" },
+  { id: "sa6", actor: "pshah@transcend.com", action: "Rejected Homecare Provider", target: "QuickCPAP (no BAA)", timestamp: "2026-05-16 10:14" },
+];
+
+export type CountryConfig = {
+  code: string;
+  name: string;
+  region: string;
+  language: string;
+  payers: number;
+  providers: number;
+  status: "live" | "pilot" | "off";
+};
+
+export const countriesConfig: CountryConfig[] = [
+  { code: "US", name: "United States", region: "us-east", language: "English", payers: 6, providers: 142, status: "live" },
+  { code: "CA", name: "Canada", region: "ca-central", language: "English / French", payers: 3, providers: 28, status: "live" },
+  { code: "GB", name: "United Kingdom", region: "eu-central", language: "English", payers: 1, providers: 19, status: "live" },
+  { code: "DE", name: "Germany", region: "eu-central", language: "German", payers: 4, providers: 11, status: "pilot" },
+  { code: "AU", name: "Australia", region: "ap-southeast", language: "English", payers: 5, providers: 22, status: "live" },
+  { code: "IN", name: "India", region: "ap-southeast", language: "English / Hindi", payers: 0, providers: 6, status: "pilot" },
+];
+
+export type FirmwareRow = { model: string; firmware: string; devices: number; latest: boolean };
+
+export const deviceFleet = {
+  total: 4820,
+  active: 4391,
+  unassigned: 312,
+  rma: 47,
+  byFirmware: [
+    { model: "Transcend miniCPAP 3", firmware: "v3.2.1", devices: 3204, latest: true },
+    { model: "Transcend miniCPAP 3", firmware: "v3.2.0", devices: 612, latest: false },
+    { model: "Transcend miniCPAP 3", firmware: "v3.1.9", devices: 388, latest: false },
+    { model: "Transcend miniCPAP 2", firmware: "v2.8.4", devices: 616, latest: false },
+  ] as FirmwareRow[],
+};
+
+export const platformFeatureFlags = [
+  { id: "ff1", label: "Self-service provider registration", desc: "Allow DMEs to self-register (vs. sales-provisioned only).", on: true },
+  { id: "ff2", label: "Monitor self-registration", desc: "Allow clinicians/payers to self-register as Authorized Monitors.", on: true },
+  { id: "ff3", label: "Remote setting changes", desc: "Expose device setting-change requests (hardware-gated).", on: false },
+  { id: "ff4", label: "Background auto-sync", desc: "Push session data from the mobile app automatically.", on: true },
+  { id: "ff5", label: "Brightree integration", desc: "Platform-wide billing integration availability.", on: true },
+];

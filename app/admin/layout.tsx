@@ -1,15 +1,19 @@
-import { LayoutDashboard, ClipboardCheck, Building2 } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, Building2, HardDrive, Users, ScrollText, Settings } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
 
 const nav = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { href: "/admin/approvals", label: "Approvals", icon: <ClipboardCheck className="w-4 h-4" /> },
   { href: "/admin/organizations", label: "Organizations", icon: <Building2 className="w-4 h-4" /> },
+  { href: "/admin/devices", label: "Device fleet", icon: <HardDrive className="w-4 h-4" /> },
+  { href: "/admin/users", label: "Admin users", icon: <Users className="w-4 h-4" /> },
+  { href: "/admin/audit", label: "Audit log", icon: <ScrollText className="w-4 h-4" /> },
+  { href: "/admin/settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell role="Platform Admin" user={{ name: "Transcend Operations", email: "ops@transcend.com" }} nav={nav}>
+    <PortalShell role="Super Admin" user={{ name: "Alex Mercer", email: "amercer@transcend.com" }} nav={nav}>
       {children}
     </PortalShell>
   );
