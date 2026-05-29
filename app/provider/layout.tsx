@@ -1,8 +1,9 @@
-import { LayoutDashboard, Users, HardDrive, FileText, Bell, Settings } from "lucide-react";
+import { LayoutDashboard, ListChecks, Users, HardDrive, FileText, Bell, Settings } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
 
 const nav = [
   { href: "/provider/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/provider/worklist", label: "Worklist", icon: <ListChecks className="w-4 h-4" /> },
   { href: "/provider/patients", label: "Patients", icon: <Users className="w-4 h-4" /> },
   { href: "/provider/devices", label: "Devices", icon: <HardDrive className="w-4 h-4" /> },
   { href: "/provider/reports", label: "Reports", icon: <FileText className="w-4 h-4" /> },
