@@ -168,13 +168,39 @@ function AdvancedTab({ vm }: { vm: ReportVM }) {
           <Row label="Avg Mask Removed" value={intOrDash(sleep.avgMaskRemoved)} />
         </Section>
       )}
-      <Section title="Device Settings">
-        <Row label="Mode" value={ps.mode ?? DASH} />
-        <Row label="Tubing Type" value={ps.tubingType ?? DASH} />
-        <Row label="Heated Humidifier" value={ps.heatedHumidifier == null ? DASH : ps.heatedHumidifier ? "Yes" : "No"} />
-        <Row label="Heated Tube" value={ps.heatedTube == null ? DASH : ps.heatedTube ? "Yes" : "No"} />
-      </Section>
+      <DeviceSettingsSection vm={vm} />
     </>
+  );
+}
+
+function DeviceSettingsSection({ vm }: { vm: ReportVM }) {
+  // Prefer the raw deviceSettings block, then fall back to the patientSettings
+  // labelled fields (which is what the End User reportBySession path uses).
+  const ds = vm.deviceSettings ?? {};
+  const ps = vm.patientSettings;
+  const mode = ds.mode ?? ps.mode ?? null;
+  const ramp = ds.ramp ?? ps.gentleRiseDuration ?? null;
+  const therapy = ds.therapyPressure ?? (ps.minPressure != null && ps.maxPressure != null ? { min: Number(ps.minPressure), max: Number(ps.maxPressure) } : null);
+  const rampStart = ds.rampStartPressure ?? ps.startingPressure ?? null;
+  const comfort = ds.comfortControlPlusLevel ?? ps.airRelief ?? null;
+  const tubing = ds.tubingType ?? ps.tubingType ?? null;
+  const humidifier = ds.heatedHumidifier ?? ps.heatedHumidifier ?? null;
+  const tube = ds.heatedTube ?? ps.heatedTube ?? null;
+  const maskLeak = ds.maskLeak ?? null;
+  const analysis = ds.analysisParameter ?? null;
+  return (
+    <Section title="Device Settings">
+      <Row label="Mode" value={mode ?? DASH} />
+      <Row label="Ramp" value={ramp == null ? DASH : `${ramp} Mins`} />
+      <Row label="Therapy pressure" value={therapy ? `${therapy.min}–${therapy.max} cmH2O` : DASH} />
+      <Row label="Ramp start pressure" value={rampStart == null ? DASH : `${rampStart} cmH2O`} />
+      <Row label="Comfort Control+ level" value={comfort == null ? DASH : String(comfort)} />
+      <Row label="Tubing type" value={tubing ?? DASH} />
+      <Row label="Heated humidifier" value={humidifier == null ? DASH : humidifier ? "Yes" : "No"} />
+      <Row label="Heated tube" value={tube == null ? DASH : tube ? "Yes" : "No"} />
+      <Row label="Mask leak" value={maskLeak == null ? DASH : `${maskLeak} L/Min`} />
+      <Row label="Analysis parameter" value={analysis ?? DASH} />
+    </Section>
   );
 }
 

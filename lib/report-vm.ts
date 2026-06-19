@@ -57,6 +57,20 @@ export type ReportVM = {
     p90Pressure?: number | null;
   };
   sleep?: { sleepScore?: number; avgMaskRemoved?: number };
+  // Raw device settings (1:1 mapping of the Home Care compliance-report
+  // DeviceSettingsMetrics block, for the Advanced tab).
+  deviceSettings?: {
+    mode?: string | null;
+    ramp?: number | null;
+    therapyPressure?: { min: number; max: number } | null;
+    rampStartPressure?: number | null;
+    comfortControlPlusLevel?: number | null;
+    tubingType?: string | null;
+    heatedHumidifier?: boolean | null;
+    heatedTube?: boolean | null;
+    maskLeak?: number | null;
+    analysisParameter?: string | null;
+  };
 };
 
 export type ReportCtx = {
@@ -122,6 +136,18 @@ export function fromComplianceReportResult(r: ComplianceReportResult, ctx: Repor
       maxPressure: r.PressureMetrics.maxPressure ?? r.DeviceSettingsMetrics.therapyPressure?.max ?? undefined,
       averagePressure: r.PressureMetrics.averagePressure ?? undefined,
       p90Pressure: r.PressureMetrics.p90Pressure,
+    },
+    deviceSettings: {
+      mode: r.DeviceSettingsMetrics.mode,
+      ramp: r.DeviceSettingsMetrics.ramp,
+      therapyPressure: r.DeviceSettingsMetrics.therapyPressure,
+      rampStartPressure: r.DeviceSettingsMetrics.rampStartPressure,
+      comfortControlPlusLevel: r.DeviceSettingsMetrics.comfortControlPlusLevel,
+      tubingType: r.DeviceSettingsMetrics.tubingType,
+      heatedHumidifier: r.DeviceSettingsMetrics.heatedHumidifier,
+      heatedTube: r.DeviceSettingsMetrics.heatedTube,
+      maskLeak: r.DeviceSettingsMetrics.maskLeak,
+      analysisParameter: r.DeviceSettingsMetrics.analysisParameter,
     },
   };
 }
