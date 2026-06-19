@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
 import { setSession, destinationForUser } from "@/lib/auth";
 
+type Kind = "patient" | "staff";
+
 export default function LoginPage() {
   const router = useRouter();
+  const [kind, setKind] = useState<Kind>("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -20,36 +23,25 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      // Try both endpoints; whichever succeeds wins.
-      const [hc, eu] = await Promise.allSettled([
-        homeCareApi.login({ email, password }),
-        endUserApi.login({ email, password }),
-      ]);
-
-      if (hc.status === "fulfilled") {
-        const { token, refreshToken, user } = hc.value;
-        setSession(token, refreshToken, user, "home-care");
-        router.push(destinationForUser(user));
-        return;
-      }
-
-      if (eu.status === "fulfilled") {
-        const u = eu.value;
+      if (kind === "patient") {
+        const u = await endUserApi.login({ email, password });
         setSession(u.token, u.refreshToken, u, "end-user");
         router.push("/patient/dashboard");
-        return;
+      } else {
+        const { token, refreshToken, user } = await homeCareApi.login({ email, password });
+        setSession(token, refreshToken, user, "home-care");
+        router.push(destinationForUser(user));
       }
-
-      // Both failed — prefer the more specific message.
-      const hcErr = hc.reason as ApiError | undefined;
-      const euErr = eu.reason as ApiError | undefined;
-      const msg = euErr?.message || hcErr?.message || "Login failed.";
-      setError(msg);
     } catch (err) {
       setError((err as ApiError).message || "Login failed.");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function switchKind(k: Kind) {
+    setKind(k);
+    setError(null);
   }
 
   return (
@@ -60,9 +52,32 @@ export default function LoginPage() {
         </Link>
         <div className="card p-6">
           <h1 className="text-xl font-semibold text-slate-900">Log on</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            One login for Patients, Homecare Providers, Authorized Monitors and Super Admins.
-          </p>
+          <p className="text-sm text-slate-500 mt-1">Select your account type to continue.</p>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => switchKind("patient")}
+              className={`text-left rounded-lg border p-3 transition flex items-start gap-2 ${kind === "patient" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
+            >
+              <User className="w-4 h-4 mt-0.5 shrink-0 text-brand-600" />
+              <div>
+                <div className="text-sm font-medium text-slate-900">Patient</div>
+                <div className="text-xs text-slate-500">Individual User</div>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => switchKind("staff")}
+              className={`text-left rounded-lg border p-3 transition flex items-start gap-2 ${kind === "staff" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
+            >
+              <Building2 className="w-4 h-4 mt-0.5 shrink-0 text-brand-600" />
+              <div>
+                <div className="text-sm font-medium text-slate-900">Provider, Monitor or Admin</div>
+                <div className="text-xs text-slate-500">Homecare / Authorized / Transcend</div>
+              </div>
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
