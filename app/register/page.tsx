@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle, AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
@@ -41,6 +42,7 @@ const blank: Form = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<AccountType | null>(null);
   const [form, setForm] = useState<Form>(blank);
@@ -92,11 +94,12 @@ export default function RegisterPage() {
   function next() {
     if (step === 1) {
       if (!type) return;
+      // Individual users go through a dedicated OTP-based End User flow.
+      if (type === "individual") { router.push("/register/patient"); return; }
       setStep(2); return;
     }
     if (step === 2) { setStep(3); return; }
-    // step === 3 — Consent → submit
-    if (type === "individual") { setStep(4); return; }
+    // step === 3 — Consent → submit (provider/monitor)
     submitRegistration();
   }
 

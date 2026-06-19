@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
-import { homeCareApi, ApiError } from "@/lib/api";
+import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
 import { setSession, destinationForUser } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -20,12 +20,33 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const { token, refreshToken, user } = await homeCareApi.login({ email, password });
-      setSession(token, refreshToken, user);
-      router.push(destinationForUser(user));
+      // Try both endpoints; whichever succeeds wins.
+      const [hc, eu] = await Promise.allSettled([
+        homeCareApi.login({ email, password }),
+        endUserApi.login({ email, password }),
+      ]);
+
+      if (hc.status === "fulfilled") {
+        const { token, refreshToken, user } = hc.value;
+        setSession(token, refreshToken, user, "home-care");
+        router.push(destinationForUser(user));
+        return;
+      }
+
+      if (eu.status === "fulfilled") {
+        const u = eu.value;
+        setSession(u.token, u.refreshToken, u, "end-user");
+        router.push("/patient/dashboard");
+        return;
+      }
+
+      // Both failed — prefer the more specific message.
+      const hcErr = hc.reason as ApiError | undefined;
+      const euErr = eu.reason as ApiError | undefined;
+      const msg = euErr?.message || hcErr?.message || "Login failed.";
+      setError(msg);
     } catch (err) {
-      const apiErr = err as ApiError;
-      setError(apiErr.message || "Login failed.");
+      setError((err as ApiError).message || "Login failed.");
     } finally {
       setSubmitting(false);
     }
@@ -40,7 +61,7 @@ export default function LoginPage() {
         <div className="card p-6">
           <h1 className="text-xl font-semibold text-slate-900">Log on</h1>
           <p className="text-sm text-slate-500 mt-1">
-            One login for Homecare Providers, Authorized Monitors and Super Admins.
+            One login for Patients, Homecare Providers, Authorized Monitors and Super Admins.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">

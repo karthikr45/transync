@@ -199,3 +199,131 @@ export interface ComplianceReportResult {
     heatedTube: boolean | null;
   };
 }
+
+// ---------- End User API ----------
+
+export interface SignUpOtpDto { email: string; name: string; }
+export interface ValidateOtpDto { email: string; otp: number; }
+
+export interface CreateUserDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  dob: string;
+  state: string;
+  country: string;
+  mobile: string;
+  cpapUser: string;
+  transcendDevice: string;
+  occupation: string;
+  gender?: string;
+  city?: string;
+  pincode?: number;
+  countryCode?: string;
+  profileImage?: string;
+  provider?: string;
+  providerEmail?: string;
+  dealerName?: string;
+  devicePurchased?: string;
+  timeZone?: string;
+  deviceId?: string;
+  eventCount?: number;
+  isFirmwareUpdate?: boolean;
+}
+
+export interface EndUserLoginDto { email: string; password: string; }
+
+export interface EndUser {
+  _id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  dob?: string;
+  gender?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  mobile?: string;
+  cpapUser?: string;
+  transcendDevice?: string;
+  deviceId?: string;
+  timeZone?: string;
+  occupation?: string;
+  provider?: string;
+  providerEmail?: string;
+  token: string;
+  refreshToken: string;
+  lastEvent?: string;
+  lastSyncDate?: string;
+  lastSettingSyncDate?: string;
+  pPolicy?: boolean;
+}
+
+export type SessionWindow = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface LastSyncQuery { email: string; deviceId: string; }
+export interface LastSyncResult {
+  lastEvent: string;
+  lastSyncDate: string;
+  lastSettingSyncDate?: string;
+}
+
+export interface SessionQuery {
+  email: string;
+  deviceId: string;
+  session: SessionWindow;
+  timeZoneName?: string;
+}
+
+export interface DataBySessionResult {
+  ahi: number;
+  avgLeak: number;
+  usageHours: number;
+  maskRemoved: number;
+  sleepScore: number;
+}
+
+export interface ReportBySessionQuery extends SessionQuery {
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ReportBySessionResult {
+  datesOfReport: string;
+  usage: number;
+  numberOfDays: number;
+  notUsed: number;
+  averageHoursPerNight: number;
+  greaterThanFour: number;
+  greaterThanSix: number;
+  apnea: number;
+  hypopnea: number;
+  AHI: number;
+  apneaDuration: number;
+  apneaPercentage: number;
+  apneaAvgLength: number;
+  longestApnea: number;
+  flowLtdIndex: number;
+  snoreIndex: number;
+  minPressure: number;
+  maxPressure: number;
+  averagePressure: number;
+  ninetyFivePercentilePressure: number;
+  averageLeak: number;
+  ninetyFivePercentileLeak: number;
+  sleepScore: number;
+  avgMaskRemoved: number;
+  leakAvgRange: number;
+}
+
+export interface EventGraphDto { label: string; value: number; }
+export interface SleepScoreEventDto {
+  totalHoursRating: number;
+  ahiRating: number;
+  sessionsRating: number;
+  snoreRating: number;
+  flowLimitedRating: number;
+  leakRating: number;
+  sleepScore: number;
+}

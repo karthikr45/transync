@@ -1,5 +1,8 @@
+"use client";
+
 import { LayoutDashboard, FileText, Smartphone, Share2, User } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
+import { getCurrentEndUser } from "@/lib/auth";
 import { currentPatient } from "@/lib/mock-data";
 
 const nav = [
@@ -11,8 +14,11 @@ const nav = [
 ];
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
+  const eu = getCurrentEndUser();
+  const displayName = eu ? `${eu.firstName ?? ""} ${eu.lastName ?? ""}`.trim() || eu.email : currentPatient.name;
+  const displayEmail = eu?.email ?? currentPatient.email;
   return (
-    <PortalShell role="Individual User" user={{ name: currentPatient.name, email: currentPatient.email }} nav={nav}>
+    <PortalShell role="Individual User" user={{ name: displayName, email: displayEmail }} nav={nav}>
       {children}
     </PortalShell>
   );

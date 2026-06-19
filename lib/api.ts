@@ -77,6 +77,9 @@ import type {
   LoginDto, LoginResult, RegisterDto, AccountUser,
   DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
   ComplianceReportDto, ComplianceReportResult,
+  SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
+  LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
+  ReportBySessionQuery, ReportBySessionResult,
 } from "./types.api";
 
 function qs(params: Record<string, unknown>): string {
@@ -103,7 +106,28 @@ export const homeCareApi = {
   uploadDevices: (dto: DeviceUploadDto) =>
     apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
   listDeviceUsers: (query: DeviceUsersQuery = {}) =>
-    apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as Record<string, unknown>)}`),
+    apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>
     apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
+};
+
+// ---------- End User endpoints ----------
+
+export const endUserApi = {
+  signUpOtp: (dto: SignUpOtpDto) =>
+    apiFetch<null>("/auth/signUp-otp", { method: "POST", body: JSON.stringify(dto) }),
+  validateOtp: (dto: ValidateOtpDto) =>
+    apiFetch<boolean>("/auth/validate-otp", { method: "POST", body: JSON.stringify(dto) }),
+  createUser: (dto: CreateUserDto) =>
+    apiFetch<EndUser>("/users/create-user", { method: "POST", body: JSON.stringify(dto) }),
+  login: (dto: EndUserLoginDto) =>
+    apiFetch<EndUser>("/auth/login", { method: "POST", body: JSON.stringify(dto) }),
+
+  // Protected (Bearer)
+  getLastSyncDate: (q: LastSyncQuery) =>
+    apiFetch<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),
+  getDataBySession: (q: SessionQuery) =>
+    apiFetch<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
+  reportBySession: (q: ReportBySessionQuery) =>
+    apiFetch<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
 };
