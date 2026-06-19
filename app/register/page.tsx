@@ -2,26 +2,102 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle } from "lucide-react";
+import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle, AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
+import { homeCareApi, ApiError } from "@/lib/api";
+import type { UserType, RegisterDto } from "@/lib/types.api";
 
 type AccountType = "provider" | "monitor" | "individual";
+
+type Form = {
+  firstName: string;
+  lastName: string;
+  title: string;
+  userName: string;
+  email: string;
+  confirmEmail: string;
+  timeZone: string;
+  address1: string;
+  address2: string;
+  city: string;
+  country: string;
+  stateProvince: string;
+  postalCode: string;
+  phone: string;
+  companyName: string;
+  accountNumber: string;
+  uniqueIdentifier: string;
+  institutionName: string;
+  password: string;
+  confirmPassword: string;
+};
+
+const blank: Form = {
+  firstName: "", lastName: "", title: "", userName: "", email: "", confirmEmail: "",
+  timeZone: "", address1: "", address2: "", city: "", country: "United States",
+  stateProvince: "", postalCode: "", phone: "",
+  companyName: "", accountNumber: "", uniqueIdentifier: "", institutionName: "",
+  password: "", confirmPassword: "",
+};
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
   const [type, setType] = useState<AccountType | null>(null);
+  const [form, setForm] = useState<Form>(blank);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>();
+
+  const update = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  async function submitRegistration() {
+    if (!type || type === "individual") return;
+    setError(null); setFieldErrors(undefined);
+    const userType: UserType = type === "provider" ? "home_care_provider" : "authorized_monitor";
+    const dto: RegisterDto = {
+      userType,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      title: form.title || undefined,
+      userName: form.userName,
+      email: form.email,
+      confirmEmail: form.confirmEmail,
+      timeZone: form.timeZone,
+      address1: form.address1,
+      address2: form.address2 || undefined,
+      city: form.city,
+      country: form.country,
+      stateProvince: form.stateProvince,
+      postalCode: form.postalCode,
+      phone: form.phone,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+      ...(userType === "home_care_provider"
+        ? { companyName: form.companyName, accountNumber: form.accountNumber }
+        : { uniqueIdentifier: form.uniqueIdentifier, institutionName: form.institutionName }),
+    };
+    setSubmitting(true);
+    try {
+      await homeCareApi.register(dto);
+      setStep(4);
+    } catch (e) {
+      const err = e as ApiError;
+      setError(err.message || "Registration failed.");
+      setFieldErrors(err.fieldErrors);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   function next() {
     if (step === 1) {
       if (!type) return;
-      setStep(2);
-      return;
+      setStep(2); return;
     }
-    if (step === 2) {
-      setStep(3);
-      return;
-    }
-    setStep(4); // completion — role-specific
+    if (step === 2) { setStep(3); return; }
+    // step === 3 — Consent → submit
+    if (type === "individual") { setStep(4); return; }
+    submitRegistration();
   }
 
   return (
@@ -36,19 +112,28 @@ export default function RegisterPage() {
           <div className="card p-6">
             <Stepper step={step} />
             {step === 1 && <PickType type={type} setType={setType} />}
-            {step === 2 && type && <DetailsForm type={type} />}
+            {step === 2 && type === "provider" && <ProviderDetails form={form} update={update} fieldErrors={fieldErrors} />}
+            {step === 2 && type === "monitor" && <MonitorDetails form={form} update={update} fieldErrors={fieldErrors} />}
+            {step === 2 && type === "individual" && <IndividualDetails form={form} update={update} />}
             {step === 3 && <Consent type={type} />}
+            {error && (
+              <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-800 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
+              </div>
+            )}
             <div className="mt-6 flex justify-between">
               <button
-                onClick={() => setStep(Math.max(1, step - 1))}
-                disabled={step === 1}
+                onClick={() => { setError(null); setStep(Math.max(1, step - 1)); }}
+                disabled={step === 1 || submitting}
                 className="btn-secondary disabled:opacity-50"
               >
                 Back
               </button>
-              <button onClick={next} disabled={step === 1 && !type} className="btn-primary disabled:opacity-50">
+              <button onClick={next} disabled={(step === 1 && !type) || submitting} className="btn-primary disabled:opacity-50">
                 {step < 3 ? (
                   <>Continue Registration <ArrowRight className="w-4 h-4" /></>
+                ) : submitting ? (
+                  <>Submitting…</>
                 ) : (
                   <>Finish <Check className="w-4 h-4" /></>
                 )}
@@ -73,15 +158,14 @@ function Completion({ type }: { type: AccountType | null }) {
         <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
           <Clock className="w-6 h-6" />
         </div>
-        <h2 className="mt-4 text-xl font-semibold text-slate-900">Account submitted for review</h2>
+        <h2 className="mt-4 text-xl font-semibold text-slate-900">Registration submitted</h2>
         <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
-          Homecare Provider accounts are verified by Transcend before activation. We&apos;ll review your business license,
-          accreditation and Business Associate Agreement (BAA) — typically within 1–2 business days. You&apos;ll get an
-          email once approved, and the first user becomes your IT Administrator.
+          Your Homecare Provider account is awaiting Super Admin approval. You&apos;ll be able to log in once it&apos;s
+          approved. Until then, logging in will tell you the current status.
         </p>
         <div className="mt-6 flex gap-2 justify-center">
           <Link href="/" className="btn-secondary">Back to home</Link>
-          <Link href="/provider/dashboard" className="btn-primary">Preview provider portal (demo)</Link>
+          <Link href="/login" className="btn-primary">Go to login</Link>
         </div>
       </div>
     );
@@ -92,15 +176,14 @@ function Completion({ type }: { type: AccountType | null }) {
         <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
           <Mail className="w-6 h-6" />
         </div>
-        <h2 className="mt-4 text-xl font-semibold text-slate-900">Verify your email</h2>
+        <h2 className="mt-4 text-xl font-semibold text-slate-900">Registration submitted</h2>
         <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
-          Check your inbox to verify your address. Once verified you&apos;ll receive a <strong>Monitor ID</strong>. Note:
-          you won&apos;t see any patient data until a Homecare Provider shares a patient with you and that patient has
-          consented. Clinicians may be granted read-write access; payers receive read-only.
+          Your Authorized Monitor account is awaiting Super Admin approval. Once approved you can log in and claim the
+          device IDs you&apos;re authorized to monitor.
         </p>
         <div className="mt-6 flex gap-2 justify-center">
           <Link href="/" className="btn-secondary">Back to home</Link>
-          <Link href="/monitor/dashboard" className="btn-primary">Preview monitor portal (demo)</Link>
+          <Link href="/login" className="btn-primary">Go to login</Link>
         </div>
       </div>
     );
@@ -110,15 +193,11 @@ function Completion({ type }: { type: AccountType | null }) {
       <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
         <Mail className="w-6 h-6" />
       </div>
-      <h2 className="mt-4 text-xl font-semibold text-slate-900">Verify your email</h2>
+      <h2 className="mt-4 text-xl font-semibold text-slate-900">Check your email</h2>
       <p className="text-sm text-slate-600 mt-2 max-w-md mx-auto">
-        Check your inbox and click the confirmation link to activate your account, then pair your Transcend device in the
-        mobile app to start seeing your therapy data.
+        Verify your email to activate your account. Patient registration is not yet wired to the live API.
       </p>
-      <div className="mt-6 flex gap-2 justify-center">
-        <Link href="/" className="btn-secondary">Back to home</Link>
-        <Link href="/patient/dashboard" className="btn-primary">Open my portal (demo)</Link>
-      </div>
+      <div className="mt-6"><Link href="/" className="btn-primary">Back to home</Link></div>
     </div>
   );
 }
@@ -154,86 +233,41 @@ function PickType({ type, setType }: { type: AccountType | null; setType: (t: Ac
     <div>
       <h2 className="text-2xl font-semibold text-slate-900">Account Registration</h2>
       <p className="text-sm text-slate-600 mt-1">Please select the type of account you are registering for:</p>
-
       <div className="mt-5 space-y-3">
-        <TypeCard
-          selected={type === "provider"}
-          onClick={() => setType("provider")}
-          icon={<Building2 className="w-5 h-5" />}
-          title="Homecare Provider Account"
-          desc="Choose this account if you are an institution that wishes to track compliance for a patient population. This account provides full access to patient data, including editing and sharing with other accounts."
-        />
-        <TypeCard
-          selected={type === "monitor"}
-          onClick={() => setType("monitor")}
-          icon={<Eye className="w-5 h-5" />}
-          title="Authorized Monitoring Account"
-          desc={
-            <>
-              Choose this <span className="underline">read-only</span> account if you are a clinician, monitoring service, insurance provider, or are otherwise authorized to view patient compliance data. Note: In order for you to view patient compliance data, Homecare Providers must share patients with you.
-            </>
-          }
-        />
-        <TypeCard
-          selected={type === "individual"}
-          onClick={() => setType("individual")}
-          icon={<User className="w-5 h-5" />}
-          title="Individual User Account"
-          desc="Choose this account type if you have a Transcend device and wish to track your own compliance."
-        />
+        <TypeCard selected={type === "provider"} onClick={() => setType("provider")}
+          icon={<Building2 className="w-5 h-5" />} title="Homecare Provider Account"
+          desc="Choose this account if you are an institution that wishes to track compliance for a patient population. This account provides full access to patient data, including editing and sharing with other accounts." />
+        <TypeCard selected={type === "monitor"} onClick={() => setType("monitor")}
+          icon={<Eye className="w-5 h-5" />} title="Authorized Monitoring Account"
+          desc={<>Choose this <span className="underline">read-only</span> account if you are a clinician, monitoring service, insurance provider, or are otherwise authorized to view patient compliance data.</>} />
+        <TypeCard selected={type === "individual"} onClick={() => setType("individual")}
+          icon={<User className="w-5 h-5" />} title="Individual User Account"
+          desc="Choose this account type if you have a Transcend device and wish to track your own compliance. (Not yet wired to the live API.)" />
       </div>
     </div>
   );
 }
 
-function TypeCard({
-  selected,
-  onClick,
-  icon,
-  title,
-  desc,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  title: string;
-  desc: React.ReactNode;
-}) {
+function TypeCard({ selected, onClick, icon, title, desc }: { selected: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full text-left rounded-xl border p-4 transition flex gap-4 ${
-        selected ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 bg-white hover:bg-slate-50"
-      }`}
-    >
-      <div
-        className={`w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${
-          selected ? "border-brand-600 bg-brand-600" : "border-slate-300"
-        }`}
-      >
+    <button type="button" onClick={onClick}
+      className={`w-full text-left rounded-xl border p-4 transition flex gap-4 ${selected ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+      <div className={`w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${selected ? "border-brand-600 bg-brand-600" : "border-slate-300"}`}>
         {selected && <div className="w-2 h-2 rounded-full bg-white" />}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2 text-slate-900 font-semibold">
-          <span className={selected ? "text-brand-700" : "text-slate-500"}>{icon}</span>
-          {title}
+          <span className={selected ? "text-brand-700" : "text-slate-500"}>{icon}</span>{title}
         </div>
-        <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-          <span className="text-green-600">✓</span> {desc}
-        </p>
+        <p className="text-sm text-slate-600 mt-1 leading-relaxed"><span className="text-green-600">✓</span> {desc}</p>
       </div>
     </button>
   );
 }
 
-function DetailsForm({ type }: { type: AccountType }) {
-  if (type === "provider") return <ProviderDetails />;
-  if (type === "monitor") return <MonitorDetails />;
-  return <IndividualDetails />;
-}
+type DetailsProps = { form: Form; update: <K extends keyof Form>(k: K, v: Form[K]) => void; fieldErrors?: Record<string, string[]> };
 
-function ProviderDetails() {
+function ProviderDetails({ form, update, fieldErrors }: DetailsProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold text-slate-900">Account Information</h2>
@@ -242,29 +276,29 @@ function ProviderDetails() {
         <div>
           <h3 className="text-sm font-semibold text-slate-900 mb-3">Corporate Information</h3>
           <div className="space-y-3">
-            <Field label="Company Name" required><input className="input" /></Field>
-            <Field label="Account Number" required help="Your Transcend account number, found on your invoice or welcome email.">
-              <input className="input" />
-            </Field>
-            <Field label="Address 1" required><input className="input" /></Field>
-            <Field label="Address 2"><input className="input" /></Field>
-            <Field label="City" required><input className="input" /></Field>
-            <Field label="Country" required><CountrySelect /></Field>
-            <Field label="State/Province" required><StateSelect /></Field>
-            <Field label="Postal Code" required><input className="input" /></Field>
-            <Field label="Phone" required><input className="input" type="tel" /></Field>
+            <TextField label="Company Name" required value={form.companyName} onChange={(v) => update("companyName", v)} err={fieldErrors?.companyName} />
+            <TextField label="Account Number" required help="Your Transcend account number, from your invoice." value={form.accountNumber} onChange={(v) => update("accountNumber", v)} err={fieldErrors?.accountNumber} />
+            <TextField label="Address 1" required value={form.address1} onChange={(v) => update("address1", v)} err={fieldErrors?.address1} />
+            <TextField label="Address 2" value={form.address2} onChange={(v) => update("address2", v)} />
+            <TextField label="City" required value={form.city} onChange={(v) => update("city", v)} err={fieldErrors?.city} />
+            <CountryField value={form.country} onChange={(v) => update("country", v)} err={fieldErrors?.country} />
+            <StateField value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
+            <TextField label="Postal Code" required value={form.postalCode} onChange={(v) => update("postalCode", v)} err={fieldErrors?.postalCode} />
+            <TextField label="Phone" required type="tel" value={form.phone} onChange={(v) => update("phone", v)} err={fieldErrors?.phone} />
           </div>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-slate-900 mb-3">User Information</h3>
           <div className="space-y-3">
-            <Field label="First Name" required><input className="input" /></Field>
-            <Field label="Last Name" required><input className="input" /></Field>
-            <Field label="Title"><input className="input" /></Field>
-            <Field label="User Name" required><input className="input" /></Field>
-            <Field label="Email" required><input className="input" type="email" /></Field>
-            <Field label="Confirm Email" required><input className="input" type="email" /></Field>
-            <Field label="Time Zone" required><TimeZoneSelect /></Field>
+            <TextField label="First Name" required value={form.firstName} onChange={(v) => update("firstName", v)} err={fieldErrors?.firstName} />
+            <TextField label="Last Name" required value={form.lastName} onChange={(v) => update("lastName", v)} err={fieldErrors?.lastName} />
+            <TextField label="Title" value={form.title} onChange={(v) => update("title", v)} />
+            <TextField label="User Name" required value={form.userName} onChange={(v) => update("userName", v)} err={fieldErrors?.userName} />
+            <TextField label="Email" required type="email" value={form.email} onChange={(v) => update("email", v)} err={fieldErrors?.email} />
+            <TextField label="Confirm Email" required type="email" value={form.confirmEmail} onChange={(v) => update("confirmEmail", v)} err={fieldErrors?.confirmEmail} />
+            <TimeZoneField value={form.timeZone} onChange={(v) => update("timeZone", v)} err={fieldErrors?.timeZone} />
+            <TextField label="Password" required type="password" help="Minimum 8 characters." value={form.password} onChange={(v) => update("password", v)} err={fieldErrors?.password} />
+            <TextField label="Confirm Password" required type="password" value={form.confirmPassword} onChange={(v) => update("confirmPassword", v)} err={fieldErrors?.confirmPassword} />
           </div>
         </div>
       </div>
@@ -272,7 +306,7 @@ function ProviderDetails() {
   );
 }
 
-function MonitorDetails() {
+function MonitorDetails({ form, update, fieldErrors }: DetailsProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold text-slate-900">Account Information</h2>
@@ -281,29 +315,29 @@ function MonitorDetails() {
         <div>
           <h3 className="text-sm font-semibold text-slate-900 mb-3">User Information</h3>
           <div className="space-y-3">
-            <Field label="First Name" required><input className="input" /></Field>
-            <Field label="Last Name" required><input className="input" /></Field>
-            <Field label="Title"><input className="input" /></Field>
-            <Field label="Unique Identifier" required help="Your Unique Provider Identifier (e.g. NPI). Homecare Providers use this to find and grant you access.">
-              <input className="input" />
-            </Field>
-            <Field label="User Name" required><input className="input" /></Field>
-            <Field label="Email" required><input className="input" type="email" /></Field>
-            <Field label="Confirm Email" required><input className="input" type="email" /></Field>
+            <TextField label="First Name" required value={form.firstName} onChange={(v) => update("firstName", v)} err={fieldErrors?.firstName} />
+            <TextField label="Last Name" required value={form.lastName} onChange={(v) => update("lastName", v)} err={fieldErrors?.lastName} />
+            <TextField label="Title" value={form.title} onChange={(v) => update("title", v)} />
+            <TextField label="Unique Identifier" required help="Your NPI or unique identifier — providers find you by this." value={form.uniqueIdentifier} onChange={(v) => update("uniqueIdentifier", v)} err={fieldErrors?.uniqueIdentifier} />
+            <TextField label="User Name" required value={form.userName} onChange={(v) => update("userName", v)} err={fieldErrors?.userName} />
+            <TextField label="Email" required type="email" value={form.email} onChange={(v) => update("email", v)} err={fieldErrors?.email} />
+            <TextField label="Confirm Email" required type="email" value={form.confirmEmail} onChange={(v) => update("confirmEmail", v)} err={fieldErrors?.confirmEmail} />
+            <TextField label="Password" required type="password" help="Minimum 8 characters." value={form.password} onChange={(v) => update("password", v)} err={fieldErrors?.password} />
+            <TextField label="Confirm Password" required type="password" value={form.confirmPassword} onChange={(v) => update("confirmPassword", v)} err={fieldErrors?.confirmPassword} />
           </div>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-slate-900 mb-3">Contact Information</h3>
           <div className="space-y-3">
-            <Field label="Institution Name" required><input className="input" /></Field>
-            <Field label="Address 1" required><input className="input" /></Field>
-            <Field label="Address 2"><input className="input" /></Field>
-            <Field label="City" required><input className="input" /></Field>
-            <Field label="Country" required><CountrySelect /></Field>
-            <Field label="State/Province" required><StateSelect /></Field>
-            <Field label="Postal Code" required><input className="input" /></Field>
-            <Field label="Phone" required><input className="input" type="tel" /></Field>
-            <Field label="Time Zone" required><TimeZoneSelect /></Field>
+            <TextField label="Institution Name" required value={form.institutionName} onChange={(v) => update("institutionName", v)} err={fieldErrors?.institutionName} />
+            <TextField label="Address 1" required value={form.address1} onChange={(v) => update("address1", v)} err={fieldErrors?.address1} />
+            <TextField label="Address 2" value={form.address2} onChange={(v) => update("address2", v)} />
+            <TextField label="City" required value={form.city} onChange={(v) => update("city", v)} err={fieldErrors?.city} />
+            <CountryField value={form.country} onChange={(v) => update("country", v)} err={fieldErrors?.country} />
+            <StateField value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
+            <TextField label="Postal Code" required value={form.postalCode} onChange={(v) => update("postalCode", v)} err={fieldErrors?.postalCode} />
+            <TextField label="Phone" required type="tel" value={form.phone} onChange={(v) => update("phone", v)} err={fieldErrors?.phone} />
+            <TimeZoneField value={form.timeZone} onChange={(v) => update("timeZone", v)} err={fieldErrors?.timeZone} />
           </div>
         </div>
       </div>
@@ -311,68 +345,14 @@ function MonitorDetails() {
   );
 }
 
-function Field({ label, required, help, children }: { label: string; required?: boolean; help?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="label flex items-center gap-1">
-        {label} {required && <span className="text-red-500">*</span>}
-        {help && (
-          <span title={help} className="inline-flex cursor-help">
-            <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-          </span>
-        )}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function CountrySelect() {
-  return (
-    <select className="input" defaultValue="United States">
-      <option>United States</option><option>Canada</option><option>United Kingdom</option>
-      <option>Germany</option><option>France</option><option>Australia</option><option>India</option>
-    </select>
-  );
-}
-
-function StateSelect() {
-  return (
-    <select className="input" defaultValue="">
-      <option value="">-- Select State/Province --</option>
-      <option>California</option><option>Colorado</option><option>Florida</option><option>New York</option>
-      <option>Texas</option><option>Washington</option>
-    </select>
-  );
-}
-
-function TimeZoneSelect() {
-  return (
-    <select className="input" defaultValue="">
-      <option value="">-- Select Time Zone --</option>
-      <option>America/New_York (ET)</option><option>America/Chicago (CT)</option>
-      <option>America/Denver (MT)</option><option>America/Los_Angeles (PT)</option>
-      <option>UTC</option><option>Europe/London</option><option>Australia/Sydney</option>
-    </select>
-  );
-}
-
-function IndividualDetails() {
+function IndividualDetails({ form, update }: Pick<DetailsProps, "form" | "update">) {
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold text-slate-900">Your details</h2>
-      <p className="text-sm text-slate-500">We&apos;ll use these to link to your Transcend mobile data.</p>
-      <div className="grid grid-cols-2 gap-3">
-        <div><label className="label">First name</label><input className="input" /></div>
-        <div><label className="label">Last name</label><input className="input" /></div>
-      </div>
-      <div><label className="label">Date of birth</label><input className="input" type="date" /></div>
-      <div><label className="label">Country</label>
-        <select className="input"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Germany</option><option>France</option><option>Australia</option><option>India</option></select>
-      </div>
-      <div><label className="label">Transcend device serial (optional)</label><input className="input" placeholder="TR-MC3-..." /></div>
-      <div><label className="label">Email (used to log in)</label><input className="input" type="email" /></div>
-      <div><label className="label">Password</label><input className="input" type="password" /></div>
+      <p className="text-sm text-slate-500">Patient registration is a placeholder for now (not yet wired to the live API).</p>
+      <TextField label="First name" value={form.firstName} onChange={(v) => update("firstName", v)} />
+      <TextField label="Last name" value={form.lastName} onChange={(v) => update("lastName", v)} />
+      <TextField label="Email" type="email" value={form.email} onChange={(v) => update("email", v)} />
     </div>
   );
 }
@@ -396,15 +376,6 @@ function Consent({ type }: { type: AccountType | null }) {
           <div className="text-xs text-slate-500">How Transcend handles protected health information.</div>
         </div>
       </label>
-      {type === "individual" && (
-        <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-          <input type="checkbox" defaultChecked className="mt-1" />
-          <div>
-            <div className="text-sm font-medium text-slate-900">I consent to compliance data being shared with accounts I authorize</div>
-            <div className="text-xs text-slate-500">You can revoke any sharing later from the Sharing screen.</div>
-          </div>
-        </label>
-      )}
       {type === "provider" && (
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
           <input type="checkbox" defaultChecked className="mt-1" />
@@ -418,11 +389,88 @@ function Consent({ type }: { type: AccountType | null }) {
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
           <input type="checkbox" defaultChecked className="mt-1" />
           <div>
-            <div className="text-sm font-medium text-slate-900">I will only access patient data shared with me</div>
+            <div className="text-sm font-medium text-slate-900">I will only access patient data I am authorized to view</div>
             <div className="text-xs text-slate-500">All access is logged and auditable.</div>
           </div>
         </label>
       )}
+    </div>
+  );
+}
+
+// ---- Field helpers ----
+
+function FieldLabel({ label, required, help }: { label: string; required?: boolean; help?: string }) {
+  return (
+    <label className="label flex items-center gap-1">
+      {label} {required && <span className="text-red-500">*</span>}
+      {help && (
+        <span title={help} className="inline-flex cursor-help">
+          <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+        </span>
+      )}
+    </label>
+  );
+}
+
+function FieldErrorMsg({ err }: { err?: string[] }) {
+  if (!err || err.length === 0) return null;
+  return <p className="text-xs text-red-600 mt-1">{err[0]}</p>;
+}
+
+function TextField({ label, required, help, type = "text", value, onChange, err }:
+  { label: string; required?: boolean; help?: string; type?: string; value: string; onChange: (v: string) => void; err?: string[] }) {
+  return (
+    <div>
+      <FieldLabel label={label} required={required} help={help} />
+      <input className="input" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+      <FieldErrorMsg err={err} />
+    </div>
+  );
+}
+
+function CountryField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+  return (
+    <div>
+      <FieldLabel label="Country" required />
+      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option>United States</option><option>Canada</option><option>United Kingdom</option>
+        <option>Germany</option><option>France</option><option>Australia</option><option>India</option>
+      </select>
+      <FieldErrorMsg err={err} />
+    </div>
+  );
+}
+
+function StateField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+  return (
+    <div>
+      <FieldLabel label="State/Province" required />
+      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">-- Select State/Province --</option>
+        <option>California</option><option>Colorado</option><option>Florida</option>
+        <option>Massachusetts</option><option>New York</option><option>Texas</option><option>Washington</option>
+      </select>
+      <FieldErrorMsg err={err} />
+    </div>
+  );
+}
+
+function TimeZoneField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+  return (
+    <div>
+      <FieldLabel label="Time Zone" required />
+      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">-- Select Time Zone --</option>
+        <option value="America/New_York">America/New_York (ET)</option>
+        <option value="America/Chicago">America/Chicago (CT)</option>
+        <option value="America/Denver">America/Denver (MT)</option>
+        <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+        <option value="UTC">UTC</option>
+        <option value="Europe/London">Europe/London</option>
+        <option value="Australia/Sydney">Australia/Sydney</option>
+      </select>
+      <FieldErrorMsg err={err} />
     </div>
   );
 }
