@@ -73,12 +73,37 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
 // ---------- Home Care endpoints ----------
 
-import type { LoginDto, LoginResult, RegisterDto, AccountUser } from "./types.api";
+import type {
+  LoginDto, LoginResult, RegisterDto, AccountUser,
+  DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
+  ComplianceReportDto, ComplianceReportResult,
+} from "./types.api";
+
+function qs(params: Record<string, unknown>): string {
+  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "");
+  if (entries.length === 0) return "";
+  return "?" + entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
+}
 
 export const homeCareApi = {
+  // Public
   register: (dto: RegisterDto) =>
     apiFetch<AccountUser>("/home-care/register", { method: "POST", body: JSON.stringify(dto) }),
-
   login: (dto: LoginDto) =>
     apiFetch<LoginResult>("/home-care/login", { method: "POST", body: JSON.stringify(dto) }),
+
+  // Super Admin
+  listPending: () => apiFetch<AccountUser[]>("/home-care/pending"),
+  approve: (id: string) =>
+    apiFetch<AccountUser>(`/home-care/approve/${id}`, { method: "POST" }),
+  reject: (id: string, reason?: string) =>
+    apiFetch<AccountUser>(`/home-care/reject/${id}`, { method: "POST", body: JSON.stringify({ reason }) }),
+
+  // Approved Client (provider or monitor)
+  uploadDevices: (dto: DeviceUploadDto) =>
+    apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
+  listDeviceUsers: (query: DeviceUsersQuery = {}) =>
+    apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as Record<string, unknown>)}`),
+  complianceReport: (dto: ComplianceReportDto) =>
+    apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
 };
