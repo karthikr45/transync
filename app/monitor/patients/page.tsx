@@ -99,7 +99,7 @@ export default function MonitorPatients() {
                     <td className="px-5 py-3"><span className={`badge ${compliant ? "badge-green" : "badge-red"}`}>{compliant ? "Yes" : "No"}</span></td>
                     <td className="px-5 py-3 text-right">
                       <Link
-                        href={`/monitor/patients/${u._id}?deviceId=${encodeURIComponent(u.deviceId)}&emailHashed=${encodeURIComponent(u.emailHashed)}&name=${encodeURIComponent(`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim())}${u.timeZone ? `&tz=${encodeURIComponent(u.timeZone)}` : ""}`}
+                        href={`/monitor/patients/${u._id}?deviceId=${encodeURIComponent(u.deviceId)}&emailHashed=${encodeURIComponent(u.emailHashed)}&name=${encodeURIComponent(`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim())}${u.email ? `&email=${encodeURIComponent(u.email)}` : ""}${u.timeZone ? `&tz=${encodeURIComponent(u.timeZone)}` : ""}`}
                         className="text-slate-400 hover:text-brand-600 inline-flex"
                       >
                         <FileBarChart className="w-4 h-4" />

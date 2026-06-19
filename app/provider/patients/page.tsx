@@ -105,7 +105,7 @@ export default function ProviderPatients() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <Link
-                        href={`/provider/patients/${u._id}/report?deviceId=${encodeURIComponent(u.deviceId)}&emailHashed=${encodeURIComponent(u.emailHashed)}&name=${encodeURIComponent(`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim())}${u.timeZone ? `&tz=${encodeURIComponent(u.timeZone)}` : ""}`}
+                        href={`/provider/patients/${u._id}/report?deviceId=${encodeURIComponent(u.deviceId)}&emailHashed=${encodeURIComponent(u.emailHashed)}&name=${encodeURIComponent(`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim())}${u.email ? `&email=${encodeURIComponent(u.email)}` : ""}${u.timeZone ? `&tz=${encodeURIComponent(u.timeZone)}` : ""}`}
                         className="text-slate-400 hover:text-brand-600 inline-flex"
                       >
                         <FileBarChart className="w-4 h-4" />
