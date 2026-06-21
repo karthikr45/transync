@@ -6,7 +6,6 @@ import { useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { endUserApi, ApiError } from "@/lib/api";
-import { setSession } from "@/lib/auth";
 import type { CreateUserDto } from "@/lib/types.api";
 
 type Profile = {
@@ -116,11 +115,9 @@ export default function PatientRegister() {
     };
     setSubmitting(true);
     try {
-      const user = await endUserApi.createUser(dto);
-      // Auto-login: response carries token + refreshToken
-      setSession(user.token, user.refreshToken, user, "end-user");
+      await endUserApi.createUser(dto);
+      // The server set httpOnly auth cookies; just navigate.
       setStep(4);
-      // Brief pause so the success state can render before redirecting
       setTimeout(() => router.push("/patient/dashboard"), 800);
     } catch (e) {
       const err = e as ApiError;

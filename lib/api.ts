@@ -1,7 +1,15 @@
-import { getToken } from "./auth";
-import type { ApiEnvelope } from "./types.api";
+// Client API. Every call goes through our same-origin Next.js Route
+// Handlers; tokens never reach the browser. The proxy refreshes silently
+// on 401, and on 401 here we redirect to /login.
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+import type {
+  ApiEnvelope, RegisterDto, AccountUser,
+  DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
+  ComplianceReportDto, ComplianceReportResult,
+  SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUser,
+  LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
+  ReportBySessionQuery, ReportBySessionResult,
+} from "./types.api";
 
 export class ApiError extends Error {
   statusCode: number;
@@ -20,9 +28,8 @@ type ErrorBody = {
   status?: string;
 };
 
-function parseErrorMessage(body: ErrorBody | null, fallback: string): { message: string; fields?: Record<string, string[]> } {
+function parseErrorMessage(body: ErrorBody | null, fallback: string) {
   if (!body) return { message: fallback };
-  // Validation Failed shape: message is an object mapping fields -> string[]
   if (body.error === "Validation Failed" && body.message && typeof body.message === "object") {
     const fields = body.message as Record<string, string[]>;
     const first = Object.values(fields).flat()[0];
@@ -32,25 +39,40 @@ function parseErrorMessage(body: ErrorBody | null, fallback: string): { message:
   return { message: fallback };
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+function qs(params: Record<string, unknown>): string {
+  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "");
+  if (entries.length === 0) return "";
+  return "?" + entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
+}
+
+type FetchOpts = RequestInit & { _skipAuthRedirect?: boolean };
+
+async function clientFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  headers.set("ngrok-skip-browser-warning", "true");
-  const token = getToken();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
 
   let res: Response;
   try {
-    res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+    res = await fetch(path, {
+      ...init,
+      headers,
+      credentials: "same-origin",
+      cache: "no-store",
+    });
   } catch {
     throw new ApiError("Network error — could not reach the server.", 0);
   }
 
   let body: unknown = null;
-  try {
-    body = await res.json();
-  } catch {
-    // empty / non-JSON body
+  try { body = await res.json(); } catch { /* empty */ }
+
+  if (res.status === 401) {
+    if (!init._skipAuthRedirect && typeof window !== "undefined" && /^\/(provider|monitor|admin|patient)\//.test(window.location.pathname)) {
+      const here = window.location.pathname + window.location.search;
+      window.location.assign(`/login?next=${encodeURIComponent(here)}`);
+    }
+    const { message } = parseErrorMessage(body as ErrorBody, "Session expired.");
+    throw new ApiError(message, 401);
   }
 
   if (!res.ok) {
@@ -59,7 +81,6 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     throw new ApiError(message, code, fields);
   }
 
-  // 2xx but envelope says Failure/Error → still treat as error per spec
   if (body && typeof body === "object" && "status" in body) {
     const env = body as ApiEnvelope<T>;
     if (env.status === "Failure" || env.status === "Error") {
@@ -67,67 +88,64 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     }
     return env.result;
   }
-
   return body as T;
 }
 
-// ---------- Home Care endpoints ----------
-
-import type {
-  LoginDto, LoginResult, RegisterDto, AccountUser,
-  DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
-  ComplianceReportDto, ComplianceReportResult,
-  SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
-  LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
-  ReportBySessionQuery, ReportBySessionResult,
-} from "./types.api";
-
-function qs(params: Record<string, unknown>): string {
-  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "");
-  if (entries.length === 0) return "";
-  return "?" + entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
+function proxyGet<T>(path: string) {
+  return clientFetch<T>(`/api/proxy${path}`, { method: "GET" });
+}
+function proxyPost<T>(path: string, body?: unknown) {
+  return clientFetch<T>(`/api/proxy${path}`, {
+    method: "POST",
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
 }
 
+// ---------- Home Care ----------
+
 export const homeCareApi = {
-  // Public
   register: (dto: RegisterDto) =>
-    apiFetch<AccountUser>("/home-care/register", { method: "POST", body: JSON.stringify(dto) }),
-  login: (dto: LoginDto) =>
-    apiFetch<LoginResult>("/home-care/login", { method: "POST", body: JSON.stringify(dto) }),
+    clientFetch<AccountUser>("/api/auth/register/home-care", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
 
-  // Super Admin
-  listPending: () => apiFetch<AccountUser[]>("/home-care/pending"),
-  approve: (id: string) =>
-    apiFetch<AccountUser>(`/home-care/approve/${id}`, { method: "POST" }),
-  reject: (id: string, reason?: string) =>
-    apiFetch<AccountUser>(`/home-care/reject/${id}`, { method: "POST", body: JSON.stringify({ reason }) }),
+  login: (dto: { email: string; password: string }) =>
+    clientFetch<{ user: AccountUser }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ kind: "home-care", ...dto }),
+      _skipAuthRedirect: true,
+    }),
 
-  // Approved Client (provider or monitor)
+  listPending: () => proxyGet<AccountUser[]>("/home-care/pending"),
+  approve: (id: string) => proxyPost<AccountUser>(`/home-care/approve/${id}`),
+  reject: (id: string, reason?: string) => proxyPost<AccountUser>(`/home-care/reject/${id}`, { reason }),
+
   uploadDevices: (dto: DeviceUploadDto) =>
-    apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
+    proxyPost<DeviceUploadResult>("/home-care/devices/upload", dto),
   listDeviceUsers: (query: DeviceUsersQuery = {}) =>
-    apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
+    proxyGet<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>
-    apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
+    proxyPost<ComplianceReportResult>("/home-care/devices/compliance-report", dto),
 };
 
-// ---------- End User endpoints ----------
+// ---------- End User ----------
 
 export const endUserApi = {
   signUpOtp: (dto: SignUpOtpDto) =>
-    apiFetch<null>("/auth/signUp-otp", { method: "POST", body: JSON.stringify(dto) }),
+    clientFetch<null>("/api/auth/register/patient/otp", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
   validateOtp: (dto: ValidateOtpDto) =>
-    apiFetch<boolean>("/auth/validate-otp", { method: "POST", body: JSON.stringify(dto) }),
+    clientFetch<boolean>("/api/auth/register/patient/verify", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
   createUser: (dto: CreateUserDto) =>
-    apiFetch<EndUser>("/users/create-user", { method: "POST", body: JSON.stringify(dto) }),
-  login: (dto: EndUserLoginDto) =>
-    apiFetch<EndUser>("/auth/login", { method: "POST", body: JSON.stringify(dto) }),
+    clientFetch<{ user: EndUser }>("/api/auth/register/patient/create", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
+  login: (dto: { email: string; password: string }) =>
+    clientFetch<{ user: EndUser }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ kind: "end-user", ...dto }),
+      _skipAuthRedirect: true,
+    }),
 
-  // Protected (Bearer)
   getLastSyncDate: (q: LastSyncQuery) =>
-    apiFetch<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),
+    proxyGet<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),
   getDataBySession: (q: SessionQuery) =>
-    apiFetch<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
+    proxyGet<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
   reportBySession: (q: ReportBySessionQuery) =>
-    apiFetch<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
+    proxyGet<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
 };

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import Logo from "@/components/Logo";
+import { logout } from "@/lib/auth";
 
 export type NavItem = {
   href: string;
@@ -49,10 +50,10 @@ export default function PortalShell({
             <div className="text-sm font-medium text-slate-900 truncate">{user.name}</div>
             <div className="text-xs text-slate-500 truncate">{user.email}</div>
           </div>
-          <Link href="/login" className="nav-link">
+          <button type="button" onClick={logout} className="nav-link w-full text-left">
             <LogOut className="w-4 h-4" />
             <span>Sign out</span>
-          </Link>
+          </button>
         </div>
       </aside>
       <main className="flex-1 min-w-0">

@@ -1,22 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AlertTriangle, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
-import { setSession, destinationForUser } from "@/lib/auth";
+import { destinationForUser } from "@/lib/auth";
 
 type Kind = "patient" | "staff";
 
 export default function LoginPage() {
   const router = useRouter();
+  const search = useSearchParams();
+  const next = search.get("next");
   const [kind, setKind] = useState<Kind>("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function safeRedirect(fallback: string) {
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      router.push(next);
+    } else {
+      router.push(fallback);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,13 +34,11 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       if (kind === "patient") {
-        const u = await endUserApi.login({ email, password });
-        setSession(u.token, u.refreshToken, u, "end-user");
-        router.push("/patient/dashboard");
+        await endUserApi.login({ email, password });
+        safeRedirect("/patient/dashboard");
       } else {
-        const { token, refreshToken, user } = await homeCareApi.login({ email, password });
-        setSession(token, refreshToken, user, "home-care");
-        router.push(destinationForUser(user));
+        const { user } = await homeCareApi.login({ email, password });
+        safeRedirect(destinationForUser(user));
       }
     } catch (err) {
       setError((err as ApiError).message || "Login failed.");

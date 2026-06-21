@@ -1,72 +1,52 @@
-import type { AccountUser, EndUser } from "./types.api";
+// Client-side session helpers. Tokens live in httpOnly cookies and are
+// never readable here. We only read the user-profile / kind cookies,
+// which are written server-side after a successful login.
 
-const TOKEN_KEY = "transcend.token";
-const REFRESH_KEY = "transcend.refreshToken";
-const USER_KEY = "transcend.user";
-const KIND_KEY = "transcend.userKind";
+import type { AccountUser, EndUser } from "./types.api";
 
 export type UserKind = "home-care" | "end-user";
 
-function storage(): Storage | null {
-  return typeof window === "undefined" ? null : window.localStorage;
-}
+const COOKIE_USER = "tc_user";
+const COOKIE_KIND = "tc_kind";
 
-export function setSession(
-  token: string,
-  refreshToken: string,
-  user: AccountUser | EndUser,
-  kind: UserKind,
-): void {
-  const s = storage();
-  if (!s) return;
-  s.setItem(TOKEN_KEY, token);
-  s.setItem(REFRESH_KEY, refreshToken);
-  s.setItem(USER_KEY, JSON.stringify(user));
-  s.setItem(KIND_KEY, kind);
-}
-
-export function clearSession(): void {
-  const s = storage();
-  if (!s) return;
-  s.removeItem(TOKEN_KEY);
-  s.removeItem(REFRESH_KEY);
-  s.removeItem(USER_KEY);
-  s.removeItem(KIND_KEY);
-}
-
-export function getToken(): string | null {
-  return storage()?.getItem(TOKEN_KEY) ?? null;
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const prefix = `${name}=`;
+  const parts = document.cookie ? document.cookie.split("; ") : [];
+  for (const p of parts) {
+    if (p.startsWith(prefix)) return decodeURIComponent(p.slice(prefix.length));
+  }
+  return null;
 }
 
 export function getUserKind(): UserKind | null {
-  const v = storage()?.getItem(KIND_KEY);
+  const v = readCookie(COOKIE_KIND);
   return v === "home-care" || v === "end-user" ? v : null;
 }
 
 export function getCurrentUser(): AccountUser | null {
   if (getUserKind() !== "home-care") return null;
-  const raw = storage()?.getItem(USER_KEY);
+  const raw = readCookie(COOKIE_USER);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as AccountUser;
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(raw) as AccountUser; } catch { return null; }
 }
 
 export function getCurrentEndUser(): EndUser | null {
   if (getUserKind() !== "end-user") return null;
-  const raw = storage()?.getItem(USER_KEY);
+  const raw = readCookie(COOKIE_USER);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as EndUser;
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(raw) as EndUser; } catch { return null; }
 }
 
 export function destinationForUser(user: AccountUser): string {
   if (user.role === "super_admin") return "/admin/dashboard";
   if (user.userType === "home_care_provider") return "/provider/dashboard";
   return "/monitor/dashboard"; // authorized_monitor
+}
+
+export async function logout(): Promise<void> {
+  try { await fetch("/api/auth/logout", { method: "POST" }); } catch { /* ignore */ }
+  if (typeof window !== "undefined") {
+    window.location.assign("/login");
+  }
 }
