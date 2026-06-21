@@ -1,0 +1,46 @@
+{
+  "common": {
+    "logOn": "Log on",
+    "register": "Register",
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "signOut": "Sign out",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
+  "login": {
+    "title": "Log on",
+    "subtitle": "Select your account type to continue.",
+    "patient": "Patient",
+    "patientHint": "Individual User",
+    "staff": "Provider, Monitor or Admin",
+    "staffHint": "Homecare / Authorized / Transcend",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "signingIn": "Signing in…",
+    "newToTranscend": "New to Transcend?",
+    "terms": "By continuing you agree to Transcend's Terms and HIPAA Notice."
+  },
+  "register": {
+    "accountRegistration": "Account Registration",
+    "selectType": "Please select the type of account you are registering for:",
+    "homecareTitle": "Homecare Provider Account",
+    "homecareDesc": "Choose this account if you are an institution that wishes to track compliance for a patient population. This account provides full access to patient data, including editing and sharing with other accounts.",
+    "monitorTitle": "Authorized Monitoring Account",
+    "monitorReadOnly": "read-only",
+    "monitorDescPrefix": "Choose this",
+    "monitorDescSuffix": "account if you are a clinician, monitoring service, insurance provider, or are otherwise authorized to view patient compliance data.",
+    "individualTitle": "Individual User Account",
+    "individualDesc": "Choose this account type if you have a Transcend device and wish to track your own compliance.",
+    "continueRegistration": "Continue Registration",
+    "finish": "Finish",
+    "alreadyHaveAccount": "Already have an account?"
+  }
+}

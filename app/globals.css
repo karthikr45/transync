@@ -12,6 +12,30 @@ html, body {
   color: var(--foreground);
 }
 
+/* Visible focus styles for keyboard users. */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip to content link — visible only on focus. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  background: #1d4ed8;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 0.5rem; }
+
 @layer components {
   .card {
     @apply bg-white rounded-xl border border-slate-200 shadow-sm;

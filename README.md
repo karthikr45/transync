@@ -90,6 +90,40 @@ tests/                  # Playwright smoke tests
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md).
 
+## Observability
+
+`lib/observability.ts` exposes `captureException(err, ctx)` /
+`captureMessage(msg, ctx)`. By default it logs to the console (so logs
+from `app/error.tsx` and CSP violations are visible in any log shipper).
+When `SENTRY_DSN` is set the wiring inside `instrumentation.ts` and
+`captureException` can be uncommented to forward events to Sentry — no
+other code changes required.
+
+CSP violation reports are POSTed to `/api/csp-report`. If
+`CSP_REPORT_FORWARD_URL` is set, reports are also forwarded to that URL
+(e.g. a Sentry, Datadog or report-uri collector).
+
+## i18n
+
+A minimal in-process i18n is provided by `lib/i18n.ts`. Strings live in
+`messages/<lang>.json` (only `en.json` ships today). Components import
+`t()` and call `t("login.title")`. Add a new locale by writing
+`messages/<lang>.json` with the same shape and registering it in
+`lib/i18n.ts`. We can swap in `next-intl` later for RTL / formatting if
+the catalogue grows.
+
+The login screen is wired as the canonical example. Roll the same
+pattern out to the rest of the screens as you go.
+
+## CI
+
+`.github/workflows/ci.yml` runs two jobs on every push / PR:
+
+1. **check** — `typecheck`, `lint`, `build` (the same as
+   `npm run check` locally).
+2. **test** — installs Playwright + chromium and runs the smoke suite.
+   The Playwright HTML report is uploaded as an artifact on every run.
+
 ## Security notes
 
 - All access tokens are in **httpOnly + SameSite=Lax + Secure (prod)**

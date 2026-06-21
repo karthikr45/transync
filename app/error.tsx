@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
+import { captureException } from "@/lib/observability";
 
 export default function GlobalError({
   error,
@@ -12,7 +13,10 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    captureException(error, {
+      url: typeof window !== "undefined" ? window.location.pathname : undefined,
+      extra: { digest: error.digest },
+    });
   }, [error]);
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
