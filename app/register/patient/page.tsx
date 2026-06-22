@@ -2,248 +2,314 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { endUserApi, ApiError } from "@/lib/api";
 import type { CreateUserDto } from "@/lib/types.api";
 
-type Profile = {
-  firstName: string;
-  lastName: string;
-  password: string;
-  confirmPassword: string;
-  dob: string;
-  gender: string;
-  mobile: string;
-  countryCode: string;
+type Step = 1 | 2 | 3 | 4 | 5; // 4 = OTP, 5 = done
+
+type Form = {
+  // Step 1 — Basic
   country: string;
   state: string;
-  city: string;
-  pincode: string;
-  timeZone: string;
-  cpapUser: string;
-  transcendDevice: string;
-  deviceId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  // Step 2 — Profile
+  dob: string;            // yyyy-MM-dd (sent to API)
   occupation: string;
+  cpapUser: string;       // "How long have you been a CPAP user?"
+  transcendUsage: string; // "How are you using the Transcend device?"
+  devicePurchased: string;
+  // Step 3 — Account
   provider: string;
   providerEmail: string;
-  dealerName: string;
+  countryCode: string;
+  mobile: string;
+  password: string;
+  confirmPassword: string;
+  consentTerms: boolean;
+  consentMarketing: boolean;
 };
 
-const blankProfile: Profile = {
-  firstName: "", lastName: "", password: "", confirmPassword: "",
-  dob: "", gender: "", mobile: "", countryCode: "+1",
-  country: "United States", state: "", city: "", pincode: "",
-  timeZone: "America/New_York",
-  cpapUser: "self", transcendDevice: "Transcend 365 miniCPAP", deviceId: "",
-  occupation: "", provider: "", providerEmail: "", dealerName: "",
+const blank: Form = {
+  country: "United States of America",
+  state: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  dob: "",
+  occupation: "Other",
+  cpapUser: "New User",
+  transcendUsage: "Business Travel",
+  devicePurchased: "MyTranscend.com",
+  provider: "",
+  providerEmail: "",
+  countryCode: "+1",
+  mobile: "",
+  password: "",
+  confirmPassword: "",
+  consentTerms: false,
+  consentMarketing: false,
 };
+
+const COUNTRIES = [
+  "United States of America", "Canada", "United Kingdom",
+  "Germany", "France", "Australia", "India",
+];
+
+const US_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming",
+];
+
+const OCCUPATIONS = [
+  "Other", "Engineer", "Teacher", "Healthcare professional", "Driver",
+  "Retired", "Student", "Office / administrative",
+];
+
+const CPAP_DURATION = [
+  "New User", "Less than 1 month", "1–3 months", "3–6 months",
+  "6–12 months", "1–3 years", "More than 3 years",
+];
+
+const USAGE = [
+  "Business Travel", "Personal Travel", "Daily Home Use",
+  "Backup Device", "Camping / Outdoors",
+];
+
+const PURCHASE = [
+  "MyTranscend.com", "Local Dealer", "Online retailer", "Medical equipment supplier", "Other",
+];
+
+const TIME_ZONES = [
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "UTC", "Europe/London", "Australia/Sydney",
+];
+
+function checkPassword(p: string) {
+  return {
+    length: p.length >= 8 && p.length <= 16,
+    lower: /[a-z]/.test(p),
+    upper: /[A-Z]/.test(p),
+    digit: /\d/.test(p),
+    special: /[^A-Za-z0-9]/.test(p),
+  };
+}
 
 export default function PatientRegister() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [step, setStep] = useState<Step>(1);
+  const [form, setForm] = useState<Form>(blank);
   const [otp, setOtp] = useState("");
-  const [profile, setProfile] = useState<Profile>(blankProfile);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>();
   const [info, setInfo] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>();
 
-  const upd = <K extends keyof Profile>(k: K, v: Profile[K]) => setProfile((p) => ({ ...p, [k]: v }));
+  const upd = <K extends keyof Form>(k: K, v: Form[K]) => setForm((p) => ({ ...p, [k]: v }));
+  const pw = checkPassword(form.password);
+  const pwOk = pw.length && pw.lower && pw.upper && pw.digit && pw.special;
+  const passwordsMatch = form.password.length > 0 && form.password === form.confirmPassword;
 
-  async function requestOtp() {
-    setError(null); setInfo(null);
-    if (!email || !name) { setError("Enter your name and email."); return; }
+  const stateOptions = useMemo(
+    () => (form.country === "United States of America" ? US_STATES : null),
+    [form.country],
+  );
+
+  function err(msg: string) { setError(msg); setInfo(null); }
+  function inf(msg: string) { setInfo(msg); setError(null); }
+  function clearMsgs() { setError(null); setInfo(null); setFieldErrors(undefined); }
+
+  function validateStep1(): string | null {
+    if (!form.country || !form.state) return "Country and State are required.";
+    if (!form.firstName.trim() || !form.lastName.trim()) return "First and Last name are required.";
+    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) return "Enter a valid email.";
+    return null;
+  }
+  function validateStep2(): string | null {
+    if (!form.dob) return "Date of Birth is required.";
+    if (!form.cpapUser) return "Tell us how long you have been a CPAP user.";
+    if (!form.transcendUsage) return "Tell us how you use the Transcend device.";
+    return null;
+  }
+  function validateStep3(): string | null {
+    if (!form.mobile.trim()) return "Mobile number is required.";
+    if (!pwOk) return "Password does not meet the policy.";
+    if (!passwordsMatch) return "Passwords do not match.";
+    if (!form.consentTerms) return "Please accept the Terms of Use to continue.";
+    if (form.providerEmail && !/^\S+@\S+\.\S+$/.test(form.providerEmail)) return "Care Provider email is not valid.";
+    return null;
+  }
+
+  async function goNext() {
+    clearMsgs();
+    if (step === 1) {
+      const v = validateStep1(); if (v) return err(v);
+      setStep(2); return;
+    }
+    if (step === 2) {
+      const v = validateStep2(); if (v) return err(v);
+      setStep(3); return;
+    }
+    if (step === 3) {
+      const v = validateStep3(); if (v) return err(v);
+      // Send OTP and advance to verify step.
+      setSubmitting(true);
+      try {
+        const name = `${form.firstName} ${form.lastName}`.trim();
+        await endUserApi.signUpOtp({ email: form.email, name });
+        inf("Verification code sent. Check your inbox.");
+        setStep(4);
+      } catch (e) {
+        err((e as ApiError).message || "Could not send the verification code.");
+      } finally { setSubmitting(false); }
+      return;
+    }
+    if (step === 4) {
+      if (!otp.trim() || isNaN(Number(otp))) return err("Enter the numeric code from the email.");
+      setSubmitting(true);
+      try {
+        const ok = await endUserApi.validateOtp({ email: form.email, otp: Number(otp) });
+        if (!ok) throw new ApiError("Code did not match.", 400);
+        await createAccount();
+      } catch (e) {
+        const apiErr = e as ApiError;
+        err(apiErr.message || "Invalid or expired code.");
+        setFieldErrors(apiErr.fieldErrors);
+      } finally { setSubmitting(false); }
+    }
+  }
+
+  async function resendOtp() {
+    clearMsgs();
     setSubmitting(true);
     try {
-      await endUserApi.signUpOtp({ email, name });
-      setInfo("Verification code sent. Check your inbox.");
-      setStep(2);
+      const name = `${form.firstName} ${form.lastName}`.trim();
+      await endUserApi.signUpOtp({ email: form.email, name });
+      inf("New code sent.");
     } catch (e) {
-      setError((e as ApiError).message || "Could not send OTP.");
+      err((e as ApiError).message || "Could not resend.");
     } finally { setSubmitting(false); }
   }
 
-  async function verifyOtp() {
-    setError(null); setInfo(null);
-    if (!otp || isNaN(Number(otp))) { setError("Enter the numeric code."); return; }
-    setSubmitting(true);
-    try {
-      const ok = await endUserApi.validateOtp({ email, otp: Number(otp) });
-      if (!ok) throw new ApiError("Code did not match.", 400);
-      // Pre-fill names from the typed name
-      const [fn, ...rest] = name.trim().split(/\s+/);
-      setProfile((p) => ({ ...p, firstName: p.firstName || fn || "", lastName: p.lastName || rest.join(" ") }));
-      setStep(3);
-    } catch (e) {
-      setError((e as ApiError).message || "Invalid or expired code.");
-    } finally { setSubmitting(false); }
-  }
-
-  async function submitProfile() {
-    setError(null); setFieldErrors(undefined);
-    if (profile.password !== profile.confirmPassword) {
-      setError("Passwords do not match."); return;
-    }
-    if (profile.password.length < 8 || profile.password.length > 16) {
-      setError("Password must be 8–16 characters."); return;
-    }
+  async function createAccount() {
     const dto: CreateUserDto = {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      email,
-      password: profile.password,
-      dob: profile.dob,
-      state: profile.state,
-      country: profile.country,
-      mobile: profile.mobile,
-      cpapUser: profile.cpapUser,
-      transcendDevice: profile.transcendDevice,
-      occupation: profile.occupation,
-      gender: profile.gender || undefined,
-      city: profile.city || undefined,
-      pincode: profile.pincode ? Number(profile.pincode) : undefined,
-      countryCode: profile.countryCode || undefined,
-      timeZone: profile.timeZone || undefined,
-      deviceId: profile.deviceId || undefined,
-      provider: profile.provider || undefined,
-      providerEmail: profile.providerEmail || undefined,
-      dealerName: profile.dealerName || undefined,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      password: form.password,
+      dob: form.dob,
+      state: form.state,
+      country: form.country,
+      mobile: form.mobile,
+      cpapUser: form.cpapUser,
+      transcendDevice: "Transcend 365 miniCPAP",
+      occupation: form.occupation,
+      countryCode: form.countryCode || undefined,
+      timeZone: TIME_ZONES[0],
+      devicePurchased: form.devicePurchased || undefined,
+      provider: form.provider || undefined,
+      providerEmail: form.providerEmail || undefined,
     };
-    setSubmitting(true);
-    try {
-      await endUserApi.createUser(dto);
-      // The server set httpOnly auth cookies; force a hard navigation so
-      // middleware sees the new cookies on the next request.
-      setStep(4);
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          window.location.assign("/patient/dashboard");
-        } else {
-          router.push("/patient/dashboard");
-        }
-      }, 800);
-    } catch (e) {
-      const err = e as ApiError;
-      setError(err.message || "Could not create account.");
-      setFieldErrors(err.fieldErrors);
-    } finally { setSubmitting(false); }
+    await endUserApi.createUser(dto);
+    setStep(5);
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.location.assign("/patient/dashboard");
+      } else {
+        router.push("/patient/dashboard");
+      }
+    }, 800);
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10">
-      <div className={`w-full ${step === 3 ? "max-w-3xl" : "max-w-md"}`}>
-        <Link href="/" className="flex items-center justify-center mb-6">
+      <div className="w-full max-w-xl">
+        <Link href="/" className="flex items-center justify-center mb-6" aria-label="Transcend home">
           <Logo className="h-9 w-auto" />
         </Link>
         <div className="card p-6">
           <Stepper step={step} />
 
-          {step === 1 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-900">Create your account</h2>
-              <p className="text-sm text-slate-500">We&apos;ll send a one-time code to verify your email.</p>
-              <div>
-                <label className="label">Full name *</label>
-                <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Smith" />
-              </div>
-              <div>
-                <label className="label">Email *</label>
-                <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
-              </div>
+          {step === 1 && <Step1 form={form} upd={upd} stateOptions={stateOptions} />}
+          {step === 2 && <Step2 form={form} upd={upd} />}
+          {step === 3 && <Step3 form={form} upd={upd} pw={pw} pwOk={pwOk} passwordsMatch={passwordsMatch} />}
+          {step === 4 && <VerifyStep email={form.email} otp={otp} setOtp={setOtp} onResend={resendOtp} disabled={submitting} />}
+          {step === 5 && <Done />}
+
+          {step !== 5 && info && (
+            <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-100 text-sm text-blue-800 flex items-start gap-2" role="status">
+              <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" /> {info}
+            </div>
+          )}
+          {step !== 5 && error && (
+            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-800 flex items-start gap-2" role="alert">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" /> {error}
+              {fieldErrors && (
+                <ul className="mt-1 list-disc list-inside text-xs">
+                  {Object.entries(fieldErrors).map(([k, v]) => <li key={k}>{k}: {v[0]}</li>)}
+                </ul>
+              )}
             </div>
           )}
 
-          {step === 2 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-900 inline-flex items-center gap-2"><Mail className="w-5 h-5 text-brand-600" /> Verify your email</h2>
-              <p className="text-sm text-slate-500">Enter the code we sent to <strong>{email}</strong>.</p>
-              <div>
-                <label className="label">Verification code *</label>
-                <input className="input tracking-widest text-center font-mono text-lg" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="0000" inputMode="numeric" />
-              </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  setSubmitting(true);
-                  try { await endUserApi.signUpOtp({ email, name }); setInfo("New code sent."); }
-                  catch (e) { setError((e as ApiError).message); }
-                  finally { setSubmitting(false); }
-                }}
-                disabled={submitting}
-                className="text-xs text-brand-600 hover:underline"
-              >
-                Resend code
-              </button>
-            </div>
-          )}
-
-          {step === 3 && (
-            <ProfileStep profile={profile} update={upd} fieldErrors={fieldErrors} email={email} />
-          )}
-
-          {step === 4 && (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto">
-                <Check className="w-6 h-6" />
-              </div>
-              <h2 className="mt-4 text-lg font-semibold text-slate-900">Account created</h2>
-              <p className="text-sm text-slate-600 mt-1">Signing you in…</p>
-            </div>
-          )}
-
-          {info && step !== 4 && (
-            <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-100 text-sm text-blue-800 flex items-start gap-2">
-              <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" /> {info}
-            </div>
-          )}
-          {error && step !== 4 && (
-            <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100 text-sm text-red-800 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /> {error}
-            </div>
-          )}
-
-          {step !== 4 && (
+          {step !== 5 && (
             <div className="mt-6 flex justify-between">
               <button
-                onClick={() => { setError(null); setInfo(null); setStep((s) => (Math.max(1, s - 1) as 1 | 2 | 3 | 4)); }}
+                type="button"
+                onClick={() => { clearMsgs(); setStep((s) => (Math.max(1, s - 1) as Step)); }}
                 disabled={step === 1 || submitting}
                 className="btn-secondary disabled:opacity-50"
               >
                 Back
               </button>
-              {step === 1 && <button onClick={requestOtp} disabled={submitting} className="btn-primary disabled:opacity-50">{submitting ? "Sending…" : (<>Send code <ArrowRight className="w-4 h-4" /></>)}</button>}
-              {step === 2 && <button onClick={verifyOtp} disabled={submitting} className="btn-primary disabled:opacity-50">{submitting ? "Verifying…" : (<>Verify <ArrowRight className="w-4 h-4" /></>)}</button>}
-              {step === 3 && <button onClick={submitProfile} disabled={submitting} className="btn-primary disabled:opacity-50">{submitting ? "Creating…" : (<>Create account <Check className="w-4 h-4" /></>)}</button>}
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={submitting}
+                className="btn-primary disabled:opacity-50"
+              >
+                {step === 1 || step === 2 ? <>Next <ArrowRight className="w-4 h-4" /></>
+                  : step === 3 ? (submitting ? "Sending code…" : <>Submit <ArrowRight className="w-4 h-4" /></>)
+                  : (submitting ? "Verifying…" : <>Verify <Check className="w-4 h-4" /></>)}
+              </button>
             </div>
           )}
         </div>
-        <div className="text-center text-sm text-slate-600 mt-4">
-          Already have an account? <Link href="/login" className="text-brand-600 font-medium">Log on</Link>
-        </div>
+        {step !== 5 && (
+          <div className="text-center text-sm text-slate-600 mt-4">
+            Already have an account? <Link href="/login" className="text-brand-600 font-medium">Log on</Link>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function Stepper({ step }: { step: 1 | 2 | 3 | 4 }) {
-  const steps = ["Account", "Verify", "Profile"];
+function Stepper({ step }: { step: Step }) {
+  const items = ["Basic", "Profile", "Account", "Verify"];
   return (
-    <div className="flex items-center justify-between mb-6">
-      {steps.map((label, i) => {
+    <div className="flex items-center justify-between mb-6" aria-label={`Step ${Math.min(step, 4)} of 4`}>
+      {items.map((label, i) => {
         const idx = i + 1;
         const active = step === idx;
-        const done = step > idx;
+        const done = step > idx || step === 5;
         return (
           <div key={label} className="flex-1 flex items-center">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${done ? "bg-brand-600 text-white" : active ? "bg-brand-100 text-brand-700 ring-2 ring-brand-500" : "bg-slate-100 text-slate-500"}`}>
               {done ? <Check className="w-4 h-4" /> : idx}
             </div>
             <div className={`ml-2 text-xs font-medium ${active ? "text-slate-900" : "text-slate-500"}`}>{label}</div>
-            {i < steps.length - 1 && <div className="flex-1 h-px bg-slate-200 mx-3" />}
+            {i < items.length - 1 && <div className="flex-1 h-px bg-slate-200 mx-3" />}
           </div>
         );
       })}
@@ -251,74 +317,204 @@ function Stepper({ step }: { step: 1 | 2 | 3 | 4 }) {
   );
 }
 
-function ProfileStep({ profile, update, fieldErrors, email }: {
-  profile: Profile;
-  update: <K extends keyof Profile>(k: K, v: Profile[K]) => void;
-  fieldErrors?: Record<string, string[]>;
-  email: string;
+// ---------- Steps ----------
+
+function Step1({ form, upd, stateOptions }: {
+  form: Form;
+  upd: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  stateOptions: string[] | null;
 }) {
   return (
     <div>
-      <h2 className="text-lg font-semibold text-slate-900">Your profile</h2>
-      <p className="text-sm text-slate-500 mb-5">Fields marked * are required.</p>
-      <div className="grid md:grid-cols-2 gap-x-6 gap-y-3">
-        <Text label="First name" required value={profile.firstName} onChange={(v) => update("firstName", v)} err={fieldErrors?.firstName} />
-        <Text label="Last name" required value={profile.lastName} onChange={(v) => update("lastName", v)} err={fieldErrors?.lastName} />
-        <div>
-          <label className="label">Email</label>
-          <input className="input bg-slate-50" value={email} readOnly />
-        </div>
-        <Text label="Date of birth" required type="date" value={profile.dob} onChange={(v) => update("dob", v)} err={fieldErrors?.dob} />
-        <Text label="Password" required type="password" help="8–16 characters." value={profile.password} onChange={(v) => update("password", v)} err={fieldErrors?.password} />
-        <Text label="Confirm password" required type="password" value={profile.confirmPassword} onChange={(v) => update("confirmPassword", v)} />
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <label className="label">Country code</label>
-            <input className="input" value={profile.countryCode} onChange={(e) => update("countryCode", e.target.value)} />
-          </div>
-          <div className="col-span-2">
-            <label className="label">Mobile *</label>
-            <input className="input" value={profile.mobile} onChange={(e) => update("mobile", e.target.value)} placeholder="555-555-5555" />
-          </div>
-        </div>
-        <Sel label="Gender" value={profile.gender} onChange={(v) => update("gender", v)} options={["", "male", "female", "other", "prefer not to say"]} />
-
-        <Sel label="Country" required value={profile.country} onChange={(v) => update("country", v)} options={["United States", "Canada", "United Kingdom", "Germany", "France", "Australia", "India"]} />
-        <Text label="State / province" required value={profile.state} onChange={(v) => update("state", v)} err={fieldErrors?.state} />
-        <Text label="City" value={profile.city} onChange={(v) => update("city", v)} />
-        <Text label="Postal code" value={profile.pincode} onChange={(v) => update("pincode", v)} />
-
-        <Sel label="Time zone" value={profile.timeZone} onChange={(v) => update("timeZone", v)} options={["America/New_York","America/Chicago","America/Denver","America/Los_Angeles","UTC","Europe/London","Australia/Sydney"]} />
-        <Sel label="CPAP user" required value={profile.cpapUser} onChange={(v) => update("cpapUser", v)} options={["self", "spouse", "parent", "other"]} />
-        <Text label="Transcend device" required value={profile.transcendDevice} onChange={(v) => update("transcendDevice", v)} err={fieldErrors?.transcendDevice} />
-        <Text label="Device ID" value={profile.deviceId} onChange={(v) => update("deviceId", v)} />
-        <Text label="Occupation" required value={profile.occupation} onChange={(v) => update("occupation", v)} err={fieldErrors?.occupation} />
-
-        <Text label="Care provider (optional)" value={profile.provider} onChange={(v) => update("provider", v)} />
-        <Text label="Provider email (optional)" type="email" value={profile.providerEmail} onChange={(v) => update("providerEmail", v)} />
-        <Text label="Dealer (optional)" value={profile.dealerName} onChange={(v) => update("dealerName", v)} />
+      <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
+      <p className="text-sm text-slate-500 mb-4">Fields marked * are required.</p>
+      <div className="space-y-3">
+        <Field label="Country" required>
+          <select className="input" value={form.country} onChange={(e) => upd("country", e.target.value)}>
+            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="State" required>
+          {stateOptions
+            ? (
+              <select className="input" value={form.state} onChange={(e) => upd("state", e.target.value)}>
+                <option value="">Select State</option>
+                {stateOptions.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            )
+            : <input className="input" placeholder="State / Province" value={form.state} onChange={(e) => upd("state", e.target.value)} />}
+        </Field>
+        <Field label="First Name" required>
+          <input className="input" placeholder="Enter your First Name" value={form.firstName} onChange={(e) => upd("firstName", e.target.value)} />
+        </Field>
+        <Field label="Last Name" required>
+          <input className="input" placeholder="Enter your Last Name" value={form.lastName} onChange={(e) => upd("lastName", e.target.value)} />
+        </Field>
+        <Field label="Email" required>
+          <input className="input" type="email" placeholder="Enter your Email" value={form.email} onChange={(e) => upd("email", e.target.value)} autoComplete="email" />
+        </Field>
       </div>
     </div>
   );
 }
 
-function Text({ label, required, value, onChange, type = "text", help, err }: { label: string; required?: boolean; value: string; onChange: (v: string) => void; type?: string; help?: string; err?: string[] }) {
+function Step2({ form, upd }: { form: Form; upd: <K extends keyof Form>(k: K, v: Form[K]) => void }) {
   return (
     <div>
-      <label className="label">{label} {required && <span className="text-red-500">*</span>}{help && <span className="text-xs text-slate-400 ml-1">{help}</span>}</label>
-      <input className="input" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
-      {err && err[0] && <p className="text-xs text-red-600 mt-1">{err[0]}</p>}
+      <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
+      <p className="text-sm text-slate-500 mb-4">Tell us a bit about your therapy.</p>
+      <div className="space-y-3">
+        <Field label="Date of Birth" required>
+          <input className="input" type="date" value={form.dob} onChange={(e) => upd("dob", e.target.value)} />
+        </Field>
+        <Field label="Occupation">
+          <select className="input" value={form.occupation} onChange={(e) => upd("occupation", e.target.value)}>
+            {OCCUPATIONS.map((o) => <option key={o}>{o}</option>)}
+          </select>
+        </Field>
+        <Field label="How long have you been a CPAP user?" required>
+          <select className="input" value={form.cpapUser} onChange={(e) => upd("cpapUser", e.target.value)}>
+            {CPAP_DURATION.map((o) => <option key={o}>{o}</option>)}
+          </select>
+        </Field>
+        <Field label="How are you using the Transcend device?" required>
+          <select className="input" value={form.transcendUsage} onChange={(e) => upd("transcendUsage", e.target.value)}>
+            {USAGE.map((o) => <option key={o}>{o}</option>)}
+          </select>
+        </Field>
+        <Field label="Where was the Transcend device purchased?" required>
+          <select className="input" value={form.devicePurchased} onChange={(e) => upd("devicePurchased", e.target.value)}>
+            {PURCHASE.map((o) => <option key={o}>{o}</option>)}
+          </select>
+        </Field>
+      </div>
     </div>
   );
 }
 
-function Sel({ label, required, value, onChange, options }: { label: string; required?: boolean; value: string; onChange: (v: string) => void; options: string[] }) {
+function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
+  form: Form;
+  upd: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  pw: ReturnType<typeof checkPassword>;
+  pwOk: boolean;
+  passwordsMatch: boolean;
+}) {
   return (
     <div>
-      <label className="label">{label} {required && <span className="text-red-500">*</span>}</label>
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => <option key={o} value={o}>{o || "—"}</option>)}
-      </select>
+      <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
+      <p className="text-sm text-slate-500 mb-4">Almost done — create your password and accept the terms.</p>
+      <div className="space-y-3">
+        <Field label="Care Provider">
+          <input className="input" placeholder="Enter Care Provider" value={form.provider} onChange={(e) => upd("provider", e.target.value)} />
+        </Field>
+        <Field label="Care Provider Email">
+          <input className="input" type="email" placeholder="Enter Care Provider Email" value={form.providerEmail} onChange={(e) => upd("providerEmail", e.target.value)} />
+        </Field>
+        <Field label="Mobile Number" required>
+          <div className="flex gap-2">
+            <input className="input !w-20" value={form.countryCode} onChange={(e) => upd("countryCode", e.target.value)} aria-label="Country code" />
+            <input className="input flex-1" inputMode="tel" placeholder="Enter Mobile Number" value={form.mobile} onChange={(e) => upd("mobile", e.target.value)} autoComplete="tel-national" />
+          </div>
+        </Field>
+        <Field label="Password" required>
+          <input className="input" type="password" placeholder="Create Password" value={form.password} onChange={(e) => upd("password", e.target.value)} autoComplete="new-password" />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <Pill ok={pw.length}>8–16 characters</Pill>
+            <Pill ok={pw.lower}>1 lowercase letter</Pill>
+            <Pill ok={pw.upper}>1 uppercase letter</Pill>
+            <Pill ok={pw.digit}>1 number</Pill>
+            <Pill ok={pw.special}>1 special character</Pill>
+          </div>
+        </Field>
+        <Field label="Confirm Password" required>
+          <input
+            className={`input ${form.confirmPassword && !passwordsMatch ? "border-red-300 focus:ring-red-500" : ""}`}
+            type="password"
+            placeholder="Confirm Password"
+            value={form.confirmPassword}
+            onChange={(e) => upd("confirmPassword", e.target.value)}
+            autoComplete="new-password"
+          />
+          {form.confirmPassword && !passwordsMatch && (
+            <p className="text-xs text-red-600 mt-1">Passwords do not match.</p>
+          )}
+        </Field>
+
+        <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
+          <input type="checkbox" className="mt-1" checked={form.consentTerms} onChange={(e) => upd("consentTerms", e.target.checked)} />
+          <div className="text-sm text-slate-700">
+            I consent to the <Link href="#" className="text-brand-600">Terms of Use</Link> and{" "}
+            <Link href="#" className="text-brand-600">Privacy Notice</Link>.
+          </div>
+        </label>
+        <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
+          <input type="checkbox" className="mt-1" checked={form.consentMarketing} onChange={(e) => upd("consentMarketing", e.target.checked)} />
+          <div className="text-sm text-slate-700">
+            I consent to receiving email messages about other Transcend products and services.
+          </div>
+        </label>
+      </div>
+      {!pwOk && form.password.length > 0 && (
+        <p className="mt-2 text-xs text-slate-500">Pick a password that satisfies all five rules.</p>
+      )}
     </div>
+  );
+}
+
+function VerifyStep({ email, otp, setOtp, onResend, disabled }: {
+  email: string; otp: string; setOtp: (v: string) => void; onResend: () => void; disabled: boolean;
+}) {
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg font-semibold text-slate-900 inline-flex items-center gap-2">
+        <Mail className="w-5 h-5 text-brand-600" aria-hidden="true" /> Verify your email
+      </h2>
+      <p className="text-sm text-slate-500">Enter the code we sent to <strong>{email}</strong>.</p>
+      <Field label="Verification code" required>
+        <input
+          className="input tracking-widest text-center font-mono text-lg"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="0000"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+        />
+      </Field>
+      <button type="button" onClick={onResend} disabled={disabled} className="text-xs text-brand-600 hover:underline">
+        Resend code
+      </button>
+    </div>
+  );
+}
+
+function Done() {
+  return (
+    <div className="text-center py-4">
+      <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto">
+        <Check className="w-6 h-6" />
+      </div>
+      <h2 className="mt-4 text-lg font-semibold text-slate-900">Account created</h2>
+      <p className="text-sm text-slate-600 mt-1">Signing you in…</p>
+    </div>
+  );
+}
+
+// ---------- Small UI helpers ----------
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="label">{label} {required && <span className="text-red-500" aria-hidden="true">*</span>}</label>
+      {children}
+    </div>
+  );
+}
+
+function Pill({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+  return (
+    <span className={`badge ${ok ? "badge-green" : "badge-slate"} inline-flex items-center gap-1`}>
+      {ok && <Check className="w-3 h-3" aria-hidden="true" />}
+      {children}
+    </span>
   );
 }

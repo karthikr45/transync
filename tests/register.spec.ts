@@ -18,11 +18,12 @@ test.describe("Registration", () => {
     await expect(page.getByText("User Information").first()).toBeVisible();
   });
 
-  test("Continue with Individual User routes to /register/patient (OTP flow)", async ({ page }) => {
+  test("Continue with Individual User routes to /register/patient (multi-step)", async ({ page }) => {
     await page.goto("/register");
     await page.getByText(/Individual User Account/i).click();
     await page.getByRole("button", { name: /Continue Registration/i }).click();
     await expect(page).toHaveURL(/\/register\/patient/);
-    await expect(page.getByRole("button", { name: /Send code/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Your Basic Information/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Next/i })).toBeVisible();
   });
 });
