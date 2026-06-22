@@ -22,10 +22,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   function safeRedirect(fallback: string) {
-    if (next && next.startsWith("/") && !next.startsWith("//")) {
-      router.push(next);
+    const candidate = next && next.startsWith("/") && !next.startsWith("//") ? next : fallback;
+    // Hard navigation so the browser issues a fresh request that carries
+    // the newly-set auth cookies through middleware.
+    if (typeof window !== "undefined") {
+      window.location.assign(candidate);
     } else {
-      router.push(fallback);
+      router.push(candidate);
     }
   }
 

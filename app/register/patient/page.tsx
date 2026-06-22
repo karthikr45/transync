@@ -116,9 +116,16 @@ export default function PatientRegister() {
     setSubmitting(true);
     try {
       await endUserApi.createUser(dto);
-      // The server set httpOnly auth cookies; just navigate.
+      // The server set httpOnly auth cookies; force a hard navigation so
+      // middleware sees the new cookies on the next request.
       setStep(4);
-      setTimeout(() => router.push("/patient/dashboard"), 800);
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          window.location.assign("/patient/dashboard");
+        } else {
+          router.push("/patient/dashboard");
+        }
+      }, 800);
     } catch (e) {
       const err = e as ApiError;
       setError(err.message || "Could not create account.");
