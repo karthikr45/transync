@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { AlertTriangle, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
@@ -12,6 +12,14 @@ import { t } from "@/lib/i18n";
 type Kind = "patient" | "staff";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
   const router = useRouter();
   const search = useSearchParams();
   const next = search.get("next");
