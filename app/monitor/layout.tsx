@@ -1,5 +1,6 @@
 import { LayoutDashboard, Users, Inbox, FileText, ScrollText } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
+import AuthGuard from "@/components/AuthGuard";
 
 const nav = [
   { href: "/monitor/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -11,8 +12,10 @@ const nav = [
 
 export default function MonitorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell role="Authorized Monitor" user={{ name: "BlueCross Claims", email: "claims@bluecross.com" }} nav={nav}>
-      {children}
-    </PortalShell>
+    <AuthGuard requireKind="home-care" requireUserType="authorized_monitor">
+      <PortalShell role="Authorized Monitor" user={{ name: "BlueCross Claims", email: "claims@bluecross.com" }} nav={nav}>
+        {children}
+      </PortalShell>
+    </AuthGuard>
   );
 }

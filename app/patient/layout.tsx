@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { LayoutDashboard, FileText, Smartphone, Share2, User } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
+import AuthGuard from "@/components/AuthGuard";
 import { getCurrentEndUser } from "@/lib/auth";
 
 const nav = [
@@ -13,14 +14,10 @@ const nav = [
   { href: "/patient/profile", label: "Profile", icon: <User className="w-4 h-4" /> },
 ];
 
-// Render with empty user on first mount so the server-rendered HTML
-// matches the initial client render. The real user is read from the
-// cookie after hydration via useEffect.
 const PLACEHOLDER = { name: "", email: "" };
 
-export default function PatientLayout({ children }: { children: React.ReactNode }) {
+function PatientShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<{ name: string; email: string }>(PLACEHOLDER);
-
   useEffect(() => {
     const eu = getCurrentEndUser();
     if (!eu) return;
@@ -29,10 +26,17 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
       email: eu.email,
     });
   }, []);
-
   return (
     <PortalShell role="Individual User" user={user} nav={nav}>
       {children}
     </PortalShell>
+  );
+}
+
+export default function PatientLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthGuard requireKind="end-user">
+      <PatientShell>{children}</PatientShell>
+    </AuthGuard>
   );
 }

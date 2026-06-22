@@ -6,7 +6,7 @@ import { Suspense, useState } from "react";
 import { AlertTriangle, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
 import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
-import { destinationForUser } from "@/lib/auth";
+import { destinationForUser, setSession } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 
 type Kind = "patient" | "staff";
@@ -47,10 +47,12 @@ function LoginInner() {
     setSubmitting(true);
     try {
       if (kind === "patient") {
-        await endUserApi.login({ email, password });
+        const eu = await endUserApi.login({ email, password });
+        setSession(eu.token, eu.refreshToken, eu, "end-user");
         safeRedirect("/patient/dashboard");
       } else {
-        const { user } = await homeCareApi.login({ email, password });
+        const { token, refreshToken, user } = await homeCareApi.login({ email, password });
+        setSession(token, refreshToken, user, "home-care");
         safeRedirect(destinationForUser(user));
       }
     } catch (err) {

@@ -6,6 +6,7 @@ import { useState, useMemo } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { endUserApi, ApiError } from "@/lib/api";
+import { setSession } from "@/lib/auth";
 import type { CreateUserDto } from "@/lib/types.api";
 
 type Step = 1 | 2 | 3 | 4 | 5; // 4 = OTP, 5 = done
@@ -233,7 +234,8 @@ export default function PatientRegister() {
       provider: form.provider || undefined,
       providerEmail: form.providerEmail || undefined,
     };
-    await endUserApi.createUser(dto);
+    const eu = await endUserApi.createUser(dto);
+    setSession(eu.token, eu.refreshToken, eu, "end-user");
     setStep(5);
     setTimeout(() => {
       if (typeof window !== "undefined") {

@@ -1,12 +1,15 @@
-// Client API. Every call goes through our same-origin Next.js Route
-// Handlers; tokens never reach the browser. The proxy refreshes silently
-// on 401, and on 401 here we redirect to /login.
+// Direct client → backend API. The browser calls API_BASE_URL directly
+// from .env (NEXT_PUBLIC_API_BASE_URL). Bearer tokens come from
+// localStorage via lib/auth.ts. On 401 we try a refresh once, then
+// either retry or surface the error and redirect to /login.
 
+import { API_BASE_URL } from "./env";
+import { clearSession, getRefreshToken, getToken, getUserKind, setSession, getCurrentUser, getCurrentEndUser } from "./auth";
 import type {
-  ApiEnvelope, RegisterDto, AccountUser,
+  ApiEnvelope, LoginDto, LoginResult, RegisterDto, AccountUser,
   DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
   ComplianceReportDto, ComplianceReportResult,
-  SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUser,
+  SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
   ReportBySessionQuery, ReportBySessionResult,
 } from "./types.api";
@@ -21,14 +24,9 @@ export class ApiError extends Error {
   }
 }
 
-type ErrorBody = {
-  statusCode?: number;
-  error?: string;
-  message?: unknown;
-  status?: string;
-};
+type ErrorBody = { statusCode?: number; error?: string; message?: unknown; status?: string };
 
-function parseErrorMessage(body: ErrorBody | null, fallback: string) {
+function parseErrorMessage(body: ErrorBody | null, fallback: string): { message: string; fields?: Record<string, string[]> } {
   if (!body) return { message: fallback };
   if (body.error === "Validation Failed" && body.message && typeof body.message === "object") {
     const fields = body.message as Record<string, string[]>;
@@ -45,35 +43,84 @@ function qs(params: Record<string, unknown>): string {
   return "?" + entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join("&");
 }
 
-type FetchOpts = RequestInit & { _skipAuthRedirect?: boolean };
+// ---- Token refresh: at-most-once concurrent ----
 
-async function clientFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refresh = getRefreshToken();
+  if (!refresh) return false;
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${refresh}`,
+        "ngrok-skip-browser-warning": "true",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return false;
+    const body = (await res.json().catch(() => null)) as
+      | { accessToken?: string }
+      | { result?: { token?: string } }
+      | null;
+    let newToken: string | undefined;
+    if (body && "accessToken" in body && typeof body.accessToken === "string") newToken = body.accessToken;
+    else if (body && "result" in body && body.result && typeof body.result.token === "string") newToken = body.result.token;
+    if (!newToken) return false;
+    const kind = getUserKind();
+    if (!kind) return false;
+    const user = kind === "home-care" ? getCurrentUser() : getCurrentEndUser();
+    if (!user) return false;
+    setSession(newToken, refresh, user, kind);
+    return true;
+  } catch { return false; }
+}
+
+async function ensureRefresh(): Promise<boolean> {
+  if (!refreshPromise) refreshPromise = refreshAccessToken().finally(() => { refreshPromise = null; });
+  return refreshPromise;
+}
+
+function redirectToLogin(): void {
+  if (typeof window === "undefined") return;
+  const here = window.location.pathname + window.location.search;
+  if (/^\/(provider|monitor|admin|patient)\//.test(window.location.pathname)) {
+    window.location.assign(`/login?next=${encodeURIComponent(here)}`);
+  } else {
+    window.location.assign("/login");
+  }
+}
+
+type FetchOpts = RequestInit & { _retry?: boolean; _skipAuth?: boolean; _skipAuthRedirect?: boolean };
+
+async function apiFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
+  if (!API_BASE_URL) throw new ApiError("API base URL is not configured.", 0);
+
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  headers.set("ngrok-skip-browser-warning", "true");
+  if (!init._skipAuth) {
+    const token = getToken();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
 
   let res: Response;
   try {
-    res = await fetch(path, {
-      ...init,
-      headers,
-      credentials: "same-origin",
-      cache: "no-store",
-    });
+    res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers, cache: "no-store" });
   } catch {
     throw new ApiError("Network error — could not reach the server.", 0);
   }
 
+  if (res.status === 401 && !init._retry && !init._skipAuth) {
+    const ok = await ensureRefresh();
+    if (ok) return apiFetch<T>(path, { ...init, _retry: true });
+    if (!init._skipAuthRedirect) { clearSession(); redirectToLogin(); }
+    throw new ApiError("Session expired. Please sign in again.", 401);
+  }
+
   let body: unknown = null;
   try { body = await res.json(); } catch { /* empty */ }
-
-  if (res.status === 401) {
-    if (!init._skipAuthRedirect && typeof window !== "undefined" && /^\/(provider|monitor|admin|patient)\//.test(window.location.pathname)) {
-      const here = window.location.pathname + window.location.search;
-      window.location.assign(`/login?next=${encodeURIComponent(here)}`);
-    }
-    const { message } = parseErrorMessage(body as ErrorBody, "Session expired.");
-    throw new ApiError(message, 401);
-  }
 
   if (!res.ok) {
     const { message, fields } = parseErrorMessage(body as ErrorBody, res.statusText || "Request failed");
@@ -91,61 +138,55 @@ async function clientFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
   return body as T;
 }
 
-function proxyGet<T>(path: string) {
-  return clientFetch<T>(`/api/proxy${path}`, { method: "GET" });
-}
-function proxyPost<T>(path: string, body?: unknown) {
-  return clientFetch<T>(`/api/proxy${path}`, {
-    method: "POST",
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-}
-
-// ---------- Home Care ----------
+// ---------- Home Care endpoints ----------
 
 export const homeCareApi = {
   register: (dto: RegisterDto) =>
-    clientFetch<AccountUser>("/api/auth/register/home-care", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
-
-  login: (dto: { email: string; password: string }) =>
-    clientFetch<{ user: AccountUser }>("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ kind: "home-care", ...dto }),
-      _skipAuthRedirect: true,
+    apiFetch<AccountUser>("/home-care/register", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
+    }),
+  login: (dto: LoginDto) =>
+    apiFetch<LoginResult>("/home-care/login", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
 
-  listPending: () => proxyGet<AccountUser[]>("/home-care/pending"),
-  approve: (id: string) => proxyPost<AccountUser>(`/home-care/approve/${id}`),
-  reject: (id: string, reason?: string) => proxyPost<AccountUser>(`/home-care/reject/${id}`, { reason }),
+  listPending: () => apiFetch<AccountUser[]>("/home-care/pending"),
+  approve: (id: string) => apiFetch<AccountUser>(`/home-care/approve/${id}`, { method: "POST" }),
+  reject: (id: string, reason?: string) =>
+    apiFetch<AccountUser>(`/home-care/reject/${id}`, { method: "POST", body: JSON.stringify({ reason }) }),
 
   uploadDevices: (dto: DeviceUploadDto) =>
-    proxyPost<DeviceUploadResult>("/home-care/devices/upload", dto),
+    apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
   listDeviceUsers: (query: DeviceUsersQuery = {}) =>
-    proxyGet<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
+    apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>
-    proxyPost<ComplianceReportResult>("/home-care/devices/compliance-report", dto),
+    apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
 };
 
-// ---------- End User ----------
+// ---------- End User endpoints ----------
 
 export const endUserApi = {
   signUpOtp: (dto: SignUpOtpDto) =>
-    clientFetch<null>("/api/auth/register/patient/otp", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
+    apiFetch<null>("/auth/signUp-otp", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
+    }),
   validateOtp: (dto: ValidateOtpDto) =>
-    clientFetch<boolean>("/api/auth/register/patient/verify", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
+    apiFetch<boolean>("/auth/validate-otp", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
+    }),
   createUser: (dto: CreateUserDto) =>
-    clientFetch<{ user: EndUser }>("/api/auth/register/patient/create", { method: "POST", body: JSON.stringify(dto), _skipAuthRedirect: true }),
-  login: (dto: { email: string; password: string }) =>
-    clientFetch<{ user: EndUser }>("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ kind: "end-user", ...dto }),
-      _skipAuthRedirect: true,
+    apiFetch<EndUser>("/users/create-user", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
+    }),
+  login: (dto: EndUserLoginDto) =>
+    apiFetch<EndUser>("/auth/login", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
 
   getLastSyncDate: (q: LastSyncQuery) =>
-    proxyGet<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),
+    apiFetch<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),
   getDataBySession: (q: SessionQuery) =>
-    proxyGet<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
+    apiFetch<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
   reportBySession: (q: ReportBySessionQuery) =>
-    proxyGet<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
+    apiFetch<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
 };

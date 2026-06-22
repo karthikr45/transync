@@ -1,5 +1,6 @@
 import { LayoutDashboard, ClipboardCheck, Building2, HardDrive, Users, ScrollText, Settings } from "lucide-react";
 import PortalShell from "@/components/PortalShell";
+import AuthGuard from "@/components/AuthGuard";
 
 const nav = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -13,8 +14,10 @@ const nav = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <PortalShell role="Super Admin" user={{ name: "Alex Mercer", email: "amercer@transcend.com" }} nav={nav}>
-      {children}
-    </PortalShell>
+    <AuthGuard requireKind="home-care" requireRole="super_admin">
+      <PortalShell role="Super Admin" user={{ name: "Alex Mercer", email: "amercer@transcend.com" }} nav={nav}>
+        {children}
+      </PortalShell>
+    </AuthGuard>
   );
 }

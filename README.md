@@ -1,44 +1,47 @@
 # Transcend Web
 
-Cloud compliance portal for the Transcend miniCPAP. A single Next.js
+Cloud compliance portal for the Transcend miniCPAP. A Next.js
 application that serves four user portals:
 
-| Portal | Audience | Auth API |
-|---|---|---|
-| `/patient/*` | Individual User (the patient) | `/auth/login`, `/users/create-user` |
-| `/provider/*` | Homecare Provider staff | `/home-care/login` |
-| `/monitor/*` | Authorized Monitor (clinician / insurer) | `/home-care/login` |
-| `/admin/*` | Transcend Super Admin / Operations | `/home-care/login` |
+| Portal | Audience |
+|---|---|
+| `/patient/*` | Individual User (the patient) |
+| `/provider/*` | Homecare Provider staff |
+| `/monitor/*` | Authorized Monitor (clinician / insurer) |
+| `/admin/*` | Transcend Super Admin / Operations |
 
 ## Architecture
 
-- **Same-origin API.** The browser never calls the upstream backend
-  directly. All traffic flows through Next.js Route Handlers under
-  `/api/*`. The upstream Bearer tokens are stored in **httpOnly cookies**
-  set by the server. This eliminates the XSS-token-stealing class of
-  bugs.
-- **Auth middleware.** `middleware.ts` is the real gate — unauthenticated
-  requests to `/provider`, `/monitor`, `/admin`, `/patient` are
-  redirected to `/login?next=…`. Wrong-role requests are sent back to
-  `/login`.
-- **Transparent token refresh.** The proxy at
-  `app/api/proxy/[...path]/route.ts` calls `/auth/refresh` on a 401 and
-  retries once. If refresh fails it clears cookies and surfaces a 401 to
-  the client, which redirects to `/login`.
-- **Security headers.** Set in `next.config.mjs`: HSTS, X-Frame-Options
-  DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, and
-  a tight Content-Security-Policy.
-- **No client tokens.** `lib/auth.ts` reads only the non-httpOnly
-  `tc_user` and `tc_kind` cookies for display / routing. There is no
-  `localStorage`-resident credential material.
+- **Frontend-only consumer.** The browser calls the upstream backend
+  (set via `NEXT_PUBLIC_API_BASE_URL`) directly. No server-side proxy.
+- **Tokens in `localStorage`.** `lib/auth.ts` writes the JWT + refresh
+  token after login; `lib/api.ts` reads them and sets the
+  `Authorization: Bearer …` header on every API call.
+- **Transparent refresh.** On any `401`, the client calls
+  `/auth/refresh` once and retries. If that fails the session is cleared
+  and the user is sent to `/login`.
+- **Client-side auth guard.** Each portal layout wraps its tree in
+  `<AuthGuard>` (see `components/AuthGuard.tsx`). It renders a Loading
+  state while it confirms the right kind / role / userType is present
+  in `localStorage`, then renders the portal — or redirects to
+  `/login?next=…` if not.
+- **Security headers** in `next.config.mjs`: HSTS, X-Frame-Options DENY,
+  X-Content-Type-Options, Referrer-Policy, Permissions-Policy,
+  COOP same-origin, X-DNS-Prefetch-Control off and a CSP that limits
+  `connect-src` to the app origin plus the API origin (read from env).
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local            # then edit API_BASE_URL
-npm run dev                            # http://localhost:3000
+cp .env.example .env.local           # edit NEXT_PUBLIC_API_BASE_URL
+npm run dev                           # http://localhost:3000
 ```
+
+The backend at `NEXT_PUBLIC_API_BASE_URL` **must allow CORS** from your
+web origin and must accept `Authorization: Bearer …` plus the
+`ngrok-skip-browser-warning` header (the latter only matters while
+serving from an ngrok tunnel).
 
 ## Scripts
 
@@ -48,92 +51,76 @@ npm run dev                            # http://localhost:3000
 | `npm run dev:local` | Dev server, loopback only |
 | `npm run build` | Production build |
 | `npm run start` | Production server, `0.0.0.0:3000` |
-| `npm run lint` | ESLint (Next config) |
+| `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run check` | Typecheck + lint + build (CI gate) |
+| `npm run check` | typecheck + lint + build (CI gate) |
 | `npm run test:install` | Install Playwright browsers (chromium) |
-| `npm run test` | Playwright UI smoke tests |
+| `npm run test` | Playwright smoke tests |
 
 ## Project layout
 
 ```
 app/
-  api/                  # Server-only Route Handlers (proxy + auth)
-  admin/                # Super Admin portal
-  provider/             # Homecare Provider portal
-  monitor/              # Authorized Monitor portal
-  patient/              # Individual User portal
-  login/                # Login (Patient / Staff toggle)
-  register/             # Provider + Monitor registration
-  register/patient/     # End-user (OTP) registration
+  admin/ provider/ monitor/ patient/    # portals
+  login/ register/                      # auth screens
+  api/csp-report/                       # CSP violation collector
   error.tsx loading.tsx not-found.tsx
 components/
-  PortalShell.tsx       # Sidebar + nav, includes logout
-  MobileReport.tsx      # Compliance report (Standard / Advanced / FAA)
-  AuthGuard.tsx         # Optional client-side guard
-  Logo.tsx PageHeader.tsx StatCard.tsx ...
+  AuthGuard.tsx PortalShell.tsx
+  MobileReport.tsx PageHeader.tsx StatCard.tsx ...
 lib/
-  api.ts                # Client-side, talks to /api/*
-  auth.ts               # Client cookie helpers + logout
-  env.ts                # Env validation
-  server-auth.ts        # httpOnly cookie management (server)
-  server-upstream.ts    # Server-side fetch to upstream
-  types.api.ts          # DTOs from the API documentation
-  report-vm.ts          # Adapters to the shared report view model
-  mock-data.ts          # Mock data for screens not yet on the API
-middleware.ts           # Auth gate
-next.config.mjs         # Security headers, build flags
+  api.ts                # client → backend, refresh handling
+  auth.ts               # localStorage session helpers, logout
+  env.ts                # NEXT_PUBLIC_API_BASE_URL resolver
+  types.api.ts          # DTOs
+  i18n.ts               # tiny key dictionary
+  observability.ts      # captureException stub (Sentry-ready)
+  report-vm.ts          # compliance report view-model
+  mock-data.ts          # mock data for non-API screens
+messages/en.json        # i18n strings
+next.config.mjs         # security headers + CSP
+instrumentation.ts      # Next.js server-boot hook
 tests/                  # Playwright smoke tests
 ```
 
-## Deployment
+## Security notes
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md).
+- Tokens live in `localStorage`, which means **any XSS bug in the page
+  steals the session**. Keep the CSP tight and never inject untrusted
+  HTML. We deliberately disallow inline scripts apart from the Next.js
+  hydration shims (CSP `script-src 'self' 'unsafe-inline'`).
+- CSP `connect-src` is set to `'self'` plus the API origin from
+  `NEXT_PUBLIC_API_BASE_URL`. If you change the backend URL, restart
+  the dev server.
+- `frame-ancestors 'none'` blocks the app from being embedded.
+- The `/login` `?next=` parameter only honours paths inside the four
+  known protected portals — open-redirect attempts are dropped.
+- CSP violations POST to `/api/csp-report`. If `CSP_REPORT_FORWARD_URL`
+  is set, reports are forwarded to that collector.
+- HTTPS at the edge is required: HSTS is `max-age=63072000;
+  includeSubDomains; preload`.
 
 ## Observability
 
 `lib/observability.ts` exposes `captureException(err, ctx)` /
-`captureMessage(msg, ctx)`. By default it logs to the console (so logs
-from `app/error.tsx` and CSP violations are visible in any log shipper).
-When `SENTRY_DSN` is set the wiring inside `instrumentation.ts` and
+`captureMessage(msg, ctx)`. By default it logs to the console. When
+`SENTRY_DSN` is set the wiring inside `instrumentation.ts` and
 `captureException` can be uncommented to forward events to Sentry — no
 other code changes required.
 
-CSP violation reports are POSTed to `/api/csp-report`. If
-`CSP_REPORT_FORWARD_URL` is set, reports are also forwarded to that URL
-(e.g. a Sentry, Datadog or report-uri collector).
-
 ## i18n
 
-A minimal in-process i18n is provided by `lib/i18n.ts`. Strings live in
-`messages/<lang>.json` (only `en.json` ships today). Components import
-`t()` and call `t("login.title")`. Add a new locale by writing
-`messages/<lang>.json` with the same shape and registering it in
-`lib/i18n.ts`. We can swap in `next-intl` later for RTL / formatting if
-the catalogue grows.
-
-The login screen is wired as the canonical example. Roll the same
-pattern out to the rest of the screens as you go.
+`lib/i18n.ts` is a dependency-free dictionary lookup with dotted keys.
+Strings live in `messages/<lang>.json` (only `en.json` ships today).
+Add a new locale by writing `messages/<lang>.json` with the same shape
+and registering it in `lib/i18n.ts`. We can swap in `next-intl` later
+for RTL / formatting if the catalogue grows.
 
 ## CI
 
-`.github/workflows/ci.yml` runs two jobs on every push / PR:
+`.github/workflows/ci.yml` runs `typecheck` / `lint` / `build` and a
+Playwright smoke job on every push and PR.
 
-1. **check** — `typecheck`, `lint`, `build` (the same as
-   `npm run check` locally).
-2. **test** — installs Playwright + chromium and runs the smoke suite.
-   The Playwright HTML report is uploaded as an artifact on every run.
+## Deployment
 
-## Security notes
-
-- All access tokens are in **httpOnly + SameSite=Lax + Secure (prod)**
-  cookies. They never reach JavaScript.
-- The user profile cookie (`tc_user`) is *not* httpOnly so the client
-  can render the portal shell; it does not contain credentials.
-- Same-origin API proxy means there are no CORS exceptions on the
-  client and the upstream URL is not present in client bundles.
-- Content-Security-Policy is set with `frame-ancestors 'none'`,
-  `default-src 'self'`, and a same-origin `connect-src`. The Transcend
-  marketing logo URL is the only externally allowed `img-src` host.
-- Robots: the root metadata sets `noindex, nofollow` to keep portals
-  out of search.
+See [DEPLOYMENT.md](./DEPLOYMENT.md).

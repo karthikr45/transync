@@ -1,20 +1,18 @@
-// Centralised environment access. Server-side variables are not prefixed
-// with NEXT_PUBLIC_ so they never leak into the client bundle.
+// Client-visible backend URL. Must be NEXT_PUBLIC_* so it's available
+// in the browser bundle (the client now calls the upstream directly).
+// API_BASE_URL (without NEXT_PUBLIC_) is honoured as a fallback so an
+// older .env still works during the transition.
 
-const RAW =
-  (process.env.API_BASE_URL ??
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    "")
-    .trim();
-
-export const API_BASE_URL: string = RAW.replace(/\/$/, "");
+export const API_BASE_URL: string = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.API_BASE_URL ??
+  ""
+).trim().replace(/\/$/, "");
 
 export const HAS_API_BASE_URL: boolean = API_BASE_URL.length > 0;
 
 if (!HAS_API_BASE_URL) {
-  // Loud on every boot so misconfiguration is caught immediately.
   console.error(
-    "[Transcend] API_BASE_URL (or NEXT_PUBLIC_API_BASE_URL) is not set. " +
-    "Configure it in .env.local before deploying.",
+    "[Transcend] NEXT_PUBLIC_API_BASE_URL is not set. Configure it in .env.local before running the app.",
   );
 }
