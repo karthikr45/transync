@@ -189,10 +189,12 @@ export default function PatientRegister() {
       return;
     }
     if (step === 4) {
-      if (!otp.trim() || isNaN(Number(otp))) return err("Enter the numeric code from the email.");
+      const otpClean = otp.trim();
+      const otpNum = Number(otpClean);
+      if (!otpClean || !Number.isFinite(otpNum)) return err("Enter the numeric code from the email.");
       setSubmitting(true);
       try {
-        const ok = await endUserApi.validateOtp({ email: form.email, otp: Number(otp) });
+        const ok = await endUserApi.validateOtp({ email: form.email.trim(), otp: otpNum });
         if (!ok) throw new ApiError("Code did not match.", 400);
         await createAccount();
       } catch (e) {
@@ -216,23 +218,36 @@ export default function PatientRegister() {
   }
 
   async function createAccount() {
+    // Send every known optional field as an empty string (not undefined).
+    // JSON.stringify drops undefined values entirely, which then causes
+    // the backend to crash when it reads body.<field> and pipes that
+    // straight into crypto.update() / Buffer.from().
+    const trim = (s: string) => s.trim();
     const dto: CreateUserDto = {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
+      firstName: trim(form.firstName),
+      lastName: trim(form.lastName),
+      email: trim(form.email),
       password: form.password,
-      dob: form.dob,
-      state: form.state,
-      country: form.country,
-      mobile: form.mobile,
-      cpapUser: form.cpapUser,
+      dob: trim(form.dob),
+      state: trim(form.state),
+      country: trim(form.country),
+      mobile: trim(form.mobile),
+      cpapUser: trim(form.cpapUser),
       transcendDevice: "Transcend 365 miniCPAP",
-      occupation: form.occupation,
-      countryCode: form.countryCode || undefined,
+      occupation: trim(form.occupation),
+      gender: "",
+      city: "",
+      pincode: undefined,
+      countryCode: trim(form.countryCode) || "+1",
+      profileImage: "",
+      provider: trim(form.provider),
+      providerEmail: trim(form.providerEmail),
+      dealerName: "",
+      devicePurchased: trim(form.devicePurchased),
       timeZone: TIME_ZONES[0],
-      devicePurchased: form.devicePurchased || undefined,
-      provider: form.provider || undefined,
-      providerEmail: form.providerEmail || undefined,
+      deviceId: "",
+      eventCount: 0,
+      isFirmwareUpdate: false,
     };
     const eu = await endUserApi.createUser(dto);
     setSession(eu.token, eu.refreshToken, eu, "end-user");
