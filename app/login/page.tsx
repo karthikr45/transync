@@ -30,9 +30,10 @@ function LoginInner() {
   const [error, setError] = useState<string | null>(null);
 
   function safeRedirect(fallback: string) {
-    const candidate = next && next.startsWith("/") && !next.startsWith("//") ? next : fallback;
-    // Hard navigation so the browser issues a fresh request that carries
-    // the newly-set auth cookies through middleware.
+    // Allow only paths that point into a known protected portal. Blocks
+    // open-redirect via ?next=//evil.example or ?next=/etc.
+    const allowed = /^\/(provider|monitor|admin|patient)(\/|$)/;
+    const candidate = next && allowed.test(next) ? next : fallback;
     if (typeof window !== "undefined") {
       window.location.assign(candidate);
     } else {

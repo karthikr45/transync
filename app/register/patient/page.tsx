@@ -150,6 +150,19 @@ export default function PatientRegister() {
     return null;
   }
 
+  // Translate raw backend / Node.js error messages into something the user
+  // can act on. Keeps the original in the dev console for debugging.
+  function friendlyError(raw: string): string {
+    const m = (raw || "").toLowerCase();
+    if (m.includes("argument must be of type") || m.includes("received undefined") || m.includes("buffer")) {
+      console.error("[register] backend error:", raw);
+      return "We couldn't complete sign-up. Please request a new code and try again.";
+    }
+    if (m.includes("invalid otp") || m.includes("expired")) return "That code is invalid or has expired. Request a new one.";
+    if (m.includes("user already exists") || m.includes("already in use")) return "An account with this email already exists. Try logging in instead.";
+    return raw || "Something went wrong.";
+  }
+
   async function goNext() {
     clearMsgs();
     if (step === 1) {
@@ -170,7 +183,7 @@ export default function PatientRegister() {
         inf("Verification code sent. Check your inbox.");
         setStep(4);
       } catch (e) {
-        err((e as ApiError).message || "Could not send the verification code.");
+        err(friendlyError((e as ApiError).message || "Could not send the verification code."));
       } finally { setSubmitting(false); }
       return;
     }
@@ -183,7 +196,7 @@ export default function PatientRegister() {
         await createAccount();
       } catch (e) {
         const apiErr = e as ApiError;
-        err(apiErr.message || "Invalid or expired code.");
+        err(friendlyError(apiErr.message || "Invalid or expired code."));
         setFieldErrors(apiErr.fieldErrors);
       } finally { setSubmitting(false); }
     }
@@ -197,7 +210,7 @@ export default function PatientRegister() {
       await endUserApi.signUpOtp({ email: form.email, name });
       inf("New code sent.");
     } catch (e) {
-      err((e as ApiError).message || "Could not resend.");
+      err(friendlyError((e as ApiError).message || "Could not resend."));
     } finally { setSubmitting(false); }
   }
 
