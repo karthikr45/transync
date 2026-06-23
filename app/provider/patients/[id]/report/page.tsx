@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import PageHeader from "@/components/PageHeader";
 import { homeCareApi, ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import { getTimeZoneName } from "@/lib/timezone";
+import { getTimeZoneName, listTimeZones } from "@/lib/timezone";
 import { getCurrentUser } from "@/lib/auth";
 import type { AccountUser, ComplianceReportResult } from "@/lib/types.api";
 import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
@@ -14,18 +14,6 @@ import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
 // Default window when the report opens — Medicare's 90-day compliance
 // look-back. The user can pick anything in the date pickers.
 const DEFAULT_WINDOW_DAYS = 90;
-
-const TIMEZONES = [
-  "Asia/Kolkata",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Berlin",
-  "Australia/Sydney",
-  "UTC",
-];
 
 const DASH = "—";
 const num = (v: number | null | undefined, suffix = "", decimals = 2): string => {
@@ -179,9 +167,13 @@ function RequestControls({
   onEnd: (v: string) => void;
   onTzChange: (v: string) => void;
 }) {
+  // Pull the full IANA list from the runtime (Intl.supportedValuesOf
+  // returns ~400 zones in modern browsers, curated fallback otherwise).
+  // Always ensure the currently-selected zone is present so the
+  // `<select>` shows a value even if the runtime list is missing it.
   const tzOptions = useMemo(() => {
-    const set = new Set(TIMEZONES);
-    set.add(timeZoneName);
+    const set = new Set(listTimeZones());
+    if (timeZoneName) set.add(timeZoneName);
     return Array.from(set).sort();
   }, [timeZoneName]);
 
