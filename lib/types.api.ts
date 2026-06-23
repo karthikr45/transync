@@ -329,17 +329,24 @@ export interface SleepScoreEventDto {
 }
 
 // ---------- /metadata (patient signup dropdowns) ----------
-// Shape is intentionally permissive — backend can return any string[]
-// keyed by field name, and the frontend will use what it recognises.
+// Permissive: options may come as string[] OR { label, value }[] OR
+// { name, code }[]. The client normalises via lib/options.ts.
+export type MetadataOption = string | {
+  label?: string;
+  value?: string;
+  name?: string;
+  code?: string;
+  id?: string;
+};
 export interface MetadataResponse {
-  occupation?: string[];
-  cpapUser?: string[];
-  transcendDevice?: string[];
-  devicePurchased?: string[];
-  transcendUsage?: string[];
-  gender?: string[];
-  timeZones?: string[];
-  [key: string]: string[] | undefined;
+  occupation?: MetadataOption[];
+  cpapUser?: MetadataOption[];
+  transcendDevice?: MetadataOption[];
+  devicePurchased?: MetadataOption[];
+  transcendUsage?: MetadataOption[];
+  gender?: MetadataOption[];
+  timeZones?: MetadataOption[];
+  [key: string]: MetadataOption[] | undefined;
 }
 
 // ---------- /home-care/admin/markets ----------

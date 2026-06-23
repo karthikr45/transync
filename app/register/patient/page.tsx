@@ -11,6 +11,7 @@ import { setSession } from "@/lib/auth";
 import { passwordPolicy, validatePassword, validName, validEmail } from "@/lib/validators";
 import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
 import { displayDob } from "@/lib/format";
+import { normaliseOptions } from "@/lib/options";
 import type { CreateUserDto, MetadataResponse } from "@/lib/types.api";
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -128,8 +129,8 @@ export default function PatientRegister() {
   }, []);
 
   function mergeList(key: keyof MetadataResponse, fallback: string[]): string[] {
-    const v = meta?.[key];
-    return Array.isArray(v) && v.length > 0 ? v : fallback;
+    const list = normaliseOptions(meta?.[key]);
+    return list.length > 0 ? list : fallback;
   }
   const occupationOptions = mergeList("occupation", FALLBACK_OCCUPATIONS);
   const cpapOptions = mergeList("cpapUser", FALLBACK_CPAP_USER);
