@@ -27,14 +27,14 @@ export default function PortalShell({
   const pathname = usePathname();
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col" aria-label={`${role} navigation`}>
+      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 self-start h-screen flex flex-col" aria-label={`${role} navigation`}>
         <div className="px-5 py-5 border-b border-slate-200">
           <Link href="/" className="block" aria-label="Transcend home">
             <Logo className="h-7 w-auto" />
             <div className="text-xs text-slate-500 mt-1.5">{role}</div>
           </Link>
         </div>
-        <nav className="flex-1 p-3 space-y-1" aria-label="Primary">
+        <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1" aria-label="Primary">
           {nav.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
