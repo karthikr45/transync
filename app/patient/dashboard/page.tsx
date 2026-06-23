@@ -60,7 +60,10 @@ export default function PatientDashboard() {
 
   // On mount, hydrate from session cache then ask the server for the
   // latest profile so deviceId / timeZone reflect any device sync that
-  // happened on the mobile app after login.
+  // happened on the mobile app after login. Critically: we keep the
+  // cached deviceId if /users/getByEmail returns nothing for it — the
+  // login response is the source of truth, and getByEmail can return a
+  // stale or null deviceId on multi-device accounts.
   useEffect(() => {
     const cached = getCurrentEndUser();
     setUser(cached);
@@ -71,6 +74,7 @@ export default function PatientDashboard() {
         const merged: EndUser = {
           ...cached,
           ...fresh,
+          deviceId: fresh.deviceId || cached.deviceId,
           token: cached.token,
           refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
         };
@@ -80,6 +84,10 @@ export default function PatientDashboard() {
       .catch(() => { /* keep cached user; surface errors only when the data call fails */ });
   }, []);
 
+  // Match the mobile app exactly: always use the browser's current time
+  // zone (Intl + Date.getTimezoneOffset). Using user.timeZone — the
+  // value saved at registration — shifts the aggregation window when
+  // the user travels, so totals diverge from the mobile view.
   const baseQuery = useMemo<SessionQuery | null>(() => {
     if (!user?.email || !user?.deviceId) return null;
     return {
@@ -87,7 +95,7 @@ export default function PatientDashboard() {
       deviceId: user.deviceId,
       session,
       timeZone: getTimeZoneOffset(),
-      timeZoneName: user.timeZone || getTimeZoneName(),
+      timeZoneName: getTimeZoneName(),
     };
   }, [user, session]);
 

@@ -27,6 +27,7 @@ export default function PatientProfile() {
       const merged: EndUser = {
         ...cached,
         ...fresh,
+        deviceId: fresh.deviceId || cached.deviceId,
         token: cached.token,
         refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
       };

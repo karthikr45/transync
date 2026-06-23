@@ -40,6 +40,7 @@ export default function PatientReports() {
         const merged: EndUser = {
           ...cached,
           ...fresh,
+          deviceId: fresh.deviceId || cached.deviceId,
           token: cached.token,
           refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
         };
@@ -61,7 +62,7 @@ export default function PatientReports() {
           deviceId: user.deviceId,
           session,
           timeZone: getTimeZoneOffset(),
-          timeZoneName: user.timeZone || getTimeZoneName(),
+          timeZoneName: getTimeZoneName(),
           startDate: start || undefined,
           endDate: end || undefined,
         }),
@@ -86,7 +87,7 @@ export default function PatientReports() {
         deviceId: user.deviceId,
         session,
         timeZone: getTimeZoneOffset(),
-        timeZoneName: user.timeZone || getTimeZoneName(),
+        timeZoneName: getTimeZoneName(),
         startDate: start || undefined,
         endDate: end || undefined,
       });
