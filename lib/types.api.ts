@@ -352,6 +352,42 @@ export interface GeneratePdfDto {
   startDate?: string;
   endDate?: string;
 }
+
+// ---------- /parameter/findOne (device parameters / patient settings) ----------
+// The mobile app reads CPAP device parameters here to render the
+// "Patient Settings" tab of the report. Permissive shape: backend field
+// names vary across firmware versions, so we accept the common aliases
+// and the consumer code picks the first non-null match.
+export interface ParameterQuery { email: string; deviceId: string }
+export interface ParameterResult {
+  _id?: string;
+  email?: string;
+  deviceId?: string;
+  // Pressure
+  startingPressure?: number | null;
+  rampStartPressure?: number | null;
+  minPressure?: number | null;
+  maxPressure?: number | null;
+  pressureMin?: number | null;
+  pressureMax?: number | null;
+  therapyPressureMin?: number | null;
+  therapyPressureMax?: number | null;
+  // Ramp / GentleRise
+  gentleRisePressure?: number | null;
+  gentleRiseDuration?: number | null; // minutes
+  ramp?: number | null;
+  rampTime?: number | null;
+  // Comfort
+  airRelief?: number | null;
+  comfortControlPlusLevel?: number | null;
+  // Mode / tubing / humidifier
+  mode?: string | null;
+  tubingType?: string | null;
+  heatedHumidifier?: boolean | null;
+  heatedTube?: boolean | null;
+  // Pass through any other fields the API may return.
+  [key: string]: unknown;
+}
 export interface SleepScoreEventDto {
   totalHoursRating: number;
   ahiRating: number;

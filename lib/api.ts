@@ -14,6 +14,7 @@ import type {
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
   ReportBySessionQuery, ReportBySessionResult, BarChartResponse,
   SleepScoreEventDto, TotalRuntimeDto, GeneratePdfDto,
+  ParameterQuery, ParameterResult,
   MetadataResponse, MarketsResponse,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   IncomingSharesResponse, SharedReportDto,
@@ -261,6 +262,11 @@ export const endUserApi = {
     apiFetch<SleepScoreEventDto>(`/event/getSessionSleepScore${qs(q as unknown as Record<string, unknown>)}`),
   totalRunningTime: (q: SessionQuery) =>
     apiFetch<TotalRuntimeDto>(`/event/totalRunningTime${qs(q as unknown as Record<string, unknown>)}`),
+
+  // Device parameters / patient settings (powers the Settings section
+  // of the patient compliance report).
+  getParameter: (q: ParameterQuery) =>
+    apiFetch<ParameterResult>(`/parameter/findOne${qs(q as unknown as Record<string, unknown>)}`),
 
   // Server-side PDF generation for reportBySession. Returns the raw
   // PDF as a Blob so the caller can trigger a download.

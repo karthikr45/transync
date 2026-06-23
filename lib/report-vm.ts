@@ -1,4 +1,42 @@
-import type { ComplianceReportResult, ReportBySessionResult } from "./types.api";
+import type { ComplianceReportResult, ParameterResult, ReportBySessionResult } from "./types.api";
+
+const firstNumber = (...candidates: (number | null | undefined)[]): number | null | undefined => {
+  for (const c of candidates) if (c !== null && c !== undefined) return c;
+  return undefined;
+};
+const firstString = (...candidates: (string | null | undefined)[]): string | null | undefined => {
+  for (const c of candidates) if (c) return c;
+  return undefined;
+};
+const firstBool = (...candidates: (boolean | null | undefined)[]): boolean | null | undefined => {
+  for (const c of candidates) if (c !== null && c !== undefined) return c;
+  return undefined;
+};
+
+/**
+ * Map a /parameter/findOne response onto the report VM's patientSettings
+ * block. Backend field names vary across firmware revisions so we try
+ * each known alias before falling back to the existing VM value.
+ */
+export function mergeParameterIntoVM(vm: ReportVM, p: ParameterResult | null | undefined): ReportVM {
+  if (!p) return vm;
+  const existing = vm.patientSettings;
+  return {
+    ...vm,
+    patientSettings: {
+      startingPressure: firstNumber(p.startingPressure, p.rampStartPressure, existing.startingPressure) ?? null,
+      minPressure: firstNumber(p.minPressure, p.pressureMin, p.therapyPressureMin, existing.minPressure) ?? null,
+      maxPressure: firstNumber(p.maxPressure, p.pressureMax, p.therapyPressureMax, existing.maxPressure) ?? null,
+      gentleRisePressure: firstNumber(p.gentleRisePressure, p.rampStartPressure, existing.gentleRisePressure) ?? null,
+      gentleRiseDuration: firstNumber(p.gentleRiseDuration, p.ramp, p.rampTime, existing.gentleRiseDuration) ?? null,
+      airRelief: firstNumber(p.airRelief, p.comfortControlPlusLevel, existing.airRelief) ?? null,
+      mode: firstString(p.mode, existing.mode) ?? null,
+      tubingType: firstString(p.tubingType, existing.tubingType) ?? null,
+      heatedHumidifier: firstBool(p.heatedHumidifier, existing.heatedHumidifier) ?? null,
+      heatedTube: firstBool(p.heatedTube, existing.heatedTube) ?? null,
+    },
+  };
+}
 
 export type ReportVM = {
   patientDetails: {

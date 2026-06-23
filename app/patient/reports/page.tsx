@@ -7,8 +7,8 @@ import { Printer, RefreshCw, AlertTriangle } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser, getRefreshToken, setSession } from "@/lib/auth";
 import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
-import type { EndUser, ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
-import { fromReportBySessionResult } from "@/lib/report-vm";
+import type { EndUser, ParameterResult, ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
+import { fromReportBySessionResult, mergeParameterIntoVM } from "@/lib/report-vm";
 
 const RANGES: { label: string; session: SessionWindow }[] = [
   { label: "Last night", session: 0 },
@@ -25,6 +25,7 @@ export default function PatientReports() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [data, setData] = useState<ReportBySessionResult | null>(null);
+  const [parameters, setParameters] = useState<ParameterResult | null>(null);
   const [sync, setSync] = useState<LastSyncResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -56,7 +57,7 @@ export default function PatientReports() {
     if (!user?.email || !user.deviceId) return;
     setLoading(true); setError(null);
     try {
-      const [r, s] = await Promise.allSettled([
+      const [r, s, p] = await Promise.allSettled([
         endUserApi.reportBySession({
           email: user.email,
           deviceId: user.deviceId,
@@ -67,10 +68,14 @@ export default function PatientReports() {
           endDate: end || undefined,
         }),
         endUserApi.getLastSyncDate({ email: user.email, deviceId: user.deviceId }),
+        endUserApi.getParameter({ email: user.email, deviceId: user.deviceId }),
       ]);
       if (r.status === "fulfilled") setData(r.value);
       else throw r.reason;
       if (s.status === "fulfilled") setSync(s.value);
+      // Parameter failures should not blank the report — show an empty
+      // settings block in that case.
+      setParameters(p.status === "fulfilled" ? p.value : null);
     } catch (e) {
       setError((e as ApiError).message || "Failed to load report.");
     } finally { setLoading(false); }
@@ -133,13 +138,16 @@ export default function PatientReports() {
 
   const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
   const vm = data
-    ? fromReportBySessionResult(data, {
-        name: fullName,
-        email: user.email,
-        deviceSerial: user.deviceId,
-        provider: user.provider,
-        lastSyncDate: sync?.lastSyncDate ?? user.lastSyncDate,
-      })
+    ? mergeParameterIntoVM(
+        fromReportBySessionResult(data, {
+          name: fullName,
+          email: user.email,
+          deviceSerial: user.deviceId,
+          provider: user.provider,
+          lastSyncDate: sync?.lastSyncDate ?? user.lastSyncDate,
+        }),
+        parameters,
+      )
     : null;
 
   return (
