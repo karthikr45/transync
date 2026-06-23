@@ -7,11 +7,11 @@ import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-reac
 import { isValidPhoneNumber } from "react-phone-number-input";
 import Logo from "@/components/Logo";
 import PhoneInputField from "@/components/PhoneInputField";
+import DobField from "@/components/DobField";
 import { endUserApi, ApiError } from "@/lib/api";
 import { setSession } from "@/lib/auth";
 import { passwordPolicy, validatePassword, validName, validEmail } from "@/lib/validators";
 import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
-import { displayDob } from "@/lib/format";
 import { normaliseOptions } from "@/lib/options";
 import type { CreateUserDto, MetadataResponse } from "@/lib/types.api";
 
@@ -461,8 +461,8 @@ function Step2({
       <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
       <p className="text-sm text-slate-500 mb-4">Tell us a bit about your therapy.</p>
       <div className="space-y-3">
-        <Field label="Date of Birth" required hint={form.dob ? `Will appear as: ${displayDob(form.dob)}` : "Format: 01-jun-2026"}>
-          <input className="input" type="date" value={form.dob} onChange={(e) => upd("dob", e.target.value)} />
+        <Field label="Date of Birth" required>
+          <DobField value={form.dob} onChange={(iso) => upd("dob", iso)} />
         </Field>
         <Field label="Occupation">
           <select className="input" value={form.occupation} onChange={(e) => upd("occupation", e.target.value)}>
