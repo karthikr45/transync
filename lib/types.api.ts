@@ -339,14 +339,20 @@ export type MetadataOption = string | {
   id?: string;
 };
 export interface MetadataResponse {
+  // Real API field names from /metadata
   occupation?: MetadataOption[];
-  cpapUser?: MetadataOption[];
+  userExpList?: MetadataOption[];          // "How long CPAP user"
+  devicePurposeList?: MetadataOption[];    // "How using Transcend"
+  devicePurchaseList?: MetadataOption[];   // "Where purchased"
+  // Other common keys we may use later
   transcendDevice?: MetadataOption[];
-  devicePurchased?: MetadataOption[];
-  transcendUsage?: MetadataOption[];
   gender?: MetadataOption[];
   timeZones?: MetadataOption[];
-  [key: string]: MetadataOption[] | undefined;
+  // Misc non-option payloads also returned by /metadata
+  clinicalMode?: { delayTime?: string; disable?: boolean };
+  appUpdate?: { normalUpdate?: boolean; forceUpdate?: boolean; latestVersion?: string; updateMessage?: string; rm?: boolean };
+  // Allow extra keys without TS noise
+  [key: string]: unknown;
 }
 
 // ---------- /home-care/admin/markets ----------

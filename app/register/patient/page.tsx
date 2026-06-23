@@ -132,10 +132,12 @@ export default function PatientRegister() {
     const list = normaliseOptions(meta?.[key]);
     return list.length > 0 ? list : fallback;
   }
+  // /metadata field names (occupation, userExpList, devicePurposeList,
+  // devicePurchaseList) per the live response shape.
   const occupationOptions = mergeList("occupation", FALLBACK_OCCUPATIONS);
-  const cpapOptions = mergeList("cpapUser", FALLBACK_CPAP_USER);
-  const usageOptions = mergeList("transcendUsage", FALLBACK_USAGE);
-  const purchaseOptions = mergeList("devicePurchased", FALLBACK_PURCHASE);
+  const cpapOptions = mergeList("userExpList", FALLBACK_CPAP_USER);
+  const usageOptions = mergeList("devicePurposeList", FALLBACK_USAGE);
+  const purchaseOptions = mergeList("devicePurchaseList", FALLBACK_PURCHASE);
 
   // Set defaults from the option lists once they're known.
   useEffect(() => {
