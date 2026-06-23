@@ -212,7 +212,7 @@ export default function PatientDashboard() {
           <StatCard label="Events / hour" value={data.ahi.toFixed(2)} hint="AHI" icon={<Moon className="w-5 h-5" />} />
           <StatCard label="Mask leak" value={data.avgLeak.toFixed(2)} hint="L/min" icon={<Wind className="w-5 h-5" />} />
           <StatCard label="Mask removed" value={data.maskRemoved} hint="events" icon={<Gauge className="w-5 h-5" />} />
-          <StatCard label="Sleep score" value={`${data.sleepScore} / 100`} tone={data.sleepScore >= 75 ? "good" : data.sleepScore >= 50 ? "warn" : "bad"} />
+          <StatCard label="Sleep score" value={`${Math.round(data.sleepScore)} / 100`} tone={data.sleepScore >= 75 ? "good" : data.sleepScore >= 50 ? "warn" : "bad"} />
         </div>
       ) : (
         <div className="card p-8 text-center text-sm text-slate-500">No data for this window yet.</div>
