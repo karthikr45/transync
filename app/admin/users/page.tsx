@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Plus } from "lucide-react";
 import { adminUsers } from "@/lib/mock-data";
 
@@ -10,6 +11,7 @@ export default function AdminUsers() {
         subtitle="Transcend platform staff and their roles."
         actions={<button className="btn-primary"><Plus className="w-4 h-4" /> Invite admin</button>}
       />
+      <MockBanner />
 
       <div className="grid md:grid-cols-4 gap-4 mb-5">
         {[

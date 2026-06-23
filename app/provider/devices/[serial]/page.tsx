@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { devices, patients } from "@/lib/mock-data";
 import { ArrowLeft, Ban } from "lucide-react";
 
@@ -21,6 +22,7 @@ export default function DeviceDetail() {
         <ArrowLeft className="w-4 h-4" /> Back to devices
       </Link>
       <PageHeader title={d.serial} subtitle={`${d.model} · firmware ${d.firmware}`} />
+      <MockBanner />
 
       <div className="grid md:grid-cols-2 gap-5">
         <div className="card p-5">

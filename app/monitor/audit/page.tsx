@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { auditLog } from "@/lib/mock-data";
 
 export default function AuditPage() {
@@ -8,6 +9,7 @@ export default function AuditPage() {
         title="Audit log"
         subtitle="Every access to patient data is logged. Required for HIPAA compliance."
       />
+      <MockBanner />
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">

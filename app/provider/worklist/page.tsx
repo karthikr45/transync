@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Phone, Activity, RefreshCw, Mail, Package, CalendarClock, Check } from "lucide-react";
 import { patients, patientExtras, alerts } from "@/lib/mock-data";
 
@@ -103,6 +104,7 @@ export default function ProviderWorklist() {
         subtitle="Your daily action queue — who needs attention today."
         actions={<span className="badge badge-slate">{openCount} open · {done.size} done</span>}
       />
+      <MockBanner />
 
       <div className="space-y-5">
         {groups.map((g) => {

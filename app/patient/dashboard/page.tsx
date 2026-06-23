@@ -6,6 +6,7 @@ import StatCard from "@/components/StatCard";
 import { Moon, Wind, Gauge, Activity, RefreshCw, AlertTriangle, Smartphone } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser } from "@/lib/auth";
+import { formatDateTime } from "@/lib/format";
 import type { DataBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
 
 const SESSIONS: { id: SessionWindow; label: string }[] = [
@@ -82,7 +83,7 @@ export default function PatientDashboard() {
         ))}
         {sync?.lastSyncDate && (
           <span className="ml-auto text-xs text-slate-500 inline-flex items-center gap-1 px-2">
-            <Smartphone className="w-3.5 h-3.5" /> Last sync {new Date(sync.lastSyncDate).toLocaleString()}
+            <Smartphone className="w-3.5 h-3.5" /> Last sync {formatDateTime(sync.lastSyncDate)}
           </span>
         )}
       </div>

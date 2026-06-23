@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Search, BadgeCheck, Ban, RotateCcw, X } from "lucide-react";
 import { orgRegistrations } from "@/lib/mock-data";
 
@@ -30,6 +31,7 @@ export default function AdminOrganizations() {
   return (
     <>
       <PageHeader title="Organizations" subtitle="All registered organizations on the platform." />
+      <MockBanner />
 
       <div className="card p-3 mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">

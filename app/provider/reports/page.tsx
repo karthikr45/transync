@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Download } from "lucide-react";
 import { groupCompliance, GroupPeriod } from "@/lib/mock-data";
 
@@ -25,6 +26,7 @@ export default function GroupReports() {
         subtitle="Management-by-exception view across your patient population."
         actions={<button className="btn-secondary"><Download className="w-4 h-4" /> Export CSV</button>}
       />
+      <MockBanner />
 
       <div className="card p-3 mb-4 flex items-center gap-2">
         <span className="text-sm text-slate-500 px-2">Window:</span>

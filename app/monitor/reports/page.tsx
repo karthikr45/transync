@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Download, FileText } from "lucide-react";
 
 export default function MonitorReports() {
@@ -10,6 +11,7 @@ export default function MonitorReports() {
   return (
     <>
       <PageHeader title="Reports" subtitle="Generate compliance audit reports for your monitoring use case." />
+      <MockBanner />
 
       <div className="card p-5">
         <h2 className="text-base font-semibold text-slate-900 mb-3">Build a new report</h2>

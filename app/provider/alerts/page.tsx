@@ -1,11 +1,13 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { alerts } from "@/lib/mock-data";
 
 export default function ProviderAlerts() {
   return (
     <>
       <PageHeader title="Alerts" subtitle="Compliance and therapy alerts across all patients." />
+      <MockBanner />
 
       <div className="card p-3 mb-4 flex gap-2">
         {["All", "High", "Medium", "Low"].map((f) => (

@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Download } from "lucide-react";
 import { platformAuditLog } from "@/lib/mock-data";
 
@@ -10,6 +11,7 @@ export default function AdminAudit() {
         subtitle="Every platform-level action: approvals, suspensions, firmware, config."
         actions={<button className="btn-secondary"><Download className="w-4 h-4" /> Export</button>}
       />
+      <MockBanner />
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">

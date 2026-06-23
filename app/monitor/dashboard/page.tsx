@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import StatCard from "@/components/StatCard";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import { Users, ShieldCheck, AlertTriangle, FileCheck, Eye } from "lucide-react";
@@ -17,6 +18,7 @@ export default function MonitorDashboard() {
         title="Monitor dashboard"
         subtitle="Read-only view of patients shared with your organization."
       />
+      <MockBanner />
 
       <div className="card p-4 mb-5 flex items-start gap-3 bg-blue-50 border-blue-100">
         <Eye className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />

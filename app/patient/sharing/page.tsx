@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Plus, Stethoscope, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 
@@ -29,6 +30,7 @@ export default function PatientSharing() {
           </button>
         }
       />
+      <MockBanner />
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">

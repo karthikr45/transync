@@ -10,6 +10,7 @@ import ComplianceBadge from "@/components/ComplianceBadge";
 import { homeCareApi, ApiError } from "@/lib/api";
 import { patients, patientExtras } from "@/lib/mock-data";
 import { fromComplianceReportResult } from "@/lib/report-vm";
+import { formatDate } from "@/lib/format";
 import type { ComplianceReportResult } from "@/lib/types.api";
 import { ArrowLeft, Printer, Lock, AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -94,7 +95,7 @@ function ApiReport({
   useEffect(() => { if (start && end) load(); }, [load, start, end]);
 
   const days = RANGE_TO_DAYS[rangeLabel];
-  const datesOfReport = start && end ? `${start} to ${end}` : undefined;
+  const datesOfReport = start && end ? `${formatDate(start)} to ${formatDate(end)}` : undefined;
 
   const vm = data
     ? fromComplianceReportResult(data, {

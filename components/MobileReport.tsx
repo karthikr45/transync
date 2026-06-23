@@ -2,6 +2,7 @@
 
 import { useState, ReactNode } from "react";
 import type { ReportVM } from "@/lib/report-vm";
+import { formatDate } from "@/lib/format";
 
 type Tab = "standard" | "advanced" | "faa";
 
@@ -110,7 +111,7 @@ function StandardTab({ vm }: { vm: ReportVM }) {
 
       <Section
         title="Usage"
-        right={u.lastSyncDate ? <>Last Sync Date: <span className="text-slate-900">{new Date(u.lastSyncDate).toLocaleDateString()}</span></> : null}
+        right={u.lastSyncDate ? <>Last Sync Date: <span className="text-slate-900">{formatDate(u.lastSyncDate)}</span></> : null}
       >
         <Row label="Dates of Report" value={u.datesOfReport ?? DASH} />
         <Row label="Days Used" value={pctOf(u.daysUsed, u.totalDays)} />

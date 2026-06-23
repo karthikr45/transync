@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { ArrowLeft, Check, AlertTriangle } from "lucide-react";
 import { patients, subAccounts } from "@/lib/mock-data";
 
@@ -24,6 +25,7 @@ export default function TransferPatient() {
     return (
       <>
         <PageHeader title="Transfer complete" />
+      <MockBanner />
         <div className="card p-8 text-center max-w-lg mx-auto">
           <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto">
             <Check className="w-6 h-6" />

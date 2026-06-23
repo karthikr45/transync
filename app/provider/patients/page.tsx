@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Search, RefreshCw, AlertTriangle, FileBarChart } from "lucide-react";
 import { homeCareApi, ApiError } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import type { DeviceUser } from "@/lib/types.api";
 
 const LIMIT = 50;
@@ -98,7 +99,7 @@ export default function ProviderPatients() {
                     </td>
                     <td className="px-5 py-3 text-slate-600">{u.email ?? "—"}</td>
                     <td className="px-5 py-3 font-mono text-xs text-slate-600">{u.deviceId}</td>
-                    <td className="px-5 py-3 text-slate-600">{u.dob ?? "—"}</td>
+                    <td className="px-5 py-3 text-slate-600">{u.dob ? formatDate(u.dob) : "—"}</td>
                     <td className="px-5 py-3 text-right">{days}/30</td>
                     <td className="px-5 py-3">
                       <span className={`badge ${compliant ? "badge-green" : "badge-red"}`}>{compliant ? "Yes" : "No"}</span>

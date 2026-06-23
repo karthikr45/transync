@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import StatCard from "@/components/StatCard";
 import ComplianceBadge from "@/components/ComplianceBadge";
 import { Users, AlertTriangle, ShieldCheck, HardDrive, Check, ArrowRight, Clock } from "lucide-react";
@@ -25,6 +26,7 @@ export default function ProviderDashboard() {
   return (
     <>
       <PageHeader title="Dashboard" subtitle="Northside Homecare — compliance overview." />
+      <MockBanner />
 
       {remaining > 0 && (
         <div className="card p-5 mb-6">

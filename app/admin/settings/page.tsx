@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { Plus } from "lucide-react";
 import { countriesConfig, platformFeatureFlags } from "@/lib/mock-data";
 
@@ -12,6 +13,7 @@ export default function AdminSettings() {
   return (
     <>
       <PageHeader title="Platform settings" subtitle="Markets, compliance defaults and feature flags." />
+      <MockBanner />
 
       <div className="card overflow-hidden mb-6">
         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">

@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Smartphone, Bluetooth, RefreshCw, AlertTriangle } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser } from "@/lib/auth";
+import { formatDateTime } from "@/lib/format";
 import type { LastSyncResult } from "@/lib/types.api";
 
 export default function PatientDevices() {
@@ -66,9 +67,9 @@ export default function PatientDevices() {
             <span className="badge badge-green">Active</span>
           </div>
           <dl className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-            <Row label="Last sync" value={sync?.lastSyncDate ? new Date(sync.lastSyncDate).toLocaleString() : "—"} />
+            <Row label="Last sync" value={sync?.lastSyncDate ? formatDateTime(sync.lastSyncDate) : "—"} />
             <Row label="Last event" value={sync?.lastEvent ?? "—"} />
-            <Row label="Last setting sync" value={sync?.lastSettingSyncDate ? new Date(sync.lastSettingSyncDate).toLocaleString() : "—"} />
+            <Row label="Last setting sync" value={sync?.lastSettingSyncDate ? formatDateTime(sync.lastSettingSyncDate) : "—"} />
             <Row label="Therapy user" value={user.cpapUser ?? "—"} />
             <Row label="Time zone" value={user.timeZone ?? "—"} />
             <Row label="Provider" value={user.provider ?? "—"} />

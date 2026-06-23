@@ -1,10 +1,12 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import { currentPatient } from "@/lib/mock-data";
 
 export default function PatientProfile() {
   return (
     <>
       <PageHeader title="Profile" subtitle="Personal and prescription information." />
+      <MockBanner />
       <div className="grid md:grid-cols-2 gap-5">
         <div className="card p-5">
           <h2 className="text-base font-semibold text-slate-900 mb-4">Personal</h2>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Check, X, ShieldCheck, FileText, AlertTriangle, RefreshCw } from "lucide-react";
 import { homeCareApi, ApiError } from "@/lib/api";
+import { formatDate, formatDateTime } from "@/lib/format";
 import type { AccountUser } from "@/lib/types.api";
 
 export default function AdminApprovals() {
@@ -104,7 +105,7 @@ export default function AdminApprovals() {
                     {r.userType === "home_care_provider" && r.companyName && <span className="text-slate-500 font-normal"> · {r.companyName}</span>}
                     {r.userType === "authorized_monitor" && r.institutionName && <span className="text-slate-500 font-normal"> · {r.institutionName}</span>}
                   </div>
-                  <div className="text-xs text-slate-500 mt-0.5">{r.email} · {r.country ?? "—"} · submitted {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "—"}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{r.email} · {r.country ?? "—"} · submitted {r.createdAt ? formatDate(r.createdAt) : "—"}</div>
 
                   {r.userType === "home_care_provider" ? (
                     <dl className="mt-3 grid grid-cols-3 gap-4 text-sm">
@@ -156,7 +157,7 @@ export default function AdminApprovals() {
                 <DRow label="Username" value={detail.userName} />
                 <DRow label="Title" value={detail.title ?? "—"} />
                 <DRow label="Phone" value={detail.phone ?? "—"} />
-                <DRow label="Submitted" value={detail.createdAt ? new Date(detail.createdAt).toLocaleString() : "—"} />
+                <DRow label="Submitted" value={detail.createdAt ? formatDateTime(detail.createdAt) : "—"} />
               </dl>
 
               {detail.userType === "home_care_provider" ? (

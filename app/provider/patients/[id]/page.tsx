@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, notFound } from "next/navigation";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import StatCard from "@/components/StatCard";
 import UsageChart from "@/components/UsageChart";
 import ComplianceBadge from "@/components/ComplianceBadge";
@@ -61,6 +62,7 @@ export default function ProviderPatientDetail() {
           )
         }
       />
+      <MockBanner />
 
       {pending && (
         <div className="card p-4 mb-5 flex items-start gap-3 bg-amber-50 border-amber-100">

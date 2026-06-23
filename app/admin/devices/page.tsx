@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import MockBanner from "@/components/MockBanner";
 import StatCard from "@/components/StatCard";
 import { HardDrive, CheckCircle2, PackageX, Wrench, UploadCloud } from "lucide-react";
 import { deviceFleet } from "@/lib/mock-data";
@@ -11,6 +12,7 @@ export default function AdminDevices() {
         subtitle="Platform-wide Transcend device registry and firmware."
         actions={<button className="btn-primary"><UploadCloud className="w-4 h-4" /> Push firmware</button>}
       />
+      <MockBanner />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Total devices" value={deviceFleet.total.toLocaleString()} icon={<HardDrive className="w-5 h-5" />} />
