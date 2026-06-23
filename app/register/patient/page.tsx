@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import Logo from "@/components/Logo";
 import PhoneInputField from "@/components/PhoneInputField";
 import { endUserApi, ApiError } from "@/lib/api";
@@ -169,7 +170,8 @@ export default function PatientRegister() {
     return null;
   }
   function validateStep3(): string | null {
-    if (!form.mobile || form.mobile.length < 6) return "Mobile number is required.";
+    if (!form.mobile) return "Mobile number is required.";
+    if (!isValidPhoneNumber(form.mobile)) return "Please enter a valid mobile number.";
     if (!pwOk) return "Password does not meet the policy.";
     if (!passwordsMatch) return "Passwords do not match.";
     if (!form.consentTerms) return "Please accept the Terms of Use to continue.";
@@ -496,6 +498,8 @@ function Step3({
   pwOk: boolean;
   passwordsMatch: boolean;
 }) {
+  const mobileEntered = form.mobile.trim().length > 0;
+  const mobileValid = !mobileEntered || isValidPhoneNumber(form.mobile);
   return (
     <div>
       <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
@@ -507,7 +511,11 @@ function Step3({
         <Field label="Care Provider Email">
           <input className="input" type="email" placeholder="Enter Care Provider Email" value={form.providerEmail} onChange={(e) => upd("providerEmail", e.target.value)} />
         </Field>
-        <Field label="Mobile Number" required>
+        <Field
+          label="Mobile Number"
+          required
+          err={!mobileValid ? "Please enter a valid mobile number for the selected country." : null}
+        >
           <PhoneInputField value={form.mobile} onChange={(v) => upd("mobile", v)} defaultCountry={form.countryCode || "US"} />
         </Field>
         <Field label="Password" required>

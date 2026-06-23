@@ -1,9 +1,12 @@
 // Display ↔ API date format helpers. The API speaks yyyy-MM-dd (ISO);
-// the UI displays "01-jun-2026".
+// the UI displays the friendly "1-june-2026" form.
 
-const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+const MONTHS_LONG = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+];
 
-/** "2026-06-01" -> "01-jun-2026". Returns the input unchanged if not parseable. */
+/** "2026-06-01" -> "1-june-2026". Returns the input unchanged if not parseable. */
 export function displayDob(iso: string): string {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
@@ -11,5 +14,6 @@ export function displayDob(iso: string): string {
   const [, y, mm, dd] = m;
   const idx = Number(mm) - 1;
   if (idx < 0 || idx > 11) return iso;
-  return `${dd}-${MONTHS[idx]}-${y}`;
+  const day = String(Number(dd)); // strip leading zero
+  return `${day}-${MONTHS_LONG[idx]}-${y}`;
 }
