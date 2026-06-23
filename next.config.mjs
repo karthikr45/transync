@@ -8,6 +8,12 @@ const apiOrigin = (() => {
   try { return new URL(u).origin; } catch { return ""; }
 })();
 
+// upgrade-insecure-requests forces the browser to rewrite http://
+// fetches to https:// before applying connect-src. Only emit it when
+// the configured API origin is itself https — otherwise it would
+// silently break an http backend (e.g. a self-hosted dev API).
+const apiIsHttps = apiOrigin.startsWith("https:");
+
 const csp = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline'",
@@ -19,7 +25,7 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
+  ...(apiIsHttps ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const nextConfig = {
