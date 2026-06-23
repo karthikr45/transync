@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { AlertTriangle, User, Building2 } from "lucide-react";
 import Logo from "@/components/Logo";
+import PasswordInput from "@/components/PasswordInput";
+import PublicGuard from "@/components/PublicGuard";
 import { homeCareApi, endUserApi, ApiError } from "@/lib/api";
 import { destinationForUser, setSession } from "@/lib/auth";
 import { t } from "@/lib/i18n";
@@ -14,7 +16,9 @@ type Kind = "patient" | "staff";
 export default function LoginPage() {
   return (
     <Suspense>
-      <LoginInner />
+      <PublicGuard>
+        <LoginInner />
+      </PublicGuard>
     </Suspense>
   );
 }
@@ -113,7 +117,7 @@ function LoginInner() {
             </div>
             <div>
               <label htmlFor="login-password" className="label">{t("login.password")}</label>
-              <input id="login-password" className="input" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+              <PasswordInput id="login-password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
             </div>
 
             {error && (

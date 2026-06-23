@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle, AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
+import PasswordInput from "@/components/PasswordInput";
+import PublicGuard from "@/components/PublicGuard";
 import { homeCareApi, ApiError } from "@/lib/api";
 import type { UserType, RegisterDto } from "@/lib/types.api";
 
@@ -42,6 +44,14 @@ const blank: Form = {
 };
 
 export default function RegisterPage() {
+  return (
+    <PublicGuard>
+      <RegisterInner />
+    </PublicGuard>
+  );
+}
+
+function RegisterInner() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<AccountType | null>(null);
@@ -423,10 +433,13 @@ function FieldErrorMsg({ err }: { err?: string[] }) {
 
 function TextField({ label, required, help, type = "text", value, onChange, err }:
   { label: string; required?: boolean; help?: string; type?: string; value: string; onChange: (v: string) => void; err?: string[] }) {
+  const isPassword = type === "password";
   return (
     <div>
       <FieldLabel label={label} required={required} help={help} />
-      <input className="input" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+      {isPassword
+        ? <PasswordInput value={value} onChange={(e) => onChange(e.target.value)} />
+        : <input className="input" type={type} value={value} onChange={(e) => onChange(e.target.value)} />}
       <FieldErrorMsg err={err} />
     </div>
   );

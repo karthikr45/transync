@@ -6,7 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import Logo from "@/components/Logo";
+import PasswordInput from "@/components/PasswordInput";
 import PhoneInputField from "@/components/PhoneInputField";
+import PublicGuard from "@/components/PublicGuard";
 import DobField from "@/components/DobField";
 import { endUserApi, ApiError } from "@/lib/api";
 import { setSession } from "@/lib/auth";
@@ -93,6 +95,14 @@ function friendlyError(raw: string): string {
 }
 
 export default function PatientRegister() {
+  return (
+    <PublicGuard>
+      <PatientRegisterInner />
+    </PublicGuard>
+  );
+}
+
+function PatientRegisterInner() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<Form>(blank);
@@ -519,9 +529,7 @@ function Step3({
           <PhoneInputField value={form.mobile} onChange={(v) => upd("mobile", v)} defaultCountry={form.countryCode || "US"} />
         </Field>
         <Field label="Password" required>
-          <input
-            className="input"
-            type="password"
+          <PasswordInput
             placeholder="Create Password"
             value={form.password}
             onChange={(e) => upd("password", e.target.value)}
@@ -536,9 +544,8 @@ function Step3({
           </div>
         </Field>
         <Field label="Confirm Password" required>
-          <input
-            className={`input ${form.confirmPassword && !passwordsMatch ? "border-red-300" : ""}`}
-            type="password"
+          <PasswordInput
+            className={form.confirmPassword && !passwordsMatch ? "border-red-300" : ""}
             placeholder="Confirm Password"
             value={form.confirmPassword}
             onChange={(e) => upd("confirmPassword", e.target.value)}
