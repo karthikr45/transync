@@ -15,6 +15,7 @@ import type {
   ReportBySessionQuery, ReportBySessionResult, BarChartResponse,
   MetadataResponse, MarketsResponse,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
+  IncomingSharesResponse, SharedReportDto,
   DeleteAccountDto, DeleteAccountResult,
 } from "./types.api";
 
@@ -169,6 +170,17 @@ export const homeCareApi = {
 
   // Admin
   markets: () => apiFetch<MarketsResponse>("/home-care/admin/markets"),
+
+  // Recipient-side data sharing (provider/monitor sees patient grants)
+  listIncomingShares: () => apiFetch<IncomingSharesResponse>("/home-care/shares/incoming"),
+  acceptShare: (id: string) =>
+    apiFetch<{ id: string; status: string }>(`/home-care/shares/${encodeURIComponent(id)}/accept`, { method: "POST" }),
+  declineShare: (id: string) =>
+    apiFetch<{ id: string; status: string }>(`/home-care/shares/${encodeURIComponent(id)}/decline`, { method: "POST" }),
+  sharedReport: (id: string, dto: SharedReportDto) =>
+    apiFetch<ComplianceReportResult>(`/home-care/shares/${encodeURIComponent(id)}/report`, {
+      method: "POST", body: JSON.stringify(dto),
+    }),
 };
 
 // ---------- End User endpoints ----------

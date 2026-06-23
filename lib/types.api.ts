@@ -409,6 +409,29 @@ export interface Share {
 }
 export interface MySharesResponse { shares: Share[] }
 
+// ---------- /home-care/shares/incoming (recipient side) ----------
+export interface IncomingShare {
+  id: string;
+  patientName: string;
+  patientEmailHashed: string;
+  devices: string[];
+  status: ShareStatus;
+  validTill: string;
+  requestedAt?: string;
+  grantedAt?: string;
+}
+export interface IncomingSharesResponse {
+  pending: IncomingShare[];
+  shares: IncomingShare[];
+}
+
+export interface SharedReportDto {
+  deviceId: string;
+  ComplianceStartDate?: string;
+  ComplianceEndDate?: string;
+  timeZoneName?: string;
+}
+
 // ---------- /users/delete-account ----------
 export interface DeleteAccountDto { email: string; deviceId: string }
 export interface DeleteAccountResult {
