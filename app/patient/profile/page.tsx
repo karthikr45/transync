@@ -1,36 +1,52 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
-import { getCurrentEndUser } from "@/lib/auth";
+import { getCurrentEndUser, setSession, getRefreshToken } from "@/lib/auth";
+import { endUserApi, ApiError } from "@/lib/api";
 import { formatDate, formatDateTime, formatPhone } from "@/lib/format";
 import { nameForCode } from "@/lib/countries";
 import type { EndUser } from "@/lib/types.api";
 
 export default function PatientProfile() {
   const [user, setUser] = useState<EndUser | null>(null);
-  const [ready, setReady] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setUser(getCurrentEndUser());
-    setReady(true);
-  }, []);
-
-  if (!ready) {
-    return (
-      <>
-        <PageHeader title="Profile" subtitle="Personal and prescription information." />
-        <div className="card p-5 text-sm text-slate-500">Loading…</div>
-      </>
-    );
+  async function load() {
+    const cached = getCurrentEndUser();
+    setUser(cached);
+    if (!cached?.email) { setLoading(false); return; }
+    setLoading(true);
+    setError(null);
+    try {
+      const fresh = await endUserApi.getByEmail(cached.email);
+      // /users/getByEmail does not return token/refreshToken — keep the
+      // existing session tokens but refresh the profile fields.
+      const merged: EndUser = {
+        ...cached,
+        ...fresh,
+        token: cached.token,
+        refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
+      };
+      setUser(merged);
+      setSession(merged.token, merged.refreshToken, merged, "end-user");
+    } catch (err) {
+      setError((err as ApiError).message || "Could not refresh profile.");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   if (!user) {
     return (
       <>
         <PageHeader title="Profile" subtitle="Personal and prescription information." />
         <div className="card p-5 text-sm text-slate-500">
-          We couldn't load your profile. Please sign in again.
+          {loading ? "Loading…" : "We couldn't load your profile. Please sign in again."}
         </div>
       </>
     );
@@ -41,7 +57,22 @@ export default function PatientProfile() {
 
   return (
     <>
-      <PageHeader title="Profile" subtitle="Personal and prescription information." />
+      <PageHeader
+        title="Profile"
+        subtitle="Personal and prescription information."
+        actions={
+          <button onClick={load} disabled={loading} className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
+            Refresh
+          </button>
+        }
+      />
+
+      {error && (
+        <div role="alert" className="card p-3 mb-4 bg-red-50 border-red-100 text-red-800 text-xs flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" /> {error}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-5">
         <div className="card p-5">

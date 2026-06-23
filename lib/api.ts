@@ -186,6 +186,8 @@ export const endUserApi = {
     apiFetch<EndUser>("/auth/login", {
       method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
+  getByEmail: (email: string) =>
+    apiFetch<EndUser>(`/users/getByEmail/${encodeURIComponent(email)}`),
 
   // Public signup metadata (occupations, CPAP usage options etc.)
   getMetadata: () =>
