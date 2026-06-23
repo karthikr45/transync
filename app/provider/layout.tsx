@@ -1,5 +1,5 @@
 import { LayoutDashboard, ListChecks, Users, HardDrive, FileText, Bell, Settings } from "lucide-react";
-import PortalShell from "@/components/PortalShell";
+import HomeCareShell from "@/components/HomeCareShell";
 import AuthGuard from "@/components/AuthGuard";
 
 const nav = [
@@ -15,9 +15,9 @@ const nav = [
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard requireKind="home-care" requireUserType="home_care_provider">
-      <PortalShell role="Homecare Provider" user={{ name: "Northside Homecare", email: "skim@northside.com" }} nav={nav}>
+      <HomeCareShell role="Homecare Provider" nav={nav}>
         {children}
-      </PortalShell>
+      </HomeCareShell>
     </AuthGuard>
   );
 }

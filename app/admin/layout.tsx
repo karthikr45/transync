@@ -1,5 +1,5 @@
 import { LayoutDashboard, ClipboardCheck, Building2, HardDrive, Users, ScrollText, Settings } from "lucide-react";
-import PortalShell from "@/components/PortalShell";
+import HomeCareShell from "@/components/HomeCareShell";
 import AuthGuard from "@/components/AuthGuard";
 
 const nav = [
@@ -15,9 +15,9 @@ const nav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard requireKind="home-care" requireRole="super_admin">
-      <PortalShell role="Super Admin" user={{ name: "Alex Mercer", email: "amercer@transcend.com" }} nav={nav}>
+      <HomeCareShell role="Super Admin" nav={nav}>
         {children}
-      </PortalShell>
+      </HomeCareShell>
     </AuthGuard>
   );
 }
