@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, Check, Building2, Eye, User, Clock, Mail, HelpCircle, AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
 import PasswordInput from "@/components/PasswordInput";
 import PublicGuard from "@/components/PublicGuard";
 import { homeCareApi, ApiError } from "@/lib/api";
+import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
 import type { UserType, RegisterDto } from "@/lib/types.api";
 
 type AccountType = "provider" | "monitor" | "individual";
@@ -23,7 +24,8 @@ type Form = {
   address1: string;
   address2: string;
   city: string;
-  country: string;
+  country: string;        // human-readable name sent to the API (e.g. "United States")
+  countryCode: string;    // ISO alpha-2 used to drive the state dropdown
   stateProvince: string;
   postalCode: string;
   phone: string;
@@ -37,7 +39,8 @@ type Form = {
 
 const blank: Form = {
   firstName: "", lastName: "", title: "", userName: "", email: "", confirmEmail: "",
-  timeZone: "", address1: "", address2: "", city: "", country: "United States",
+  timeZone: "", address1: "", address2: "", city: "",
+  country: nameForCode("US"), countryCode: "US",
   stateProvince: "", postalCode: "", phone: "",
   companyName: "", accountNumber: "", uniqueIdentifier: "", institutionName: "",
   password: "", confirmPassword: "",
@@ -280,6 +283,14 @@ function TypeCard({ selected, onClick, icon, title, desc }: { selected: boolean;
 
 type DetailsProps = { form: Form; update: <K extends keyof Form>(k: K, v: Form[K]) => void; fieldErrors?: Record<string, string[]> };
 
+// Treat selecting a country as picking by ISO code; cascade to a name +
+// reset the state field so the new country's options are valid.
+function selectCountry(update: DetailsProps["update"], code: string) {
+  update("countryCode", code);
+  update("country", nameForCode(code));
+  update("stateProvince", "");
+}
+
 function ProviderDetails({ form, update, fieldErrors }: DetailsProps) {
   return (
     <div>
@@ -294,8 +305,8 @@ function ProviderDetails({ form, update, fieldErrors }: DetailsProps) {
             <TextField label="Address 1" required value={form.address1} onChange={(v) => update("address1", v)} err={fieldErrors?.address1} />
             <TextField label="Address 2" value={form.address2} onChange={(v) => update("address2", v)} />
             <TextField label="City" required value={form.city} onChange={(v) => update("city", v)} err={fieldErrors?.city} />
-            <CountryField value={form.country} onChange={(v) => update("country", v)} err={fieldErrors?.country} />
-            <StateField value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
+            <CountryField code={form.countryCode} onCodeChange={(code) => selectCountry(update, code)} err={fieldErrors?.country} />
+            <StateField countryCode={form.countryCode} value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
             <TextField label="Postal Code" required value={form.postalCode} onChange={(v) => update("postalCode", v)} err={fieldErrors?.postalCode} />
             <TextField label="Phone" required type="tel" value={form.phone} onChange={(v) => update("phone", v)} err={fieldErrors?.phone} />
           </div>
@@ -346,8 +357,8 @@ function MonitorDetails({ form, update, fieldErrors }: DetailsProps) {
             <TextField label="Address 1" required value={form.address1} onChange={(v) => update("address1", v)} err={fieldErrors?.address1} />
             <TextField label="Address 2" value={form.address2} onChange={(v) => update("address2", v)} />
             <TextField label="City" required value={form.city} onChange={(v) => update("city", v)} err={fieldErrors?.city} />
-            <CountryField value={form.country} onChange={(v) => update("country", v)} err={fieldErrors?.country} />
-            <StateField value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
+            <CountryField code={form.countryCode} onCodeChange={(code) => selectCountry(update, code)} err={fieldErrors?.country} />
+            <StateField countryCode={form.countryCode} value={form.stateProvince} onChange={(v) => update("stateProvince", v)} err={fieldErrors?.stateProvince} />
             <TextField label="Postal Code" required value={form.postalCode} onChange={(v) => update("postalCode", v)} err={fieldErrors?.postalCode} />
             <TextField label="Phone" required type="tel" value={form.phone} onChange={(v) => update("phone", v)} err={fieldErrors?.phone} />
             <TimeZoneField value={form.timeZone} onChange={(v) => update("timeZone", v)} err={fieldErrors?.timeZone} />
@@ -445,28 +456,35 @@ function TextField({ label, required, help, type = "text", value, onChange, err 
   );
 }
 
-function CountryField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+function CountryField({ code, onCodeChange, err }: { code: string; onCodeChange: (code: string) => void; err?: string[] }) {
+  const countries = useMemo(() => listCountries(), []);
   return (
     <div>
       <FieldLabel label="Country" required />
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option>United States</option><option>Canada</option><option>United Kingdom</option>
-        <option>Germany</option><option>France</option><option>Australia</option><option>India</option>
+      <select className="input" value={code} onChange={(e) => onCodeChange(e.target.value)}>
+        <option value="">-- Select Country --</option>
+        {countries.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
       </select>
       <FieldErrorMsg err={err} />
     </div>
   );
 }
 
-function StateField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+function StateField({ countryCode, value, onChange, err }: { countryCode: string; value: string; onChange: (v: string) => void; err?: string[] }) {
+  const options = useMemo(() => statesForCode(countryCode), [countryCode]);
   return (
     <div>
       <FieldLabel label="State/Province" required />
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">-- Select State/Province --</option>
-        <option>California</option><option>Colorado</option><option>Florida</option>
-        <option>Massachusetts</option><option>New York</option><option>Texas</option><option>Washington</option>
-      </select>
+      {options === null ? (
+        <input className="input" placeholder="State / Province" value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : options.length === 0 ? (
+        <input className="input bg-slate-50 text-slate-500" disabled value="No states for this country" />
+      ) : (
+        <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+          <option value="">-- Select State/Province --</option>
+          {options.map((s) => <option key={s}>{s}</option>)}
+        </select>
+      )}
       <FieldErrorMsg err={err} />
     </div>
   );
