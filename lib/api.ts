@@ -8,6 +8,7 @@ import { clearSession, getRefreshToken, getToken, getUserKind, setSession, getCu
 import type {
   ApiEnvelope, LoginDto, LoginResult, RegisterDto, AccountUser,
   DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
+  ClaimedDevicesResponse,
   ComplianceReportDto, ComplianceReportResult,
   SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
@@ -160,6 +161,7 @@ export const homeCareApi = {
 
   uploadDevices: (dto: DeviceUploadDto) =>
     apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
+  listDevices: () => apiFetch<ClaimedDevicesResponse>("/home-care/devices/list"),
   listDeviceUsers: (query: DeviceUsersQuery = {}) =>
     apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>

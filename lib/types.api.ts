@@ -128,6 +128,22 @@ export interface DeviceUsersResult {
   users: DeviceUser[];
 }
 
+// ---------- /home-care/devices/list ----------
+export type ClaimedDeviceStatus = "active" | "unassigned";
+export interface ClaimedDevice {
+  deviceId: string;
+  model: string | null;
+  firmware: string | null;
+  endUserName: string | null;
+  firstSyncDate: string | null;
+  claimedAt: string;
+  status: ClaimedDeviceStatus;
+}
+export interface ClaimedDevicesResponse {
+  total: number;
+  devices: ClaimedDevice[];
+}
+
 export interface ComplianceReportDto {
   deviceId: string;
   emailHashed: string;
