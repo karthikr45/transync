@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import PageHeader from "@/components/PageHeader";
 import { homeCareApi, ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -11,12 +11,9 @@ import { getCurrentUser } from "@/lib/auth";
 import type { AccountUser, ComplianceReportResult } from "@/lib/types.api";
 import { ArrowLeft, Printer, AlertTriangle, RefreshCw } from "lucide-react";
 
-// Presets cover both Medicare-style windows and the ones the mobile
-// app already offered; each maps to the ComplianceStartDate /
-// ComplianceEndDate the API payload expects.
-const RANGE_TO_DAYS: Record<string, number> = {
-  "7 Days": 7, "30 Days": 30, "90 Days": 90, "180 Days": 180, "365 Days": 365,
-};
+// Default window when the report opens — Medicare's 90-day compliance
+// look-back. The user can pick anything in the date pickers.
+const DEFAULT_WINDOW_DAYS = 90;
 
 const TIMEZONES = [
   "Asia/Kolkata",
@@ -82,7 +79,6 @@ function ApiReport({
   deviceId, emailHashed, name, email, initialTz,
 }: { deviceId: string; emailHashed: string; name: string; email?: string; initialTz?: string }) {
   const [account, setAccount] = useState<AccountUser | null>(null);
-  const [rangeLabel, setRangeLabel] = useState<string>("90 Days");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [timeZoneName, setTimeZoneName] = useState<string>(
@@ -94,18 +90,16 @@ function ApiReport({
 
   useEffect(() => { setAccount(getCurrentUser()); }, []);
 
-  const applyPreset = useCallback((label: string) => {
-    const days = RANGE_TO_DAYS[label] ?? 90;
+  // Seed the date pickers with the default 90-day window. Users can
+  // change either end with the date inputs.
+  useEffect(() => {
     const endD = new Date();
     const startD = new Date();
-    startD.setDate(endD.getDate() - days + 1);
+    startD.setDate(endD.getDate() - DEFAULT_WINDOW_DAYS + 1);
     const iso = (d: Date) => d.toISOString().slice(0, 10);
-    setRangeLabel(label);
     setStart(iso(startD));
     setEnd(iso(endD));
   }, []);
-
-  useEffect(() => { applyPreset("90 Days"); }, [applyPreset]);
 
   const load = useCallback(async () => {
     if (!start || !end) return;
@@ -150,16 +144,11 @@ function ApiReport({
       />
 
       <RequestControls
-        deviceId={deviceId}
-        emailHashed={emailHashed}
-        email={email}
-        rangeLabel={rangeLabel}
         start={start}
         end={end}
         timeZoneName={timeZoneName}
-        onPreset={applyPreset}
-        onStart={(v) => { setStart(v); setRangeLabel(""); }}
-        onEnd={(v) => { setEnd(v); setRangeLabel(""); }}
+        onStart={(v) => setStart(v)}
+        onEnd={(v) => setEnd(v)}
         onTzChange={setTimeZoneName}
       />
 
@@ -181,17 +170,11 @@ function ApiReport({
 }
 
 function RequestControls({
-  deviceId, emailHashed, email, rangeLabel, start, end, timeZoneName,
-  onPreset, onStart, onEnd, onTzChange,
+  start, end, timeZoneName, onStart, onEnd, onTzChange,
 }: {
-  deviceId: string;
-  emailHashed: string;
-  email?: string;
-  rangeLabel: string;
   start: string;
   end: string;
   timeZoneName: string;
-  onPreset: (label: string) => void;
   onStart: (v: string) => void;
   onEnd: (v: string) => void;
   onTzChange: (v: string) => void;
@@ -203,53 +186,27 @@ function RequestControls({
   }, [timeZoneName]);
 
   return (
-    <div className="card p-4 mb-5 space-y-4">
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <Field label="Device ID">
-          <input className="input font-mono text-xs" value={deviceId} readOnly />
+    <div className="card p-4 mb-5">
+      <div className="grid sm:grid-cols-3 gap-3 text-sm items-end">
+        <Field label="Start date">
+          <input className="input" type="date" value={start} max={end || undefined} onChange={(e) => onStart(e.target.value)} />
         </Field>
-        <Field label="Email (hashed)" colSpan={2}>
-          <input className="input font-mono text-xs truncate" value={emailHashed} readOnly title={emailHashed} />
-        </Field>
-        <Field label="Email">
-          <input className="input text-xs" value={email ?? "—"} readOnly />
-        </Field>
-      </div>
-
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm items-end">
-        <Field label="Compliance start date">
-          <input className="input" type="date" value={start} onChange={(e) => onStart(e.target.value)} />
-        </Field>
-        <Field label="Compliance end date">
-          <input className="input" type="date" value={end} onChange={(e) => onEnd(e.target.value)} />
+        <Field label="End date">
+          <input className="input" type="date" value={end} min={start || undefined} onChange={(e) => onEnd(e.target.value)} />
         </Field>
         <Field label="Time zone">
           <select className="input" value={timeZoneName} onChange={(e) => onTzChange(e.target.value)}>
             {tzOptions.map((tz) => <option key={tz}>{tz}</option>)}
           </select>
         </Field>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-500">Preset:</span>
-          {Object.keys(RANGE_TO_DAYS).map((label) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => onPreset(label)}
-              className={`px-2 py-1 rounded-md text-xs font-medium border ${rangeLabel === label ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
 }
 
-function Field({ label, children, colSpan }: { label: string; children: React.ReactNode; colSpan?: 2 | 3 }) {
-  const cls = colSpan === 2 ? "md:col-span-2" : colSpan === 3 ? "md:col-span-3" : "";
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className={cls}>
+    <div>
       <label className="label">{label}</label>
       {children}
     </div>
