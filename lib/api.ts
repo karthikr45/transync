@@ -266,7 +266,7 @@ export const endUserApi = {
   // Device parameters / patient settings (powers the Settings section
   // of the patient compliance report).
   getParameter: (q: ParameterQuery) =>
-    apiFetch<ParameterResult>(`/parameter/findOne${qs(q as unknown as Record<string, unknown>)}`),
+    apiFetch<ParameterResult>(`/parameter/getByEmailAndDeviceId${qs(q as unknown as Record<string, unknown>)}`),
 
   // Server-side PDF generation for reportBySession. Returns the raw
   // PDF as a Blob so the caller can trigger a download.
