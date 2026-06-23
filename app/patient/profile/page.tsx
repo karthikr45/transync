@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, Trash2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
-import { getCurrentEndUser, setSession, getRefreshToken } from "@/lib/auth";
+import { getCurrentEndUser, setSession, getRefreshToken, logout } from "@/lib/auth";
 import { endUserApi, ApiError } from "@/lib/api";
 import { formatDate, formatDateTime, formatPhone } from "@/lib/format";
 import { nameForCode } from "@/lib/countries";
@@ -126,9 +126,93 @@ export default function PatientProfile() {
         <div className="grid md:grid-cols-3 gap-3">
           <button className="btn-secondary">Change password</button>
           <button className="btn-secondary">Enable 2FA</button>
-          <button className="btn-danger">Delete account</button>
+          <DeleteAccountButton email={user.email} deviceId={user.deviceId} />
         </div>
       </div>
+    </>
+  );
+}
+
+function DeleteAccountButton({ email, deviceId }: { email: string; deviceId?: string }) {
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submittedAt, setSubmittedAt] = useState<string | null>(null);
+
+  const canSubmit = confirmText === "DELETE" && !!deviceId && !submitting;
+
+  async function submit() {
+    if (!deviceId) { setError("No device associated with your account yet."); return; }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await endUserApi.deleteAccount({ email, deviceId });
+      setSubmittedAt(res.AccountDeletionRequestDate);
+      setTimeout(() => logout(), 2500);
+    } catch (err) {
+      setError((err as ApiError).message || "Could not submit deletion request.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <>
+      <button className="btn-danger" onClick={() => setOpen(true)}>
+        <Trash2 className="w-4 h-4" /> Delete account
+      </button>
+      {open && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center px-4 z-50" role="dialog" aria-modal="true">
+          <div className="card p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-slate-900">Delete account</h2>
+            {submittedAt ? (
+              <div className="mt-3 text-sm text-slate-700">
+                <p>Your deletion request was submitted on <strong>{formatDateTime(submittedAt)}</strong>.</p>
+                <p className="mt-2 text-slate-500">Your account and all therapy data will be permanently erased about 48 hours from now. You&apos;ll be signed out shortly.</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-slate-600 mt-2">
+                  This will request permanent deletion of your account, all therapy data and any shares you&apos;ve granted.
+                  The erase happens roughly 48 hours after the request, across every device linked to <strong>{email}</strong>.
+                </p>
+                {!deviceId && (
+                  <div className="mt-3 p-2 rounded bg-amber-50 border border-amber-100 text-xs text-amber-800 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    We can&apos;t process the deletion without a registered device. Sync your Transcend device, then come back.
+                  </div>
+                )}
+                <div className="mt-3">
+                  <label className="label" htmlFor="confirm-delete">
+                    Type <span className="font-mono">DELETE</span> to confirm
+                  </label>
+                  <input
+                    id="confirm-delete"
+                    className="input"
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                {error && (
+                  <div role="alert" className="mt-3 p-2 rounded bg-red-50 border border-red-100 text-xs text-red-800 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" /> {error}
+                  </div>
+                )}
+                <div className="mt-5 flex justify-end gap-2">
+                  <button className="btn-secondary" onClick={() => { setOpen(false); setConfirmText(""); setError(null); }} disabled={submitting}>
+                    Cancel
+                  </button>
+                  <button className="btn-danger disabled:opacity-50" onClick={submit} disabled={!canSubmit}>
+                    {submitting ? "Submitting…" : "Request deletion"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

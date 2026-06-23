@@ -359,3 +359,38 @@ export interface MetadataResponse {
 export interface MarketSummary { total: number; providers: number; payers: number }
 export interface MarketRow { country: string; providers: number; payers: number }
 export interface MarketsResponse { summary: MarketSummary; markets: MarketRow[] }
+
+// ---------- /home-care/share-recipients & /home-care/shares ----------
+export type RecipientType = "home_care_provider" | "authorized_monitor";
+export type ShareStatus = "pending" | "accepted" | "declined" | "revoked";
+
+export interface ShareRecipient {
+  id: string;
+  name: string;
+  type: RecipientType;
+  email: string;
+}
+export interface ShareRecipientsResponse { recipients: ShareRecipient[] }
+
+export interface CreateShareDto {
+  recipientId: string;
+  validTill: string; // yyyy-MM-dd
+}
+export interface Share {
+  id: string;
+  recipientId: string;
+  recipientName: string;
+  recipientType: RecipientType;
+  status: ShareStatus;
+  validTill: string;
+  grantedAt: string;
+}
+export interface MySharesResponse { shares: Share[] }
+
+// ---------- /users/delete-account ----------
+export interface DeleteAccountDto { email: string; deviceId: string }
+export interface DeleteAccountResult {
+  email: string;
+  deviceId: string;
+  AccountDeletionRequestDate: string;
+}

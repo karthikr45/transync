@@ -13,6 +13,8 @@ import type {
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
   ReportBySessionQuery, ReportBySessionResult,
   MetadataResponse, MarketsResponse,
+  RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
+  DeleteAccountDto, DeleteAccountResult,
 } from "./types.api";
 
 export class ApiError extends Error {
@@ -188,6 +190,21 @@ export const endUserApi = {
     }),
   getByEmail: (email: string) =>
     apiFetch<EndUser>(`/users/getByEmail/${encodeURIComponent(email)}`),
+
+  // Patient → recipients / shares (uses end-user JWT)
+  listShareRecipients: (type?: RecipientType) =>
+    apiFetch<ShareRecipientsResponse>(`/home-care/share-recipients${qs({ type })}`),
+  createShare: (dto: CreateShareDto) =>
+    apiFetch<Share>("/home-care/shares", { method: "POST", body: JSON.stringify(dto) }),
+  listMyShares: () => apiFetch<MySharesResponse>("/home-care/shares/mine"),
+  revokeShare: (id: string) =>
+    apiFetch<Share>(`/home-care/shares/${encodeURIComponent(id)}/revoke`, { method: "POST" }),
+
+  // Account deletion (public per docs, but we have the email from the session)
+  deleteAccount: (dto: DeleteAccountDto) =>
+    apiFetch<DeleteAccountResult>("/users/delete-account", {
+      method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
+    }),
 
   // Public signup metadata (occupations, CPAP usage options etc.)
   getMetadata: () =>
