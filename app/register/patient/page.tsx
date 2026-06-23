@@ -14,6 +14,7 @@ import { endUserApi, ApiError } from "@/lib/api";
 import { setSession } from "@/lib/auth";
 import { passwordPolicy, validatePassword, validName, validEmail } from "@/lib/validators";
 import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
+import { getTimeZoneName } from "@/lib/timezone";
 import { normaliseOptions } from "@/lib/options";
 import type { CreateUserDto, MetadataResponse } from "@/lib/types.api";
 
@@ -77,10 +78,6 @@ const FALLBACK_USAGE = [
 ];
 const FALLBACK_PURCHASE = [
   "MyTranscend.com", "Local Dealer", "Online retailer", "Medical equipment supplier", "Other",
-];
-const TIME_ZONES = [
-  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-  "UTC", "Europe/London", "Australia/Sydney",
 ];
 
 function friendlyError(raw: string): string {
@@ -265,7 +262,7 @@ function PatientRegisterInner() {
       providerEmail: trim(form.providerEmail),
       dealerName: "",
       devicePurchased: trim(form.devicePurchased),
-      timeZone: TIME_ZONES[0],
+      timeZone: getTimeZoneName(),
       deviceId: "",
       eventCount: 0,
       isFirmwareUpdate: false,

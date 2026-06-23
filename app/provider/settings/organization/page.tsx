@@ -1,9 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import { ArrowLeft } from "lucide-react";
 import { dataRegions } from "@/lib/mock-data";
+import { listCountries } from "@/lib/countries";
+import { listTimeZones } from "@/lib/timezone";
 
 export default function OrganizationSettings() {
+  const countries = useMemo(() => listCountries(), []);
+  const timeZones = useMemo(() => listTimeZones(), []);
   return (
     <>
       <Link href="/provider/settings" className="text-sm text-slate-500 inline-flex items-center gap-1 mb-3 hover:text-slate-800">
@@ -19,10 +26,14 @@ export default function OrganizationSettings() {
             <div><label className="label">Unique Provider Identifier</label><input className="input" defaultValue="UPI-NS-44120" readOnly /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="label">Country</label>
-                <select className="input"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Germany</option><option>Australia</option></select>
+                <select className="input">
+                  {countries.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+                </select>
               </div>
               <div><label className="label">Time zone</label>
-                <select className="input"><option>America/Denver</option><option>America/New_York</option><option>UTC</option></select>
+                <select className="input">
+                  {timeZones.map((tz) => <option key={tz}>{tz}</option>)}
+                </select>
               </div>
             </div>
             <button className="btn-primary">Save</button>

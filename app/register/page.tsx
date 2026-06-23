@@ -9,6 +9,7 @@ import PasswordInput from "@/components/PasswordInput";
 import PublicGuard from "@/components/PublicGuard";
 import { homeCareApi, ApiError } from "@/lib/api";
 import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
+import { getTimeZoneName, listTimeZones } from "@/lib/timezone";
 import type { UserType, RegisterDto } from "@/lib/types.api";
 
 type AccountType = "provider" | "monitor" | "individual";
@@ -58,7 +59,7 @@ function RegisterInner() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<AccountType | null>(null);
-  const [form, setForm] = useState<Form>(blank);
+  const [form, setForm] = useState<Form>(() => ({ ...blank, timeZone: getTimeZoneName() }));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>();
@@ -491,18 +492,21 @@ function StateField({ countryCode, value, onChange, err }: { countryCode: string
 }
 
 function TimeZoneField({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string[] }) {
+  const options = useMemo(() => {
+    const set = new Set(listTimeZones());
+    if (value) set.add(value);
+    return Array.from(set).sort();
+  }, [value]);
   return (
     <div>
       <FieldLabel label="Time Zone" required />
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+      <select
+        className="input"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
         <option value="">-- Select Time Zone --</option>
-        <option value="America/New_York">America/New_York (ET)</option>
-        <option value="America/Chicago">America/Chicago (CT)</option>
-        <option value="America/Denver">America/Denver (MT)</option>
-        <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
-        <option value="UTC">UTC</option>
-        <option value="Europe/London">Europe/London</option>
-        <option value="Australia/Sydney">Australia/Sydney</option>
+        {options.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
       </select>
       <FieldErrorMsg err={err} />
     </div>
