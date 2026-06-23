@@ -327,3 +327,22 @@ export interface SleepScoreEventDto {
   leakRating: number;
   sleepScore: number;
 }
+
+// ---------- /metadata (patient signup dropdowns) ----------
+// Shape is intentionally permissive — backend can return any string[]
+// keyed by field name, and the frontend will use what it recognises.
+export interface MetadataResponse {
+  occupation?: string[];
+  cpapUser?: string[];
+  transcendDevice?: string[];
+  devicePurchased?: string[];
+  transcendUsage?: string[];
+  gender?: string[];
+  timeZones?: string[];
+  [key: string]: string[] | undefined;
+}
+
+// ---------- /home-care/admin/markets ----------
+export interface MarketSummary { total: number; providers: number; payers: number }
+export interface MarketRow { country: string; providers: number; payers: number }
+export interface MarketsResponse { summary: MarketSummary; markets: MarketRow[] }

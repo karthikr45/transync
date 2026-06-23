@@ -12,6 +12,7 @@ import type {
   SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
   ReportBySessionQuery, ReportBySessionResult,
+  MetadataResponse, MarketsResponse,
 } from "./types.api";
 
 export class ApiError extends Error {
@@ -161,6 +162,9 @@ export const homeCareApi = {
     apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>
     apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
+
+  // Admin
+  markets: () => apiFetch<MarketsResponse>("/home-care/admin/markets"),
 };
 
 // ---------- End User endpoints ----------
@@ -182,6 +186,10 @@ export const endUserApi = {
     apiFetch<EndUser>("/auth/login", {
       method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
+
+  // Public signup metadata (occupations, CPAP usage options etc.)
+  getMetadata: () =>
+    apiFetch<MetadataResponse>("/metadata", { _skipAuth: true, _skipAuthRedirect: true }),
 
   getLastSyncDate: (q: LastSyncQuery) =>
     apiFetch<LastSyncResult>(`/event/getLastSyncDate${qs(q as unknown as Record<string, unknown>)}`),

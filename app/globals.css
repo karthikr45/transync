@@ -19,6 +19,29 @@ html, body {
   border-radius: 4px;
 }
 
+/* react-phone-number-input layout to match our input style. */
+.phone-input-shell .PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.phone-input-shell .PhoneInputCountry {
+  flex: 0 0 auto;
+}
+.phone-input-shell .PhoneInputInput {
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+.phone-input-shell .PhoneInput--focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* Skip to content link — visible only on focus. */
 .skip-link {
   position: absolute;

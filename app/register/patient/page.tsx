@@ -2,33 +2,36 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Check, Mail, ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
+import PhoneInputField from "@/components/PhoneInputField";
 import { endUserApi, ApiError } from "@/lib/api";
 import { setSession } from "@/lib/auth";
-import type { CreateUserDto } from "@/lib/types.api";
+import { passwordPolicy, validatePassword, validName, validEmail } from "@/lib/validators";
+import { listCountries, statesForCode, nameForCode } from "@/lib/countries";
+import { displayDob } from "@/lib/format";
+import type { CreateUserDto, MetadataResponse } from "@/lib/types.api";
 
-type Step = 1 | 2 | 3 | 4 | 5; // 4 = OTP, 5 = done
+type Step = 1 | 2 | 3 | 4 | 5;
 
 type Form = {
-  // Step 1 — Basic
-  country: string;
+  // Step 1
+  countryCode: string;          // ISO alpha-2 ("US"). API sends the full name.
   state: string;
   firstName: string;
   lastName: string;
   email: string;
-  // Step 2 — Profile
-  dob: string;            // yyyy-MM-dd (sent to API)
+  // Step 2
+  dob: string;                  // yyyy-MM-dd (input + API)
   occupation: string;
-  cpapUser: string;       // "How long have you been a CPAP user?"
-  transcendUsage: string; // "How are you using the Transcend device?"
+  cpapUser: string;
+  transcendUsage: string;
   devicePurchased: string;
-  // Step 3 — Account
+  // Step 3
   provider: string;
   providerEmail: string;
-  countryCode: string;
-  mobile: string;
+  mobile: string;               // E.164 ("+14155551234")
   password: string;
   confirmPassword: string;
   consentTerms: boolean;
@@ -36,19 +39,18 @@ type Form = {
 };
 
 const blank: Form = {
-  country: "United States of America",
+  countryCode: "US",
   state: "",
   firstName: "",
   lastName: "",
   email: "",
   dob: "",
-  occupation: "Other",
-  cpapUser: "New User",
-  transcendUsage: "Business Travel",
-  devicePurchased: "MyTranscend.com",
+  occupation: "",
+  cpapUser: "",
+  transcendUsage: "",
+  devicePurchased: "",
   provider: "",
   providerEmail: "",
-  countryCode: "+1",
   mobile: "",
   password: "",
   confirmPassword: "",
@@ -56,54 +58,36 @@ const blank: Form = {
   consentMarketing: false,
 };
 
-const COUNTRIES = [
-  "United States of America", "Canada", "United Kingdom",
-  "Germany", "France", "Australia", "India",
-];
-
-const US_STATES = [
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
-  "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-  "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
-  "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
-  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-  "Wisconsin", "Wyoming",
-];
-
-const OCCUPATIONS = [
+// Sensible defaults used when the /metadata endpoint is unavailable or
+// missing a particular field.
+const FALLBACK_OCCUPATIONS = [
   "Other", "Engineer", "Teacher", "Healthcare professional", "Driver",
   "Retired", "Student", "Office / administrative",
 ];
-
-const CPAP_DURATION = [
+const FALLBACK_CPAP_USER = [
   "New User", "Less than 1 month", "1–3 months", "3–6 months",
   "6–12 months", "1–3 years", "More than 3 years",
 ];
-
-const USAGE = [
-  "Business Travel", "Personal Travel", "Daily Home Use",
-  "Backup Device", "Camping / Outdoors",
+const FALLBACK_USAGE = [
+  "Business Travel", "Personal Travel", "Daily Home Use", "Backup Device", "Camping / Outdoors",
 ];
-
-const PURCHASE = [
+const FALLBACK_PURCHASE = [
   "MyTranscend.com", "Local Dealer", "Online retailer", "Medical equipment supplier", "Other",
 ];
-
 const TIME_ZONES = [
   "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
   "UTC", "Europe/London", "Australia/Sydney",
 ];
 
-function checkPassword(p: string) {
-  return {
-    length: p.length >= 8 && p.length <= 16,
-    lower: /[a-z]/.test(p),
-    upper: /[A-Z]/.test(p),
-    digit: /\d/.test(p),
-    special: /[^A-Za-z0-9]/.test(p),
-  };
+function friendlyError(raw: string): string {
+  const m = (raw || "").toLowerCase();
+  if (m.includes("argument must be of type") || m.includes("received undefined") || m.includes("buffer")) {
+    console.error("[register] backend error:", raw);
+    return "We couldn't complete sign-up. Please request a new code and try again.";
+  }
+  if (m.includes("invalid otp") || m.includes("expired")) return "That code is invalid or has expired. Request a new one.";
+  if (m.includes("user already exists") || m.includes("already in use")) return "An account with this email already exists. Try logging in instead.";
+  return raw || "Something went wrong.";
 }
 
 export default function PatientRegister() {
@@ -115,53 +99,79 @@ export default function PatientRegister() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>();
+  const [meta, setMeta] = useState<MetadataResponse | null>(null);
+  const [touched, setTouched] = useState<Record<keyof Form, boolean>>({} as Record<keyof Form, boolean>);
 
   const upd = <K extends keyof Form>(k: K, v: Form[K]) => setForm((p) => ({ ...p, [k]: v }));
-  const pw = checkPassword(form.password);
-  const pwOk = pw.length && pw.lower && pw.upper && pw.digit && pw.special;
+  const touch = (k: keyof Form) => setTouched((t) => ({ ...t, [k]: true }));
+
+  const countries = useMemo(() => listCountries(), []);
+  const stateOptions = useMemo(() => statesForCode(form.countryCode), [form.countryCode]);
+  const pw = passwordPolicy(form.password);
+  const pwOk = validatePassword(form.password);
   const passwordsMatch = form.password.length > 0 && form.password === form.confirmPassword;
 
-  const stateOptions = useMemo(
-    () => (form.country === "United States of America" ? US_STATES : null),
-    [form.country],
-  );
+  // Pull dropdown contents from /metadata if available. Falls back to
+  // the static lists above when the endpoint is missing or fields are
+  // not provided.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const m = await endUserApi.getMetadata();
+        if (!cancelled) setMeta(m ?? {});
+      } catch {
+        if (!cancelled) setMeta({});
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  function mergeList(key: keyof MetadataResponse, fallback: string[]): string[] {
+    const v = meta?.[key];
+    return Array.isArray(v) && v.length > 0 ? v : fallback;
+  }
+  const occupationOptions = mergeList("occupation", FALLBACK_OCCUPATIONS);
+  const cpapOptions = mergeList("cpapUser", FALLBACK_CPAP_USER);
+  const usageOptions = mergeList("transcendUsage", FALLBACK_USAGE);
+  const purchaseOptions = mergeList("devicePurchased", FALLBACK_PURCHASE);
+
+  // Set defaults from the option lists once they're known.
+  useEffect(() => {
+    setForm((p) => ({
+      ...p,
+      occupation: p.occupation || occupationOptions[0] || "",
+      cpapUser: p.cpapUser || cpapOptions[0] || "",
+      transcendUsage: p.transcendUsage || usageOptions[0] || "",
+      devicePurchased: p.devicePurchased || purchaseOptions[0] || "",
+    }));
+  }, [occupationOptions, cpapOptions, usageOptions, purchaseOptions]);
 
   function err(msg: string) { setError(msg); setInfo(null); }
   function inf(msg: string) { setInfo(msg); setError(null); }
   function clearMsgs() { setError(null); setInfo(null); setFieldErrors(undefined); }
 
   function validateStep1(): string | null {
-    if (!form.country || !form.state) return "Country and State are required.";
-    if (!form.firstName.trim() || !form.lastName.trim()) return "First and Last name are required.";
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) return "Enter a valid email.";
+    if (!form.countryCode) return "Country is required.";
+    if (stateOptions && stateOptions.length > 0 && !form.state) return "Please select a state.";
+    if (!validName(form.firstName)) return "First Name is invalid.";
+    if (!validName(form.lastName)) return "Last Name is invalid.";
+    if (!validEmail(form.email)) return "Please enter a valid email.";
     return null;
   }
   function validateStep2(): string | null {
-    if (!form.dob) return "Date of Birth is required.";
+    if (!form.dob || !/^\d{4}-\d{2}-\d{2}$/.test(form.dob)) return "Date of Birth is required.";
     if (!form.cpapUser) return "Tell us how long you have been a CPAP user.";
     if (!form.transcendUsage) return "Tell us how you use the Transcend device.";
     return null;
   }
   function validateStep3(): string | null {
-    if (!form.mobile.trim()) return "Mobile number is required.";
+    if (!form.mobile || form.mobile.length < 6) return "Mobile number is required.";
     if (!pwOk) return "Password does not meet the policy.";
     if (!passwordsMatch) return "Passwords do not match.";
     if (!form.consentTerms) return "Please accept the Terms of Use to continue.";
-    if (form.providerEmail && !/^\S+@\S+\.\S+$/.test(form.providerEmail)) return "Care Provider email is not valid.";
+    if (form.providerEmail && !validEmail(form.providerEmail)) return "Care Provider email is not valid.";
     return null;
-  }
-
-  // Translate raw backend / Node.js error messages into something the user
-  // can act on. Keeps the original in the dev console for debugging.
-  function friendlyError(raw: string): string {
-    const m = (raw || "").toLowerCase();
-    if (m.includes("argument must be of type") || m.includes("received undefined") || m.includes("buffer")) {
-      console.error("[register] backend error:", raw);
-      return "We couldn't complete sign-up. Please request a new code and try again.";
-    }
-    if (m.includes("invalid otp") || m.includes("expired")) return "That code is invalid or has expired. Request a new one.";
-    if (m.includes("user already exists") || m.includes("already in use")) return "An account with this email already exists. Try logging in instead.";
-    return raw || "Something went wrong.";
   }
 
   async function goNext() {
@@ -176,11 +186,10 @@ export default function PatientRegister() {
     }
     if (step === 3) {
       const v = validateStep3(); if (v) return err(v);
-      // Send OTP and advance to verify step.
       setSubmitting(true);
       try {
         const name = `${form.firstName} ${form.lastName}`.trim();
-        await endUserApi.signUpOtp({ email: form.email, name });
+        await endUserApi.signUpOtp({ email: form.email.trim(), name });
         inf("Verification code sent. Check your inbox.");
         setStep(4);
       } catch (e) {
@@ -210,7 +219,7 @@ export default function PatientRegister() {
     setSubmitting(true);
     try {
       const name = `${form.firstName} ${form.lastName}`.trim();
-      await endUserApi.signUpOtp({ email: form.email, name });
+      await endUserApi.signUpOtp({ email: form.email.trim(), name });
       inf("New code sent.");
     } catch (e) {
       err(friendlyError((e as ApiError).message || "Could not resend."));
@@ -218,19 +227,16 @@ export default function PatientRegister() {
   }
 
   async function createAccount() {
-    // Send every known optional field as an empty string (not undefined).
-    // JSON.stringify drops undefined values entirely, which then causes
-    // the backend to crash when it reads body.<field> and pipes that
-    // straight into crypto.update() / Buffer.from().
     const trim = (s: string) => s.trim();
+    const countryName = nameForCode(form.countryCode);
     const dto: CreateUserDto = {
       firstName: trim(form.firstName),
       lastName: trim(form.lastName),
       email: trim(form.email),
       password: form.password,
-      dob: trim(form.dob),
+      dob: trim(form.dob),                 // yyyy-MM-dd (ISO date string)
       state: trim(form.state),
-      country: trim(form.country),
+      country: countryName,
       mobile: trim(form.mobile),
       cpapUser: trim(form.cpapUser),
       transcendDevice: "Transcend 365 miniCPAP",
@@ -238,7 +244,7 @@ export default function PatientRegister() {
       gender: "",
       city: "",
       pincode: undefined,
-      countryCode: trim(form.countryCode) || "+1",
+      countryCode: "",                     // dial code embedded in `mobile` E.164
       profileImage: "",
       provider: trim(form.provider),
       providerEmail: trim(form.providerEmail),
@@ -253,11 +259,8 @@ export default function PatientRegister() {
     setSession(eu.token, eu.refreshToken, eu, "end-user");
     setStep(5);
     setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.location.assign("/patient/dashboard");
-      } else {
-        router.push("/patient/dashboard");
-      }
+      if (typeof window !== "undefined") window.location.assign("/patient/dashboard");
+      else router.push("/patient/dashboard");
     }, 800);
   }
 
@@ -270,10 +273,31 @@ export default function PatientRegister() {
         <div className="card p-6">
           <Stepper step={step} />
 
-          {step === 1 && <Step1 form={form} upd={upd} stateOptions={stateOptions} />}
-          {step === 2 && <Step2 form={form} upd={upd} />}
-          {step === 3 && <Step3 form={form} upd={upd} pw={pw} pwOk={pwOk} passwordsMatch={passwordsMatch} />}
-          {step === 4 && <VerifyStep email={form.email} otp={otp} setOtp={setOtp} onResend={resendOtp} disabled={submitting} />}
+          {step === 1 && (
+            <Step1
+              form={form} upd={upd} touch={touch} touched={touched}
+              countries={countries} stateOptions={stateOptions}
+            />
+          )}
+          {step === 2 && (
+            <Step2
+              form={form} upd={upd}
+              occupations={occupationOptions} cpapOpts={cpapOptions}
+              usageOpts={usageOptions} purchaseOpts={purchaseOptions}
+            />
+          )}
+          {step === 3 && (
+            <Step3
+              form={form} upd={upd}
+              pw={pw} pwOk={pwOk} passwordsMatch={passwordsMatch}
+            />
+          )}
+          {step === 4 && (
+            <VerifyStep
+              email={form.email} otp={otp} setOtp={setOtp}
+              onResend={resendOtp} disabled={submitting}
+            />
+          )}
           {step === 5 && <Done />}
 
           {step !== 5 && info && (
@@ -308,9 +332,9 @@ export default function PatientRegister() {
                 disabled={submitting}
                 className="btn-primary disabled:opacity-50"
               >
-                {step === 1 || step === 2 ? <>Next <ArrowRight className="w-4 h-4" /></>
-                  : step === 3 ? (submitting ? "Sending code…" : <>Submit <ArrowRight className="w-4 h-4" /></>)
-                  : (submitting ? "Verifying…" : <>Verify <Check className="w-4 h-4" /></>)}
+                {step === 1 || step === 2 ? (<>Next <ArrowRight className="w-4 h-4" /></>) :
+                  step === 3 ? (submitting ? "Sending code…" : (<>Submit <ArrowRight className="w-4 h-4" /></>)) :
+                  (submitting ? "Verifying…" : (<>Verify <Check className="w-4 h-4" /></>))}
               </button>
             </div>
           )}
@@ -349,72 +373,110 @@ function Stepper({ step }: { step: Step }) {
 
 // ---------- Steps ----------
 
-function Step1({ form, upd, stateOptions }: {
+function Step1({
+  form, upd, touch, touched, countries, stateOptions,
+}: {
   form: Form;
   upd: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  touch: (k: keyof Form) => void;
+  touched: Record<keyof Form, boolean>;
+  countries: { code: string; name: string }[];
   stateOptions: string[] | null;
 }) {
+  const fnInvalid = touched.firstName && !validName(form.firstName);
+  const lnInvalid = touched.lastName && !validName(form.lastName);
+  const emInvalid = touched.email && !validEmail(form.email);
   return (
     <div>
       <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
       <p className="text-sm text-slate-500 mb-4">Fields marked * are required.</p>
       <div className="space-y-3">
         <Field label="Country" required>
-          <select className="input" value={form.country} onChange={(e) => upd("country", e.target.value)}>
-            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+          <select className="input" value={form.countryCode} onChange={(e) => { upd("countryCode", e.target.value); upd("state", ""); }}>
+            {countries.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
           </select>
         </Field>
         <Field label="State" required>
-          {stateOptions
-            ? (
-              <select className="input" value={form.state} onChange={(e) => upd("state", e.target.value)}>
-                <option value="">Select State</option>
-                {stateOptions.map((s) => <option key={s}>{s}</option>)}
-              </select>
-            )
-            : <input className="input" placeholder="State / Province" value={form.state} onChange={(e) => upd("state", e.target.value)} />}
+          {stateOptions === null ? (
+            <input className="input" placeholder="State / Province" value={form.state} onChange={(e) => upd("state", e.target.value)} />
+          ) : stateOptions.length === 0 ? (
+            <input className="input bg-slate-50 text-slate-500" disabled value="No states for this country" />
+          ) : (
+            <select className="input" value={form.state} onChange={(e) => upd("state", e.target.value)}>
+              <option value="">Select State</option>
+              {stateOptions.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          )}
         </Field>
-        <Field label="First Name" required>
-          <input className="input" placeholder="Enter your First Name" value={form.firstName} onChange={(e) => upd("firstName", e.target.value)} />
+        <Field label="First Name" required err={fnInvalid ? "Only letters, apostrophes and single spaces are allowed." : null}>
+          <input
+            className={`input ${fnInvalid ? "border-red-300" : ""}`}
+            placeholder="Enter your First Name"
+            value={form.firstName}
+            onChange={(e) => upd("firstName", e.target.value)}
+            onBlur={() => touch("firstName")}
+            autoComplete="given-name"
+          />
         </Field>
-        <Field label="Last Name" required>
-          <input className="input" placeholder="Enter your Last Name" value={form.lastName} onChange={(e) => upd("lastName", e.target.value)} />
+        <Field label="Last Name" required err={lnInvalid ? "Only letters, apostrophes and single spaces are allowed." : null}>
+          <input
+            className={`input ${lnInvalid ? "border-red-300" : ""}`}
+            placeholder="Enter your Last Name"
+            value={form.lastName}
+            onChange={(e) => upd("lastName", e.target.value)}
+            onBlur={() => touch("lastName")}
+            autoComplete="family-name"
+          />
         </Field>
-        <Field label="Email" required>
-          <input className="input" type="email" placeholder="Enter your Email" value={form.email} onChange={(e) => upd("email", e.target.value)} autoComplete="email" />
+        <Field label="Email" required err={emInvalid ? "Enter a valid email address." : null}>
+          <input
+            className={`input ${emInvalid ? "border-red-300" : ""}`}
+            type="email"
+            placeholder="Enter your Email"
+            value={form.email}
+            onChange={(e) => upd("email", e.target.value)}
+            onBlur={() => touch("email")}
+            autoComplete="email"
+          />
         </Field>
       </div>
     </div>
   );
 }
 
-function Step2({ form, upd }: { form: Form; upd: <K extends keyof Form>(k: K, v: Form[K]) => void }) {
+function Step2({
+  form, upd, occupations, cpapOpts, usageOpts, purchaseOpts,
+}: {
+  form: Form;
+  upd: <K extends keyof Form>(k: K, v: Form[K]) => void;
+  occupations: string[]; cpapOpts: string[]; usageOpts: string[]; purchaseOpts: string[];
+}) {
   return (
     <div>
       <h2 className="text-lg font-semibold text-slate-900">Your Basic Information</h2>
       <p className="text-sm text-slate-500 mb-4">Tell us a bit about your therapy.</p>
       <div className="space-y-3">
-        <Field label="Date of Birth" required>
+        <Field label="Date of Birth" required hint={form.dob ? `Will appear as: ${displayDob(form.dob)}` : "Format: 01-jun-2026"}>
           <input className="input" type="date" value={form.dob} onChange={(e) => upd("dob", e.target.value)} />
         </Field>
         <Field label="Occupation">
           <select className="input" value={form.occupation} onChange={(e) => upd("occupation", e.target.value)}>
-            {OCCUPATIONS.map((o) => <option key={o}>{o}</option>)}
+            {occupations.map((o) => <option key={o}>{o}</option>)}
           </select>
         </Field>
         <Field label="How long have you been a CPAP user?" required>
           <select className="input" value={form.cpapUser} onChange={(e) => upd("cpapUser", e.target.value)}>
-            {CPAP_DURATION.map((o) => <option key={o}>{o}</option>)}
+            {cpapOpts.map((o) => <option key={o}>{o}</option>)}
           </select>
         </Field>
         <Field label="How are you using the Transcend device?" required>
           <select className="input" value={form.transcendUsage} onChange={(e) => upd("transcendUsage", e.target.value)}>
-            {USAGE.map((o) => <option key={o}>{o}</option>)}
+            {usageOpts.map((o) => <option key={o}>{o}</option>)}
           </select>
         </Field>
         <Field label="Where was the Transcend device purchased?" required>
           <select className="input" value={form.devicePurchased} onChange={(e) => upd("devicePurchased", e.target.value)}>
-            {PURCHASE.map((o) => <option key={o}>{o}</option>)}
+            {purchaseOpts.map((o) => <option key={o}>{o}</option>)}
           </select>
         </Field>
       </div>
@@ -422,10 +484,12 @@ function Step2({ form, upd }: { form: Form; upd: <K extends keyof Form>(k: K, v:
   );
 }
 
-function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
+function Step3({
+  form, upd, pw, pwOk, passwordsMatch,
+}: {
   form: Form;
   upd: <K extends keyof Form>(k: K, v: Form[K]) => void;
-  pw: ReturnType<typeof checkPassword>;
+  pw: ReturnType<typeof passwordPolicy>;
   pwOk: boolean;
   passwordsMatch: boolean;
 }) {
@@ -441,13 +505,17 @@ function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
           <input className="input" type="email" placeholder="Enter Care Provider Email" value={form.providerEmail} onChange={(e) => upd("providerEmail", e.target.value)} />
         </Field>
         <Field label="Mobile Number" required>
-          <div className="flex gap-2">
-            <input className="input !w-20" value={form.countryCode} onChange={(e) => upd("countryCode", e.target.value)} aria-label="Country code" />
-            <input className="input flex-1" inputMode="tel" placeholder="Enter Mobile Number" value={form.mobile} onChange={(e) => upd("mobile", e.target.value)} autoComplete="tel-national" />
-          </div>
+          <PhoneInputField value={form.mobile} onChange={(v) => upd("mobile", v)} defaultCountry={form.countryCode || "US"} />
         </Field>
         <Field label="Password" required>
-          <input className="input" type="password" placeholder="Create Password" value={form.password} onChange={(e) => upd("password", e.target.value)} autoComplete="new-password" />
+          <input
+            className="input"
+            type="password"
+            placeholder="Create Password"
+            value={form.password}
+            onChange={(e) => upd("password", e.target.value)}
+            autoComplete="new-password"
+          />
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Pill ok={pw.length}>8–16 characters</Pill>
             <Pill ok={pw.lower}>1 lowercase letter</Pill>
@@ -458,7 +526,7 @@ function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
         </Field>
         <Field label="Confirm Password" required>
           <input
-            className={`input ${form.confirmPassword && !passwordsMatch ? "border-red-300 focus:ring-red-500" : ""}`}
+            className={`input ${form.confirmPassword && !passwordsMatch ? "border-red-300" : ""}`}
             type="password"
             placeholder="Confirm Password"
             value={form.confirmPassword}
@@ -469,7 +537,6 @@ function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
             <p className="text-xs text-red-600 mt-1">Passwords do not match.</p>
           )}
         </Field>
-
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
           <input type="checkbox" className="mt-1" checked={form.consentTerms} onChange={(e) => upd("consentTerms", e.target.checked)} />
           <div className="text-sm text-slate-700">
@@ -491,7 +558,9 @@ function Step3({ form, upd, pw, pwOk, passwordsMatch }: {
   );
 }
 
-function VerifyStep({ email, otp, setOtp, onResend, disabled }: {
+function VerifyStep({
+  email, otp, setOtp, onResend, disabled,
+}: {
   email: string; otp: string; setOtp: (v: string) => void; onResend: () => void; disabled: boolean;
 }) {
   return (
@@ -531,11 +600,15 @@ function Done() {
 
 // ---------- Small UI helpers ----------
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({
+  label, required, hint, err, children,
+}: { label: string; required?: boolean; hint?: string; err?: string | null; children: React.ReactNode }) {
   return (
     <div>
       <label className="label">{label} {required && <span className="text-red-500" aria-hidden="true">*</span>}</label>
       {children}
+      {err && <p className="text-xs text-red-600 mt-1">{err}</p>}
+      {hint && !err && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
     </div>
   );
 }
