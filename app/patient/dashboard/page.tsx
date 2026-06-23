@@ -6,12 +6,13 @@ import StatCard from "@/components/StatCard";
 import BarChart from "@/components/BarChart";
 import { Moon, Wind, Gauge, Activity, RefreshCw, AlertTriangle, Smartphone } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
-import { getCurrentEndUser } from "@/lib/auth";
+import { getCurrentEndUser, getRefreshToken, setSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
 import type {
   BarChartResponse,
   DataBySessionResult,
+  EndUser,
   EventGraphDto,
   LastSyncResult,
   SessionQuery,
@@ -47,8 +48,9 @@ type Charts = {
 const EMPTY_CHARTS: Charts = { usage: [], leak: [], ahi: [], sleep: [], mask: [] };
 
 export default function PatientDashboard() {
-  const [user, setUser] = useState<ReturnType<typeof getCurrentEndUser>>(null);
-  const [session, setSession] = useState<SessionWindow>(1);
+  const [user, setUser] = useState<EndUser | null>(null);
+  const [ready, setReady] = useState(false);
+  const [session, setSessionWindow] = useState<SessionWindow>(1);
   const [data, setData] = useState<DataBySessionResult | null>(null);
   const [sync, setSync] = useState<LastSyncResult | null>(null);
   const [charts, setCharts] = useState<Charts>(EMPTY_CHARTS);
@@ -56,7 +58,27 @@ export default function PatientDashboard() {
   const [chartsLoading, setChartsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setUser(getCurrentEndUser()); }, []);
+  // On mount, hydrate from session cache then ask the server for the
+  // latest profile so deviceId / timeZone reflect any device sync that
+  // happened on the mobile app after login.
+  useEffect(() => {
+    const cached = getCurrentEndUser();
+    setUser(cached);
+    setReady(true);
+    if (!cached?.email) return;
+    endUserApi.getByEmail(cached.email)
+      .then((fresh) => {
+        const merged: EndUser = {
+          ...cached,
+          ...fresh,
+          token: cached.token,
+          refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
+        };
+        setUser(merged);
+        setSession(merged.token, merged.refreshToken, merged, "end-user");
+      })
+      .catch(() => { /* keep cached user; surface errors only when the data call fails */ });
+  }, []);
 
   const baseQuery = useMemo<SessionQuery | null>(() => {
     if (!user?.email || !user?.deviceId) return null;
@@ -105,12 +127,32 @@ export default function PatientDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
+  if (!ready) {
+    return (
+      <>
+        <PageHeader title="Dashboard" />
+        <div className="card p-8 text-center text-sm text-slate-500">Loading…</div>
+      </>
+    );
+  }
+
   if (!user) {
     return (
       <>
         <PageHeader title="Dashboard" />
         <div className="card p-8 text-center text-sm text-slate-500">
           You&apos;re not signed in as a patient. <a href="/login" className="text-brand-600 font-medium">Log on</a> or <a href="/register/patient" className="text-brand-600 font-medium">create an account</a>.
+        </div>
+      </>
+    );
+  }
+
+  if (!user.deviceId) {
+    return (
+      <>
+        <PageHeader title="Dashboard" subtitle="Your CPAP therapy summary." />
+        <div className="card p-8 text-center text-sm text-slate-500">
+          No device is linked to this account yet. Sync your Transcend device from the mobile app — your therapy data will appear here once events are uploaded.
         </div>
       </>
     );
@@ -135,7 +177,7 @@ export default function PatientDashboard() {
         {SESSIONS.map((s) => (
           <button
             key={s.id}
-            onClick={() => setSession(s.id)}
+            onClick={() => setSessionWindow(s.id)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${session === s.id ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
           >
             {s.label}

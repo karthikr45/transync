@@ -5,8 +5,9 @@ import PageHeader from "@/components/PageHeader";
 import MobileReport from "@/components/MobileReport";
 import { Printer, RefreshCw, AlertTriangle } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
-import { getCurrentEndUser } from "@/lib/auth";
-import type { ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
+import { getCurrentEndUser, getRefreshToken, setSession } from "@/lib/auth";
+import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
+import type { EndUser, ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
 import { fromReportBySessionResult } from "@/lib/report-vm";
 
 const RANGES: { label: string; session: SessionWindow }[] = [
@@ -18,16 +19,35 @@ const RANGES: { label: string; session: SessionWindow }[] = [
 ];
 
 export default function PatientReports() {
-  const [user, setUser] = useState<ReturnType<typeof getCurrentEndUser>>(null);
+  const [user, setUser] = useState<EndUser | null>(null);
+  const [ready, setReady] = useState(false);
   const [rangeLabel, setRangeLabel] = useState("90 Days");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [data, setData] = useState<ReportBySessionResult | null>(null);
   const [sync, setSync] = useState<LastSyncResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { setUser(getCurrentEndUser()); }, []);
+  useEffect(() => {
+    const cached = getCurrentEndUser();
+    setUser(cached);
+    setReady(true);
+    if (!cached?.email) return;
+    endUserApi.getByEmail(cached.email)
+      .then((fresh) => {
+        const merged: EndUser = {
+          ...cached,
+          ...fresh,
+          token: cached.token,
+          refreshToken: cached.refreshToken ?? getRefreshToken() ?? "",
+        };
+        setUser(merged);
+        setSession(merged.token, merged.refreshToken, merged, "end-user");
+      })
+      .catch(() => { /* keep cached user */ });
+  }, []);
 
   const session = RANGES.find((r) => r.label === rangeLabel)?.session ?? 3;
 
@@ -40,7 +60,8 @@ export default function PatientReports() {
           email: user.email,
           deviceId: user.deviceId,
           session,
-          timeZoneName: user.timeZone || undefined,
+          timeZone: getTimeZoneOffset(),
+          timeZoneName: user.timeZone || getTimeZoneName(),
           startDate: start || undefined,
           endDate: end || undefined,
         }),
@@ -56,12 +77,54 @@ export default function PatientReports() {
 
   useEffect(() => { load(); }, [load]);
 
+  async function downloadPdf() {
+    if (!user?.email || !user.deviceId) return;
+    setDownloading(true); setError(null);
+    try {
+      const blob = await endUserApi.generatePdf({
+        email: user.email,
+        deviceId: user.deviceId,
+        session,
+        timeZone: getTimeZoneOffset(),
+        timeZoneName: user.timeZone || getTimeZoneName(),
+        startDate: start || undefined,
+        endDate: end || undefined,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.download = `transcend-report-${stamp}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError((e as ApiError).message || "Failed to generate PDF.");
+    } finally { setDownloading(false); }
+  }
+
+  if (!ready) {
+    return (<><PageHeader title="Report" /><div className="card p-8 text-center text-sm text-slate-500">Loading…</div></>);
+  }
+
   if (!user) {
     return (
       <>
         <PageHeader title="Report" />
         <div className="card p-8 text-center text-sm text-slate-500">
           Not signed in. <a href="/login" className="text-brand-600 font-medium">Log on</a>.
+        </div>
+      </>
+    );
+  }
+
+  if (!user.deviceId) {
+    return (
+      <>
+        <PageHeader title="Report" subtitle="Generated from your device's event stream." />
+        <div className="card p-8 text-center text-sm text-slate-500">
+          No device is linked to this account yet. Sync your Transcend device from the mobile app — reports will be available once events are uploaded.
         </div>
       </>
     );
@@ -109,8 +172,8 @@ export default function PatientReports() {
               <button className="btn-secondary" onClick={load} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
               </button>
-              <button className="btn-primary" onClick={() => window.print()}>
-                <Printer className="w-4 h-4" /> Print to PDF
+              <button className="btn-primary disabled:opacity-50" onClick={downloadPdf} disabled={downloading || loading}>
+                <Printer className="w-4 h-4" /> {downloading ? "Generating…" : "Download PDF"}
               </button>
             </>
           }

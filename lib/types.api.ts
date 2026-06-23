@@ -340,6 +340,18 @@ export interface EventGraphDto { label: string; value: number; }
 // EventGraphDto[] directly or { data: EventGraphDto[] }, so we normalise
 // at the call site.
 export type BarChartResponse = EventGraphDto[] | { data?: EventGraphDto[]; values?: number[]; labels?: string[] };
+
+export interface TotalRuntimeDto { totalRunningTime: number }
+
+export interface GeneratePdfDto {
+  email: string;
+  deviceId: string;
+  session: SessionWindow;
+  timeZone?: number;
+  timeZoneName?: string;
+  startDate?: string;
+  endDate?: string;
+}
 export interface SleepScoreEventDto {
   totalHoursRating: number;
   ahiRating: number;

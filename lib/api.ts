@@ -13,6 +13,7 @@ import type {
   SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
   ReportBySessionQuery, ReportBySessionResult, BarChartResponse,
+  SleepScoreEventDto, TotalRuntimeDto, GeneratePdfDto,
   MetadataResponse, MarketsResponse,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   IncomingSharesResponse, SharedReportDto,
@@ -252,4 +253,40 @@ export const endUserApi = {
     apiFetch<BarChartResponse>(`/event/getAverageSleepScore${qs(q as unknown as Record<string, unknown>)}`),
   getAverageMaskRemoved: (q: SessionQuery) =>
     apiFetch<BarChartResponse>(`/event/getAverageMaskRemoved${qs(q as unknown as Record<string, unknown>)}`),
+
+  // Sleep-score breakdown + total run time
+  getSleepScore: (q: SessionQuery) =>
+    apiFetch<SleepScoreEventDto>(`/event/getSleepScore${qs(q as unknown as Record<string, unknown>)}`),
+  getSessionSleepScore: (q: SessionQuery) =>
+    apiFetch<SleepScoreEventDto>(`/event/getSessionSleepScore${qs(q as unknown as Record<string, unknown>)}`),
+  totalRunningTime: (q: SessionQuery) =>
+    apiFetch<TotalRuntimeDto>(`/event/totalRunningTime${qs(q as unknown as Record<string, unknown>)}`),
+
+  // Server-side PDF generation for reportBySession. Returns the raw
+  // PDF as a Blob so the caller can trigger a download.
+  generatePdf: async (dto: GeneratePdfDto): Promise<Blob> => {
+    if (!API_BASE_URL) throw new ApiError("API base URL is not configured.", 0);
+    const token = getToken();
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+      Accept: "application/pdf, application/json",
+    };
+    if (token) (headers as Record<string, string>).Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE_URL}/event/generatePdf`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(dto),
+      cache: "no-store",
+    }).catch(() => { throw new ApiError("Network error — could not reach the server.", 0); });
+    if (!res.ok) {
+      let message = res.statusText || "PDF generation failed.";
+      try {
+        const body = await res.json();
+        if (body && typeof body.message === "string") message = body.message;
+      } catch { /* not JSON */ }
+      throw new ApiError(message, res.status);
+    }
+    return res.blob();
+  },
 };
