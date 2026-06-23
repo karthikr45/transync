@@ -409,6 +409,82 @@ export interface Share {
 }
 export interface MySharesResponse { shares: Share[] }
 
+// ---------- /home-care/provider/dashboard, /worklist, /reports ----------
+export type ComplianceStatus = "compliant" | "at_risk" | "non_compliant";
+export type ProviderAlertType = "low_usage" | "mask_leak" | "no_sync" | "ahi";
+export type ProviderAlertSeverity = "high" | "medium";
+
+export interface ProviderDashboardMetrics {
+  totalPatients: number;
+  compliant: number;
+  compliantPct: number;
+  atRiskOrNonCompliant: number;
+  unassignedDevices: number;
+  awaitingConsent: number;
+}
+export interface PatientNeedingAttention {
+  name: string;
+  usage7d: number;
+  status: ComplianceStatus;
+}
+export interface ProviderAlert {
+  patientName: string;
+  type: ProviderAlertType;
+  severity: ProviderAlertSeverity;
+  message: string;
+  date: string;
+}
+export interface ProviderDashboardResult {
+  metrics: ProviderDashboardMetrics;
+  patientsNeedingAttention: PatientNeedingAttention[];
+  recentAlerts: ProviderAlert[];
+}
+
+export type WorklistCategory = "non_compliant" | "at_risk" | "missed_sync" | "awaiting_consent";
+export type WorklistAction = "call" | "review" | "contact" | "resend";
+
+export interface WorklistItem {
+  category: WorklistCategory;
+  patientName: string;
+  detail: string;
+  suggestedAction: WorklistAction;
+}
+export interface ProviderWorklistResult {
+  total: number;
+  open: number;
+  limit: number;
+  offset: number;
+  summary: Partial<Record<WorklistCategory, number>>;
+  items: WorklistItem[];
+}
+export interface ProviderWorklistQuery { limit?: number; offset?: number }
+
+export type ComplianceWindow = "24h" | "7d" | "30d" | "90d";
+export interface ProviderReportRow {
+  patientId: string;
+  name: string;
+  deviceId: string;
+  totalDays: number;
+  therapyHours: number;
+  sessionsOver4h: number;
+  ahi: number;
+  pctCompliant: number;
+  compliant: boolean;
+}
+export interface ProviderReportsResult {
+  window: ComplianceWindow;
+  total: number;
+  limit: number;
+  offset: number;
+  pageSummary: { compliant: number; total: number; pct: number };
+  rows: ProviderReportRow[];
+}
+export interface ProviderReportsQuery {
+  window?: ComplianceWindow;
+  limit?: number;
+  offset?: number;
+}
+
 // ---------- /home-care/shares/incoming (recipient side) ----------
 export interface IncomingShare {
   id: string;

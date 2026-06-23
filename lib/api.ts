@@ -17,6 +17,8 @@ import type {
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   IncomingSharesResponse, SharedReportDto,
   DeleteAccountDto, DeleteAccountResult,
+  ProviderDashboardResult, ProviderWorklistResult, ProviderWorklistQuery,
+  ProviderReportsResult, ProviderReportsQuery,
 } from "./types.api";
 
 export class ApiError extends Error {
@@ -167,6 +169,14 @@ export const homeCareApi = {
     apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),
   complianceReport: (dto: ComplianceReportDto) =>
     apiFetch<ComplianceReportResult>("/home-care/devices/compliance-report", { method: "POST", body: JSON.stringify(dto) }),
+
+  // Provider console
+  providerDashboard: () =>
+    apiFetch<ProviderDashboardResult>("/home-care/provider/dashboard"),
+  providerWorklist: (query: ProviderWorklistQuery = {}) =>
+    apiFetch<ProviderWorklistResult>(`/home-care/provider/worklist${qs(query as unknown as Record<string, unknown>)}`),
+  providerReports: (query: ProviderReportsQuery = {}) =>
+    apiFetch<ProviderReportsResult>(`/home-care/provider/reports${qs(query as unknown as Record<string, unknown>)}`),
 
   // Admin
   markets: () => apiFetch<MarketsResponse>("/home-care/admin/markets"),
