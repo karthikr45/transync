@@ -27,12 +27,36 @@ const SESSIONS: { id: SessionWindow; label: string }[] = [
   { id: 3, label: "90 Days" },
 ];
 
-function normaliseBarChart(raw: BarChartResponse | null | undefined): EventGraphDto[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (Array.isArray(raw.data)) return raw.data;
-  if (Array.isArray(raw.labels) && Array.isArray(raw.values)) {
-    return raw.labels.map((label, i) => ({ label, value: raw.values?.[i] ?? 0 }));
+// Coerce one chart-point object into { label, value } regardless of
+// which field names the API uses. Backend serialisers have shipped at
+// least three shapes across releases ({label,value}, {x,y},
+// {date,count}, …) and value sometimes lands as a numeric string.
+function coercePoint(raw: unknown, idx: number): { label: string; value: number } {
+  if (raw === null || raw === undefined) return { label: String(idx), value: 0 };
+  if (typeof raw === "number") return { label: String(idx), value: raw };
+  if (typeof raw === "string") return { label: String(idx), value: Number(raw) || 0 };
+  const o = raw as Record<string, unknown>;
+  const labelCandidate = o.label ?? o.x ?? o.date ?? o.day ?? o.name ?? o.key ?? String(idx);
+  const valueCandidate =
+    o.value ?? o.y ?? o.count ?? o.total ?? o.avg ?? o.average ??
+    o.hours ?? o.usageHours ?? o.usageHrs ?? o.ahi ?? o.leak ?? o.score ?? o.sleepScore ?? 0;
+  const num = typeof valueCandidate === "number" ? valueCandidate : Number(valueCandidate);
+  return { label: String(labelCandidate), value: Number.isFinite(num) ? num : 0 };
+}
+
+function normaliseBarChart(raw: unknown): EventGraphDto[] {
+  if (raw === null || raw === undefined) return [];
+  if (Array.isArray(raw)) return raw.map(coercePoint);
+  if (typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    if (Array.isArray(o.data)) return o.data.map(coercePoint);
+    if (Array.isArray(o.result)) return o.result.map(coercePoint);
+    if (Array.isArray(o.points)) return o.points.map(coercePoint);
+    if (Array.isArray(o.labels) && Array.isArray(o.values)) {
+      const labels = o.labels as unknown[];
+      const values = o.values as unknown[];
+      return labels.map((label, i) => coercePoint({ label, value: values[i] }, i));
+    }
   }
   return [];
 }
