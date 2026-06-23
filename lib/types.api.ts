@@ -289,6 +289,7 @@ export interface SessionQuery {
   email: string;
   deviceId: string;
   session: SessionWindow;
+  timeZone?: number;
   timeZoneName?: string;
 }
 
@@ -334,6 +335,11 @@ export interface ReportBySessionResult {
 }
 
 export interface EventGraphDto { label: string; value: number; }
+
+// Bar-chart endpoints (event/getAverage*) — permissive: API may return
+// EventGraphDto[] directly or { data: EventGraphDto[] }, so we normalise
+// at the call site.
+export type BarChartResponse = EventGraphDto[] | { data?: EventGraphDto[]; values?: number[]; labels?: string[] };
 export interface SleepScoreEventDto {
   totalHoursRating: number;
   ahiRating: number;

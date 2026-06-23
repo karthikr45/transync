@@ -1,39 +1,81 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
+import BarChart from "@/components/BarChart";
 import { Moon, Wind, Gauge, Activity, RefreshCw, AlertTriangle, Smartphone } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
-import type { DataBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
+import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
+import type {
+  BarChartResponse,
+  DataBySessionResult,
+  EventGraphDto,
+  LastSyncResult,
+  SessionQuery,
+  SessionWindow,
+} from "@/lib/types.api";
 
+// Window selector mirrors the mobile app: Last 24 Hours / 7 Days / 30 Days / 90 Days.
 const SESSIONS: { id: SessionWindow; label: string }[] = [
-  { id: 0, label: "Last night" },
-  { id: 1, label: "7 days" },
-  { id: 2, label: "28 days" },
-  { id: 3, label: "90 days" },
-  { id: 4, label: "365 days" },
+  { id: 0, label: "Last 24 Hours" },
+  { id: 1, label: "7 Days" },
+  { id: 2, label: "30 Days" },
+  { id: 3, label: "90 Days" },
 ];
+
+function normaliseBarChart(raw: BarChartResponse | null | undefined): EventGraphDto[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw.data)) return raw.data;
+  if (Array.isArray(raw.labels) && Array.isArray(raw.values)) {
+    return raw.labels.map((label, i) => ({ label, value: raw.values?.[i] ?? 0 }));
+  }
+  return [];
+}
+
+type Charts = {
+  usage: EventGraphDto[];
+  leak: EventGraphDto[];
+  ahi: EventGraphDto[];
+  sleep: EventGraphDto[];
+  mask: EventGraphDto[];
+};
+
+const EMPTY_CHARTS: Charts = { usage: [], leak: [], ahi: [], sleep: [], mask: [] };
 
 export default function PatientDashboard() {
   const [user, setUser] = useState<ReturnType<typeof getCurrentEndUser>>(null);
   const [session, setSession] = useState<SessionWindow>(1);
   const [data, setData] = useState<DataBySessionResult | null>(null);
   const [sync, setSync] = useState<LastSyncResult | null>(null);
+  const [charts, setCharts] = useState<Charts>(EMPTY_CHARTS);
   const [loading, setLoading] = useState(false);
+  const [chartsLoading, setChartsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { setUser(getCurrentEndUser()); }, []);
 
+  const baseQuery = useMemo<SessionQuery | null>(() => {
+    if (!user?.email || !user?.deviceId) return null;
+    return {
+      email: user.email,
+      deviceId: user.deviceId,
+      session,
+      timeZone: getTimeZoneOffset(),
+      timeZoneName: user.timeZone || getTimeZoneName(),
+    };
+  }, [user, session]);
+
   const load = useCallback(async () => {
-    if (!user || !user.email || !user.deviceId) return;
-    setLoading(true); setError(null);
+    if (!baseQuery) return;
+    setLoading(true); setChartsLoading(true); setError(null);
     try {
       const [d, s] = await Promise.allSettled([
-        endUserApi.getDataBySession({ email: user.email, deviceId: user.deviceId, session, timeZoneName: user.timeZone || undefined }),
-        endUserApi.getLastSyncDate({ email: user.email, deviceId: user.deviceId }),
+        endUserApi.getDataBySession(baseQuery),
+        endUserApi.getLastSyncDate({ email: baseQuery.email, deviceId: baseQuery.deviceId }),
       ]);
       if (d.status === "fulfilled") setData(d.value);
       else throw d.reason;
@@ -41,7 +83,25 @@ export default function PatientDashboard() {
     } catch (e) {
       setError((e as ApiError).message || "Failed to load data.");
     } finally { setLoading(false); }
-  }, [user, session]);
+
+    // Fire all five trend charts in parallel; failures degrade to empty arrays.
+    try {
+      const [usage, leak, ahi, sleep, mask] = await Promise.allSettled([
+        endUserApi.getAverageTime(baseQuery),
+        endUserApi.getAverageLeak(baseQuery),
+        endUserApi.getAverageAHI(baseQuery),
+        endUserApi.getAverageSleepScore(baseQuery),
+        endUserApi.getAverageMaskRemoved(baseQuery),
+      ]);
+      setCharts({
+        usage: usage.status === "fulfilled" ? normaliseBarChart(usage.value) : [],
+        leak: leak.status === "fulfilled" ? normaliseBarChart(leak.value) : [],
+        ahi: ahi.status === "fulfilled" ? normaliseBarChart(ahi.value) : [],
+        sleep: sleep.status === "fulfilled" ? normaliseBarChart(sleep.value) : [],
+        mask: mask.status === "fulfilled" ? normaliseBarChart(mask.value) : [],
+      });
+    } finally { setChartsLoading(false); }
+  }, [baseQuery]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -98,15 +158,23 @@ export default function PatientDashboard() {
         <div className="card p-8 text-center text-sm text-slate-500">Loading…</div>
       ) : data ? (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <StatCard label="Usage" value={`${data.usageHours.toFixed(1)}h`} hint="avg / night" tone="good" icon={<Activity className="w-5 h-5" />} />
-          <StatCard label="AHI" value={data.ahi.toFixed(1)} hint="events / hour" icon={<Moon className="w-5 h-5" />} />
-          <StatCard label="Avg leak" value={`${data.avgLeak.toFixed(0)}`} hint="L/min" icon={<Wind className="w-5 h-5" />} />
-          <StatCard label="Mask removed" value={data.maskRemoved} icon={<Gauge className="w-5 h-5" />} />
-          <StatCard label="Sleep score" value={data.sleepScore} tone={data.sleepScore >= 75 ? "good" : data.sleepScore >= 50 ? "warn" : "bad"} />
+          <StatCard label="Usage hours" value={`${data.usageHours.toFixed(2)}h`} hint="avg / night" tone="good" icon={<Activity className="w-5 h-5" />} />
+          <StatCard label="Events / hour" value={data.ahi.toFixed(2)} hint="AHI" icon={<Moon className="w-5 h-5" />} />
+          <StatCard label="Mask leak" value={data.avgLeak.toFixed(2)} hint="L/min" icon={<Wind className="w-5 h-5" />} />
+          <StatCard label="Mask removed" value={data.maskRemoved} hint="events" icon={<Gauge className="w-5 h-5" />} />
+          <StatCard label="Sleep score" value={`${data.sleepScore} / 100`} tone={data.sleepScore >= 75 ? "good" : data.sleepScore >= 50 ? "warn" : "bad"} />
         </div>
       ) : (
         <div className="card p-8 text-center text-sm text-slate-500">No data for this window yet.</div>
       )}
+
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
+        <BarChart title="Usage hours" unit="hours" points={charts.usage} tone="brand" loading={chartsLoading} />
+        <BarChart title="Mask leak" unit="L/min" points={charts.leak} tone="amber" loading={chartsLoading} />
+        <BarChart title="Events / hour" unit="AHI" points={charts.ahi} tone="slate" loading={chartsLoading} />
+        <BarChart title="Sleep score" unit="/100" points={charts.sleep} tone="green" loading={chartsLoading} />
+        <BarChart title="Mask removed" unit="events" points={charts.mask} tone="slate" loading={chartsLoading} />
+      </div>
 
       <div className="card p-5 mt-6">
         <h2 className="text-base font-semibold text-slate-900 mb-1">Device</h2>

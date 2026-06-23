@@ -12,7 +12,7 @@ import type {
   ComplianceReportDto, ComplianceReportResult,
   SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
   LastSyncQuery, LastSyncResult, SessionQuery, DataBySessionResult,
-  ReportBySessionQuery, ReportBySessionResult,
+  ReportBySessionQuery, ReportBySessionResult, BarChartResponse,
   MetadataResponse, MarketsResponse,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   DeleteAccountDto, DeleteAccountResult,
@@ -218,4 +218,16 @@ export const endUserApi = {
     apiFetch<DataBySessionResult>(`/event/getDataBySession${qs(q as unknown as Record<string, unknown>)}`),
   reportBySession: (q: ReportBySessionQuery) =>
     apiFetch<ReportBySessionResult>(`/event/reportBySession${qs(q as unknown as Record<string, unknown>)}`),
+
+  // Bar-chart trend endpoints (same SessionQuery shape as getDataBySession)
+  getAverageTime: (q: SessionQuery) =>
+    apiFetch<BarChartResponse>(`/event/getAverageTime${qs(q as unknown as Record<string, unknown>)}`),
+  getAverageLeak: (q: SessionQuery) =>
+    apiFetch<BarChartResponse>(`/event/getAverageLeak${qs(q as unknown as Record<string, unknown>)}`),
+  getAverageAHI: (q: SessionQuery) =>
+    apiFetch<BarChartResponse>(`/event/getAverageAHI${qs(q as unknown as Record<string, unknown>)}`),
+  getAverageSleepScore: (q: SessionQuery) =>
+    apiFetch<BarChartResponse>(`/event/getAverageSleepScore${qs(q as unknown as Record<string, unknown>)}`),
+  getAverageMaskRemoved: (q: SessionQuery) =>
+    apiFetch<BarChartResponse>(`/event/getAverageMaskRemoved${qs(q as unknown as Record<string, unknown>)}`),
 };
