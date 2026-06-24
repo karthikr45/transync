@@ -355,16 +355,28 @@ export interface GeneratePdfDto {
 
 // ---------- /parameter/findOne (device parameters / patient settings) ----------
 // The mobile app reads CPAP device parameters here to render the
-// "Patient Settings" tab of the report. Permissive shape: backend field
-// names vary across firmware versions, so we accept the common aliases
-// and the consumer code picks the first non-null match.
+// ---------- /parameter/getByEmailAndDeviceId (device parameters / patient settings) ----------
+// The mobile app reads CPAP device parameters here to render the
+// "Patient Settings" tab of the report. The current backend returns
+// the device's actual field names verbatim:
+//   minimumPressure / maximumPressure / startingPressure
+//   startingRampPressure / rampDuration
+//   EZEX (= AirRelief comfort control level)
+// Older firmware / mock builds shipped slightly different names —
+// kept as aliases so the consumer code keeps working everywhere.
 export interface ParameterQuery { email: string; deviceId: string }
 export interface ParameterResult {
   _id?: string;
   email?: string;
   deviceId?: string;
-  // Pressure
+  // Pressure (current API)
   startingPressure?: number | null;
+  minimumPressure?: number | null;
+  maximumPressure?: number | null;
+  startingRampPressure?: number | null;
+  rampDuration?: number | null; // minutes
+  EZEX?: number | null;
+  // Pressure (legacy aliases)
   rampStartPressure?: number | null;
   minPressure?: number | null;
   maxPressure?: number | null;
@@ -372,15 +384,14 @@ export interface ParameterResult {
   pressureMax?: number | null;
   therapyPressureMin?: number | null;
   therapyPressureMax?: number | null;
-  // Ramp / GentleRise
   gentleRisePressure?: number | null;
-  gentleRiseDuration?: number | null; // minutes
+  gentleRiseDuration?: number | null;
   ramp?: number | null;
   rampTime?: number | null;
-  // Comfort
   airRelief?: number | null;
   comfortControlPlusLevel?: number | null;
-  // Mode / tubing / humidifier
+  // Mode / tubing / humidifier (not in the current response but kept
+  // for future firmware that may report them).
   mode?: string | null;
   tubingType?: string | null;
   heatedHumidifier?: boolean | null;

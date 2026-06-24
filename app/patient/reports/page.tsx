@@ -10,12 +10,15 @@ import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
 import type { EndUser, ParameterResult, ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
 import { fromReportBySessionResult, mergeParameterIntoVM } from "@/lib/report-vm";
 
+// Mirror the mobile app's range selector verbatim — same labels and
+// session indexes, so the API receives the same window the mobile
+// would have sent.
 const RANGES: { label: string; session: SessionWindow }[] = [
-  { label: "Last night", session: 0 },
+  { label: "Last 24 Hours", session: 0 },
   { label: "7 Days", session: 1 },
   { label: "30 Days", session: 2 },
   { label: "90 Days", session: 3 },
-  { label: "365 Days", session: 4 },
+  { label: "1 Year", session: 4 },
 ];
 
 export default function PatientReports() {

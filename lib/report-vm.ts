@@ -14,9 +14,12 @@ const firstBool = (...candidates: (boolean | null | undefined)[]): boolean | nul
 };
 
 /**
- * Map a /parameter/findOne response onto the report VM's patientSettings
- * block. Backend field names vary across firmware revisions so we try
- * each known alias before falling back to the existing VM value.
+ * Map a /parameter/getByEmailAndDeviceId response onto the report
+ * VM's patientSettings block. Today's API returns minimumPressure /
+ * maximumPressure / startingPressure / startingRampPressure /
+ * rampDuration / EZEX; the legacy aliases are kept as fallbacks so
+ * older firmware still wires up correctly. First non-null match wins,
+ * falling back to whatever was already on the VM.
  */
 export function mergeParameterIntoVM(vm: ReportVM, p: ParameterResult | null | undefined): ReportVM {
   if (!p) return vm;
@@ -25,11 +28,11 @@ export function mergeParameterIntoVM(vm: ReportVM, p: ParameterResult | null | u
     ...vm,
     patientSettings: {
       startingPressure: firstNumber(p.startingPressure, p.rampStartPressure, existing.startingPressure) ?? null,
-      minPressure: firstNumber(p.minPressure, p.pressureMin, p.therapyPressureMin, existing.minPressure) ?? null,
-      maxPressure: firstNumber(p.maxPressure, p.pressureMax, p.therapyPressureMax, existing.maxPressure) ?? null,
-      gentleRisePressure: firstNumber(p.gentleRisePressure, p.rampStartPressure, existing.gentleRisePressure) ?? null,
-      gentleRiseDuration: firstNumber(p.gentleRiseDuration, p.ramp, p.rampTime, existing.gentleRiseDuration) ?? null,
-      airRelief: firstNumber(p.airRelief, p.comfortControlPlusLevel, existing.airRelief) ?? null,
+      minPressure: firstNumber(p.minimumPressure, p.minPressure, p.pressureMin, p.therapyPressureMin, existing.minPressure) ?? null,
+      maxPressure: firstNumber(p.maximumPressure, p.maxPressure, p.pressureMax, p.therapyPressureMax, existing.maxPressure) ?? null,
+      gentleRisePressure: firstNumber(p.startingRampPressure, p.gentleRisePressure, p.rampStartPressure, existing.gentleRisePressure) ?? null,
+      gentleRiseDuration: firstNumber(p.rampDuration, p.gentleRiseDuration, p.ramp, p.rampTime, existing.gentleRiseDuration) ?? null,
+      airRelief: firstNumber(p.EZEX, p.airRelief, p.comfortControlPlusLevel, existing.airRelief) ?? null,
       mode: firstString(p.mode, existing.mode) ?? null,
       tubingType: firstString(p.tubingType, existing.tubingType) ?? null,
       heatedHumidifier: firstBool(p.heatedHumidifier, existing.heatedHumidifier) ?? null,
