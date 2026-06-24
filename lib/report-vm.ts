@@ -202,10 +202,19 @@ export function fromReportBySessionResult(r: ReportBySessionResult, ctx: ReportC
   // the user-picked window, falling back to numberOfDays when callers
   // don't supply an override.
   const totalDays = ctx.totalDaysOverride ?? r.numberOfDays;
-  // r.usage is total therapy hours in this API version, not the
-  // count of days used. Derive days-used from numberOfDays - notUsed
-  // (mobile renders the same way for the 1-of-1-day case).
-  const daysUsed = Math.max(0, (r.numberOfDays ?? 0) - (r.notUsed ?? 0));
+  // r.usage is the API's "days used" field in the current backend
+  // (matches the mobile screenshot "1 of 1 day" with usage = 1, and
+  // the API doc's example with usage = 26). One observed exception
+  // returned r.usage in HOURS (a non-integer 453.4) — detect that
+  // and fall through to numberOfDays - notUsed so the row still
+  // renders something sane instead of >100%.
+  const usageRaw = Number(r.usage);
+  const usageLooksLikeDays =
+    Number.isFinite(usageRaw) && Number.isInteger(usageRaw) && usageRaw >= 0;
+  const daysUsedFromCount = Math.max(0, (r.numberOfDays ?? 0) - (r.notUsed ?? 0));
+  const daysUsedRaw = usageLooksLikeDays ? usageRaw : daysUsedFromCount;
+  // Cap to the requested window so we never render >100%.
+  const daysUsed = totalDays && totalDays > 0 ? Math.min(daysUsedRaw, totalDays) : daysUsedRaw;
   return {
     patientDetails: {
       name: ctx.name,
