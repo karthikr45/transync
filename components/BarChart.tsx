@@ -94,8 +94,11 @@ export default function BarChart({
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
             {ticks.map((_, i) => <div key={i} className="border-t border-slate-100" />)}
           </div>
-          {/* Bars + value labels */}
-          <div className="absolute inset-0 flex items-end gap-2 px-2">
+          {/* Bars + value labels. Columns stretch to full plot height
+              (default items-stretch) so child `height: %` resolves
+              against a real number — items-end here collapses bars to
+              zero because the column then sizes to its content. */}
+          <div className="absolute inset-0 flex gap-2 px-2">
             {points.map((p, i) => {
               const v = Number(p.value);
               const safeV = Number.isFinite(v) ? v : 0;
@@ -108,7 +111,7 @@ export default function BarChart({
                   : Math.max(4, Math.round((safeV / yMax) * 90))
                 : 0;
               return (
-                <div key={`${p.label}-${i}`} className="flex-1 flex flex-col items-center justify-end min-w-0">
+                <div key={`${p.label}-${i}`} className="flex-1 flex flex-col items-center justify-end min-w-0 h-full">
                   <span className="text-[11px] text-slate-700 font-semibold leading-none mb-1 tabular-nums">
                     {fmt(safeV)}
                   </span>
