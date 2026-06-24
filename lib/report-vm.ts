@@ -195,6 +195,17 @@ export function fromComplianceReportResult(r: ComplianceReportResult, ctx: Repor
 
 // End User reportBySession -> VM
 export function fromReportBySessionResult(r: ReportBySessionResult, ctx: ReportCtx = {}): ReportVM {
+  // r.numberOfDays is the API's data window (number of days actually
+  // covered by stored events); ctx.totalDaysOverride is the window the
+  // user asked for ("90 Days" -> 90, custom span -> day count). Prefer
+  // the override so percentages and "X of Y days" rows render against
+  // the user-picked window, falling back to numberOfDays when callers
+  // don't supply an override.
+  const totalDays = ctx.totalDaysOverride ?? r.numberOfDays;
+  // r.usage is total therapy hours in this API version, not the
+  // count of days used. Derive days-used from numberOfDays - notUsed
+  // (mobile renders the same way for the 1-of-1-day case).
+  const daysUsed = Math.max(0, (r.numberOfDays ?? 0) - (r.notUsed ?? 0));
   return {
     patientDetails: {
       name: ctx.name,
@@ -205,9 +216,9 @@ export function fromReportBySessionResult(r: ReportBySessionResult, ctx: ReportC
     patientSettings: {},
     usage: {
       lastSyncDate: ctx.lastSyncDate,
-      datesOfReport: r.datesOfReport,
-      daysUsed: r.usage,
-      totalDays: r.numberOfDays,
+      datesOfReport: ctx.datesOfReportOverride ?? r.datesOfReport,
+      daysUsed,
+      totalDays,
       notUsed: r.notUsed,
       averageHoursPerNight: r.averageHoursPerNight,
       fourPlusUsage: r.greaterThanFour,

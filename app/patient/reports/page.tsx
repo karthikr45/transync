@@ -59,7 +59,45 @@ export default function PatientReports() {
       .catch(() => { /* keep cached user */ });
   }, []);
 
-  const session = RANGES.find((r) => r.label === rangeLabel)?.session ?? 3;
+  // Days in the user-picked window — drives the "X of Y days" rows
+  // (Days Used / 4+ / 6+) and their percentages. For the fixed
+  // presets it's the session-window length; for "Select a Range" it's
+  // the inclusive day count between start and end.
+  const customDays = (() => {
+    if (rangeLabel !== CUSTOM_LABEL || !start || !end) return undefined;
+    const ms = new Date(end).getTime() - new Date(start).getTime();
+    if (!Number.isFinite(ms)) return undefined;
+    return Math.max(1, Math.round(ms / 86_400_000) + 1);
+  })();
+
+  // Session to send to the API. For the fixed presets it's the
+  // mapped session. For "Select a Range" we pick the smallest
+  // session bucket that covers the custom span, so even if the
+  // backend ignores startDate/endDate the window is approximately
+  // right.
+  const session: SessionWindow = (() => {
+    if (rangeLabel === CUSTOM_LABEL) {
+      const d = customDays ?? 90;
+      if (d <= 1) return 0;
+      if (d <= 7) return 1;
+      if (d <= 30) return 2;
+      if (d <= 90) return 3;
+      return 4;
+    }
+    return RANGES.find((r) => r.label === rangeLabel)?.session ?? 3;
+  })();
+
+  const requestedDays = (() => {
+    if (rangeLabel === CUSTOM_LABEL) return customDays;
+    switch (session) {
+      case 0: return 1;
+      case 1: return 7;
+      case 2: return 30;
+      case 3: return 90;
+      case 4: return 365;
+      default: return undefined;
+    }
+  })();
 
   const load = useCallback(async () => {
     if (!user?.email || !user.deviceId) return;
@@ -172,6 +210,11 @@ export default function PatientReports() {
           deviceSerial: user.deviceId,
           provider: user.provider,
           lastSyncDate: sync?.lastSyncDate ?? user.lastSyncDate,
+          totalDaysOverride: requestedDays,
+          datesOfReportOverride:
+            rangeLabel === CUSTOM_LABEL && start && end
+              ? `${formatDate(start)} to ${formatDate(end)}`
+              : undefined,
         }),
         parameters,
       )
