@@ -5,12 +5,13 @@ import type { EventGraphDto } from "@/lib/types.api";
 type Tone = "brand" | "amber" | "green" | "slate";
 
 // Bar gradient by tone — top color → bottom color, matching the mobile
-// mint/cyan look on the patient dashboard.
+// mint/cyan look on the patient dashboard. The brand variant uses the
+// same cyan→mint stops the mobile app does.
 const TONE_GRAD: Record<Tone, string> = {
-  brand: "from-cyan-300 to-emerald-300",
-  amber: "from-amber-300 to-orange-400",
-  green: "from-emerald-300 to-green-400",
-  slate: "from-slate-300 to-slate-400",
+  brand: "from-cyan-200 via-cyan-300 to-emerald-300",
+  amber: "from-amber-200 via-amber-300 to-orange-400",
+  green: "from-emerald-200 via-emerald-300 to-green-400",
+  slate: "from-slate-200 via-slate-300 to-slate-400",
 };
 
 // Round a value up to a "nice" axis maximum (1, 2, 5 × 10^n) so y-axis
@@ -94,7 +95,7 @@ export default function BarChart({
             {ticks.map((_, i) => <div key={i} className="border-t border-slate-100" />)}
           </div>
           {/* Bars + value labels */}
-          <div className="absolute inset-0 flex items-end gap-3 px-1">
+          <div className="absolute inset-0 flex items-end gap-2 px-2">
             {points.map((p, i) => {
               const v = Number(p.value);
               const safeV = Number.isFinite(v) ? v : 0;
@@ -108,11 +109,11 @@ export default function BarChart({
                 : 0;
               return (
                 <div key={`${p.label}-${i}`} className="flex-1 flex flex-col items-center justify-end min-w-0">
-                  <span className="text-[10px] text-slate-700 font-medium leading-none mb-1 tabular-nums">
+                  <span className="text-[11px] text-slate-700 font-semibold leading-none mb-1 tabular-nums">
                     {fmt(safeV)}
                   </span>
                   <div
-                    className={`w-full max-w-[44px] rounded-t bg-gradient-to-b ${TONE_GRAD[tone]}`}
+                    className={`w-[78%] max-w-[68px] rounded-t-md bg-gradient-to-b ${TONE_GRAD[tone]} shadow-sm`}
                     style={{ height: `${h}%` }}
                     title={`${p.label}: ${safeV}`}
                   />
@@ -124,11 +125,11 @@ export default function BarChart({
       </div>
 
       {/* X-axis labels — aligned under the bars (same gap + padding) */}
-      <div className="flex pl-10 gap-3 mt-2 px-1">
+      <div className="flex pl-10 gap-2 mt-2 px-2">
         {points.map((p, i) => (
           <span
             key={`xl-${i}`}
-            className="flex-1 text-[10px] text-slate-500 truncate text-center"
+            className="flex-1 text-[11px] text-slate-600 truncate text-center"
             title={p.label}
           >
             {p.label}
