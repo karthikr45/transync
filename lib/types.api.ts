@@ -441,6 +441,63 @@ export interface MarketSummary { total: number; providers: number; payers: numbe
 export interface MarketRow { country: string; providers: number; payers: number }
 export interface MarketsResponse { summary: MarketSummary; markets: MarketRow[] }
 
+// ---------- /home-care/admin/dashboard ----------
+export interface AdminDashboardMetrics {
+  pendingApprovals: number;
+  activeProviders: number;
+  activeMonitors: number;
+  devices: { total: number; active: number };
+}
+export type AdminDashboardResult = AdminDashboardMetrics;
+
+// ---------- /home-care/admin/recent-activity ----------
+export type AdminActivityAction = "approved" | "rejected" | "suspended" | "reinstated";
+export interface AdminActivityEntry {
+  id: string;
+  name: string;
+  userType: UserType;
+  action: AdminActivityAction | string;
+  date: string;
+  actor: string;
+}
+export interface AdminActivityResult { activity: AdminActivityEntry[] }
+export interface AdminActivityQuery { limit?: number }
+
+// ---------- /home-care/admin/clients ----------
+export type ClientStatus = "pending" | "approved" | "rejected" | "suspended";
+export interface AdminClientRow {
+  id: string;
+  name: string;
+  contactEmail: string;
+  userType: UserType;
+  country: string;
+  joinedAt: string;
+  status: ClientStatus;
+}
+export interface AdminClientsResult {
+  total: number;
+  limit: number;
+  offset: number;
+  clients: AdminClientRow[];
+}
+export interface AdminClientsQuery {
+  userType?: UserType;
+  status?: ClientStatus;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface AdminSuspendDto { reason?: string }
+export interface AdminSuspendResult {
+  _id: string;
+  status: ClientStatus | string;
+  suspendedBy?: string;
+  suspendedAt?: string;
+  suspendedReason?: string;
+}
+export interface AdminReinstateResult { _id: string; status: ClientStatus | string }
+
 // ---------- /home-care/share-recipients & /home-care/shares ----------
 export type RecipientType = "home_care_provider" | "authorized_monitor";
 export type ShareStatus = "pending" | "accepted" | "declined" | "revoked";

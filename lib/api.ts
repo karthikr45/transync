@@ -16,6 +16,9 @@ import type {
   SleepScoreEventDto, TotalRuntimeDto, GeneratePdfDto,
   ParameterQuery, ParameterResult,
   MetadataResponse, MarketsResponse,
+  AdminDashboardResult, AdminActivityResult, AdminActivityQuery,
+  AdminClientsResult, AdminClientsQuery, AdminSuspendDto,
+  AdminSuspendResult, AdminReinstateResult,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   IncomingSharesResponse, SharedReportDto,
   DeleteAccountDto, DeleteAccountResult,
@@ -182,6 +185,19 @@ export const homeCareApi = {
 
   // Admin
   markets: () => apiFetch<MarketsResponse>("/home-care/admin/markets"),
+  adminDashboard: () => apiFetch<AdminDashboardResult>("/home-care/admin/dashboard"),
+  adminRecentActivity: (query: AdminActivityQuery = {}) =>
+    apiFetch<AdminActivityResult>(`/home-care/admin/recent-activity${qs(query as unknown as Record<string, unknown>)}`),
+  adminClients: (query: AdminClientsQuery = {}) =>
+    apiFetch<AdminClientsResult>(`/home-care/admin/clients${qs(query as unknown as Record<string, unknown>)}`),
+  adminSuspendClient: (id: string, dto: AdminSuspendDto = {}) =>
+    apiFetch<AdminSuspendResult>(`/home-care/admin/clients/${encodeURIComponent(id)}/suspend`, {
+      method: "POST", body: JSON.stringify(dto),
+    }),
+  adminReinstateClient: (id: string) =>
+    apiFetch<AdminReinstateResult>(`/home-care/admin/clients/${encodeURIComponent(id)}/reinstate`, {
+      method: "POST",
+    }),
 
   // Recipient-side data sharing (provider/monitor sees patient grants)
   listIncomingShares: () => apiFetch<IncomingSharesResponse>("/home-care/shares/incoming"),
