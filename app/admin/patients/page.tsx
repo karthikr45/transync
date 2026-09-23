@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { homeCareApi } from "@/lib/api";
-import { patientFieldLabel, patientList } from "@/lib/admin-patients";
+import { patientDisplayResponse, patientFieldLabel, patientList } from "@/lib/admin-patients";
 import type { AdminPatientsResult, ApiJson } from "@/lib/types.api";
 
 function FieldValue({ value }: { value: ApiJson | undefined }) {
@@ -32,7 +32,7 @@ export default function AdminPatients() {
     setError(null);
     setData(null);
     homeCareApi.adminPatients({ page, limit }).then((result) => {
-      if (active) setData(result);
+      if (active) setData(patientDisplayResponse(result));
     }).catch((e: unknown) => {
       if (active) setError(e instanceof Error ? e.message : "Failed to load patients.");
     }).finally(() => {
@@ -76,10 +76,12 @@ export default function AdminPatients() {
             <table className="w-full text-sm">
               <caption className="sr-only">Patients, page {page}</caption>
               <thead className="bg-slate-50 text-xs text-slate-500"><tr>
+                <th scope="col" className="text-left font-medium px-5 py-3">No.</th>
                 {list.columns.map((key) => <th key={key} scope="col" className="text-left font-medium px-5 py-3 whitespace-nowrap">{patientFieldLabel(key)}</th>)}
               </tr></thead>
               <tbody>{list.rows.map((patient, index) => (
                 <tr key={index} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-5 py-3 align-top text-slate-500">{(page - 1) * limit + index + 1}</td>
                   {list.columns.map((key) => <td key={key} className="px-5 py-3 align-top min-w-[140px] max-w-md break-words">
                     <FieldValue value={patient[key]} />
                   </td>)}

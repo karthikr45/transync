@@ -6,6 +6,15 @@ const isObject = (value: ApiJson): value is JsonObject =>
 const count = (value: ApiJson | undefined): number | undefined =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : undefined;
 
+/** Hide database IDs and email hashes in both rows and expanded details. */
+export function patientDisplayResponse(value: ApiJson): ApiJson {
+  if (Array.isArray(value)) return value.map(patientDisplayResponse);
+  if (!isObject(value)) return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => !["id", "emailhashed", "hashedemail", "emailhash"].includes(key.replace(/[_-]/g, "").toLowerCase()))
+    .map(([key, field]) => [key, patientDisplayResponse(field)]));
+}
+
 /** Accept common list envelopes without discarding any of the source response. */
 export function patientList(response: ApiJson, page: number, limit: number) {
   const layers: JsonObject[] = [];
