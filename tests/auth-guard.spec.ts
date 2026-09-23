@@ -4,6 +4,7 @@ const protectedPaths = [
   "/provider/dashboard",
   "/monitor/dashboard",
   "/admin/dashboard",
+  "/admin/patients",
   "/patient/dashboard",
 ];
 

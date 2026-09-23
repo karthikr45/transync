@@ -30,6 +30,8 @@ export default defineConfig({
       // routes will only be exercised by tests that intentionally mock
       // the upstream.
       API_BASE_URL: "http://127.0.0.1:9",
+      // Browser API calls are intercepted by tests; keep them same-origin.
+      NEXT_PUBLIC_API_BASE_URL: BASE_URL,
     },
   },
 });

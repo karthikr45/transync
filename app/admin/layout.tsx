@@ -4,6 +4,7 @@ import AuthGuard from "@/components/AuthGuard";
 
 const nav = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+  { href: "/admin/patients", label: "Patients", icon: <Users className="w-4 h-4" /> },
   { href: "/admin/approvals", label: "Approvals", icon: <ClipboardCheck className="w-4 h-4" /> },
   { href: "/admin/organizations", label: "Organizations", icon: <Building2 className="w-4 h-4" /> },
   { href: "/admin/devices", label: "Device fleet", icon: <HardDrive className="w-4 h-4" /> },

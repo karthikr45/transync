@@ -642,3 +642,10 @@ export interface DeleteAccountResult {
   deviceId: string;
   AccountDeletionRequestDate: string;
 }
+
+// ---------- /home-care/admin/patients ----------
+export interface AdminPatientsQuery { page?: number; limit?: number }
+// The published OpenAPI spec does not define a response schema. Preserve
+// returned fields rather than assuming the organization-scoped patient DTO.
+export type ApiJson = null | boolean | number | string | ApiJson[] | { [key: string]: ApiJson };
+export type AdminPatientsResult = ApiJson;

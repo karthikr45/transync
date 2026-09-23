@@ -17,7 +17,7 @@ import type {
   ParameterQuery, ParameterResult,
   MetadataResponse, MarketsResponse,
   AdminDashboardResult, AdminActivityResult, AdminActivityQuery,
-  AdminClientsResult, AdminClientsQuery, AdminSuspendDto,
+  AdminClientsResult, AdminClientsQuery, AdminSuspendDto, AdminPatientsQuery, AdminPatientsResult,
   AdminSuspendResult, AdminReinstateResult,
   RecipientType, ShareRecipientsResponse, CreateShareDto, Share, MySharesResponse,
   IncomingSharesResponse, SharedReportDto,
@@ -188,6 +188,8 @@ export const homeCareApi = {
   adminDashboard: () => apiFetch<AdminDashboardResult>("/home-care/admin/dashboard"),
   adminRecentActivity: (query: AdminActivityQuery = {}) =>
     apiFetch<AdminActivityResult>(`/home-care/admin/recent-activity${qs(query as unknown as Record<string, unknown>)}`),
+  adminPatients: (query: AdminPatientsQuery = {}) =>
+    apiFetch<AdminPatientsResult>(`/home-care/admin/patients${qs(query as unknown as Record<string, unknown>)}`),
   adminClients: (query: AdminClientsQuery = {}) =>
     apiFetch<AdminClientsResult>(`/home-care/admin/clients${qs(query as unknown as Record<string, unknown>)}`),
   adminSuspendClient: (id: string, dto: AdminSuspendDto = {}) =>
