@@ -115,8 +115,8 @@ export default function PatientProfile() {
           <dl className="space-y-3 text-sm">
             <Row label="Homecare provider" value={user.provider || "—"} />
             <Row label="Provider email" value={user.providerEmail || "—"} />
-            <Row label="Last sync" value={formatDateTime(user.lastSyncDate) || "—"} />
-            <Row label="Last setting sync" value={formatDateTime(user.lastSettingSyncDate) || "—"} />
+            <Row label="Last sync" value={formatDate(user.lastSyncDate, true) || "—"} />
+            <Row label="Last setting sync" value={formatDate(user.lastSettingSyncDate, true) || "—"} />
             <Row label="Last event" value={user.lastEvent || "—"} />
           </dl>
         </div>

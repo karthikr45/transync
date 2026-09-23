@@ -7,7 +7,7 @@ import BarChart from "@/components/BarChart";
 import { Moon, Wind, Gauge, Activity, RefreshCw, AlertTriangle, Smartphone } from "lucide-react";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser, getRefreshToken, setSession } from "@/lib/auth";
-import { formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
 import type {
   BarChartResponse,
@@ -217,7 +217,7 @@ export default function PatientDashboard() {
         ))}
         {sync?.lastSyncDate && (
           <span className="ml-auto text-xs text-slate-500 inline-flex items-center gap-1 px-2">
-            <Smartphone className="w-3.5 h-3.5" /> Last sync {formatDateTime(sync.lastSyncDate)}
+            <Smartphone className="w-3.5 h-3.5" /> Last sync {formatDate(sync.lastSyncDate, true)}
           </span>
         )}
       </div>

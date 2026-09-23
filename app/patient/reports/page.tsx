@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, Printer, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertTriangle, ChevronDown, Printer, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
-import MobileReport from "@/components/MobileReport";
+import MobileReport, { type Tab } from "@/components/MobileReport";
 import { endUserApi, ApiError } from "@/lib/api";
 import { getCurrentEndUser, getRefreshToken, setSession } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
+import { getLocale } from "@/lib/i18n";
 import { getTimeZoneName, getTimeZoneOffset } from "@/lib/timezone";
-import type { EndUser, ParameterResult, ReportBySessionResult, SessionWindow, LastSyncResult } from "@/lib/types.api";
+import type { EndUser, GeneratePdfDto, ParameterResult, ReportBySessionResult, ReportType, SessionWindow } from "@/lib/types.api";
 import { fromReportBySessionResult, mergeParameterIntoVM } from "@/lib/report-vm";
 
 // Mirror the mobile app's range selector verbatim — same labels and
@@ -25,6 +26,8 @@ const RANGES: { label: string; session: SessionWindow }[] = [
   { label: CUSTOM_LABEL, session: 3 },
 ];
 
+const TAB_LABEL: Record<Tab, string> = { standard: "Standard", advanced: "Advanced", faa: "FAA" };
+
 export default function PatientReports() {
   const [user, setUser] = useState<EndUser | null>(null);
   const [ready, setReady] = useState(false);
@@ -34,10 +37,21 @@ export default function PatientReports() {
   const [showRangeModal, setShowRangeModal] = useState(false);
   const [data, setData] = useState<ReportBySessionResult | null>(null);
   const [parameters, setParameters] = useState<ParameterResult | null>(null);
-  const [sync, setSync] = useState<LastSyncResult | null>(null);
+  const [tab, setTab] = useState<Tab>("standard");
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!downloadMenuOpen) return;
+    function onDocClick(e: MouseEvent) {
+      if (!downloadMenuRef.current?.contains(e.target as Node)) setDownloadMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [downloadMenuOpen]);
 
   useEffect(() => {
     const cached = getCurrentEndUser();
@@ -103,7 +117,7 @@ export default function PatientReports() {
     if (!user?.email || !user.deviceId) return;
     setLoading(true); setError(null);
     try {
-      const [r, s, p] = await Promise.allSettled([
+      const [r, p] = await Promise.allSettled([
         endUserApi.reportBySession({
           email: user.email,
           deviceId: user.deviceId,
@@ -113,12 +127,10 @@ export default function PatientReports() {
           startDate: start || undefined,
           endDate: end || undefined,
         }),
-        endUserApi.getLastSyncDate({ email: user.email, deviceId: user.deviceId }),
         endUserApi.getParameter({ email: user.email, deviceId: user.deviceId }),
       ]);
       if (r.status === "fulfilled") setData(r.value);
       else throw r.reason;
-      if (s.status === "fulfilled") setSync(s.value);
       // Parameter failures should not blank the report — show an empty
       // settings block in that case.
       setParameters(p.status === "fulfilled" ? p.value : null);
@@ -129,29 +141,49 @@ export default function PatientReports() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function downloadPdf() {
-    if (!user?.email || !user.deviceId) return;
+  // Mirrors the mobile app's share/download payload verbatim: name,
+  // provider and language ride along with the same session/device/tz
+  // fields reportBySession uses, plus `type` for the tab currently open.
+  function buildPdfDto(): GeneratePdfDto | null {
+    if (!user?.email || !user.deviceId) return null;
+    const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
+    return {
+      email: user.email,
+      deviceId: user.deviceId,
+      session,
+      name: fullName,
+      provider: user.provider,
+      timeZone: getTimeZoneOffset(),
+      timeZoneName: getTimeZoneName(),
+      language: getLocale(),
+      type: tab.toUpperCase() as ReportType,
+      startDate: start || undefined,
+      endDate: end || undefined,
+    };
+  }
+
+  async function viewPdf(dailyLog: boolean) {
+    const dto = buildPdfDto();
+    if (!dto) return;
+    setDownloadMenuOpen(false);
+    // Open while the click still has browser activation; awaiting the API
+    // first can cause the browser to block the PDF tab as a popup.
+    const pdfWindow = window.open("about:blank", "_blank");
+    if (!pdfWindow) {
+      setError("Allow popups for this site to view the PDF.");
+      return;
+    }
+    pdfWindow.opener = null;
     setDownloading(true); setError(null);
     try {
-      const blob = await endUserApi.generatePdf({
-        email: user.email,
-        deviceId: user.deviceId,
-        session,
-        timeZone: getTimeZoneOffset(),
-        timeZoneName: getTimeZoneName(),
-        startDate: start || undefined,
-        endDate: end || undefined,
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const stamp = new Date().toISOString().slice(0, 10);
-      a.download = `transcend-report-${stamp}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const url = dailyLog ? await endUserApi.getReportWithDailyLog(dto) : await endUserApi.generatePdf(dto);
+      const pdfUrl = new URL(url);
+      if (pdfUrl.protocol !== "https:" && pdfUrl.protocol !== "http:") {
+        throw new Error("The server returned an invalid PDF URL.");
+      }
+      pdfWindow.location.replace(pdfUrl.href);
     } catch (e) {
+      pdfWindow.close();
       setError((e as ApiError).message || "Failed to generate PDF.");
     } finally { setDownloading(false); }
   }
@@ -209,7 +241,7 @@ export default function PatientReports() {
           email: user.email,
           deviceSerial: user.deviceId,
           provider: user.provider,
-          lastSyncDate: sync?.lastSyncDate ?? user.lastSyncDate,
+          lastSyncDate: user.lastSyncDate,
           totalDaysOverride: requestedDays,
           datesOfReportOverride:
             rangeLabel === CUSTOM_LABEL && start && end
@@ -240,6 +272,8 @@ export default function PatientReports() {
           rangeLabel={rangeLabel}
           rangeOptions={RANGES.map((r) => r.label)}
           onRangeSelect={handleRangeSelect}
+          tab={tab}
+          onTabChange={(t) => { setTab(t); load(); }}
           customRange={customActive ? (
             <button
               type="button"
@@ -255,9 +289,34 @@ export default function PatientReports() {
               <button className="btn-secondary" onClick={load} disabled={loading}>
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
               </button>
-              <button className="btn-primary disabled:opacity-50" onClick={downloadPdf} disabled={downloading || loading}>
-                <Printer className="w-4 h-4" /> {downloading ? "Generating…" : "Download PDF"}
-              </button>
+              <div className="relative" ref={downloadMenuRef}>
+                <button
+                  className="btn-primary disabled:opacity-50 !pr-2"
+                  onClick={() => (tab === "faa" ? viewPdf(false) : setDownloadMenuOpen((o) => !o))}
+                  disabled={downloading || loading}
+                >
+                  <Printer className="w-4 h-4" /> {downloading ? "Generating…" : "View PDF"}
+                  {tab !== "faa" && <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                {tab !== "faa" && downloadMenuOpen && (
+                  <div className="absolute right-0 mt-1 w-48 card p-1 z-10 shadow-lg">
+                    <button
+                      type="button"
+                      className="w-full text-left text-sm px-3 py-2 rounded hover:bg-slate-50"
+                      onClick={() => viewPdf(false)}
+                    >
+                      {TAB_LABEL[tab]}
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-left text-sm px-3 py-2 rounded hover:bg-slate-50"
+                      onClick={() => viewPdf(true)}
+                    >
+                      {TAB_LABEL[tab]} With Daily Log
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           }
         />

@@ -65,7 +65,7 @@ export default function LandingPage() {
       <footer className="border-t border-slate-200 mt-16">
         <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-slate-500 flex justify-between">
           <span>© 2026 Transcend. For demo purposes only.</span>
-          <span>HIPAA · GDPR ready</span>
+          <span>HIPAA Compliant</span>
         </div>
       </footer>
     </div>

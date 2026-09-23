@@ -2,7 +2,7 @@
 export default function Logo({ className = "h-8 w-auto" }: { className?: string }) {
   return (
     <img
-      src="https://mytranscend.com/wp-content/uploads/2024/02/Transcend2C.png"
+      src="https://cpapfiles.blob.core.windows.net/assets/logo_-_full_color.svg"
       alt="Transcend"
       className={className}
     />

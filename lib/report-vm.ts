@@ -195,26 +195,15 @@ export function fromComplianceReportResult(r: ComplianceReportResult, ctx: Repor
 
 // End User reportBySession -> VM
 export function fromReportBySessionResult(r: ReportBySessionResult, ctx: ReportCtx = {}): ReportVM {
-  // r.numberOfDays is the API's data window (number of days actually
-  // covered by stored events); ctx.totalDaysOverride is the window the
-  // user asked for ("90 Days" -> 90, custom span -> day count). Prefer
-  // the override so percentages and "X of Y days" rows render against
-  // the user-picked window, falling back to numberOfDays when callers
-  // don't supply an override.
+  // ctx.totalDaysOverride is the window the user asked for ("90 Days"
+  // -> 90, custom span -> inclusive day count) — the mobile app derives
+  // this client-side from the selected session and never from the API,
+  // so we mirror that here rather than falling back to an API field.
   const totalDays = ctx.totalDaysOverride ?? r.numberOfDays;
-  // r.usage is the API's "days used" field in the current backend
-  // (matches the mobile screenshot "1 of 1 day" with usage = 1, and
-  // the API doc's example with usage = 26). One observed exception
-  // returned r.usage in HOURS (a non-integer 453.4) — detect that
-  // and fall through to numberOfDays - notUsed so the row still
-  // renders something sane instead of >100%.
-  const usageRaw = Number(r.usage);
-  const usageLooksLikeDays =
-    Number.isFinite(usageRaw) && Number.isInteger(usageRaw) && usageRaw >= 0;
-  const daysUsedFromCount = Math.max(0, (r.numberOfDays ?? 0) - (r.notUsed ?? 0));
-  const daysUsedRaw = usageLooksLikeDays ? usageRaw : daysUsedFromCount;
-  // Cap to the requested window so we never render >100%.
-  const daysUsed = totalDays && totalDays > 0 ? Math.min(daysUsedRaw, totalDays) : daysUsedRaw;
+  // Confirmed against the mobile app's AdvancedUsageScreen source:
+  // "Days Used" is r.numberOfDays, not r.usage (the API's naming is
+  // misleading — numberOfDays is actually the count of days used).
+  const daysUsed = r.numberOfDays;
   return {
     patientDetails: {
       name: ctx.name,

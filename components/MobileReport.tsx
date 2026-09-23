@@ -1,16 +1,19 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import type { ReportVM } from "@/lib/report-vm";
 import { formatDate } from "@/lib/format";
 
-type Tab = "standard" | "advanced" | "faa";
+export type Tab = "standard" | "advanced" | "faa";
 
 export default function MobileReport({
   vm,
   rangeLabel,
   rangeOptions,
   onRangeSelect,
+  tab: tabProp,
+  onTabChange,
   customRange,
   headerActions,
 }: {
@@ -18,10 +21,18 @@ export default function MobileReport({
   rangeLabel?: string;
   rangeOptions?: string[];
   onRangeSelect?: (label: string) => void;
+  tab?: Tab; // controlled tab; omit to let the component manage its own state
+  onTabChange?: (tab: Tab) => void; // re-fetch the report data for the newly selected tab
   customRange?: ReactNode; // optional explicit date range picker
   headerActions?: ReactNode;
 }) {
-  const [tab, setTab] = useState<Tab>("standard");
+  const [internalTab, setInternalTab] = useState<Tab>("standard");
+  const tab = tabProp ?? internalTab;
+
+  function selectTab(t: Tab) {
+    if (tabProp === undefined) setInternalTab(t);
+    if (t !== tab) onTabChange?.(t);
+  }
 
   return (
     <>
@@ -30,7 +41,7 @@ export default function MobileReport({
           {(["standard", "advanced", "faa"] as Tab[]).map((t) => (
             <button
               key={t}
-              onClick={() => setTab(t)}
+              onClick={() => selectTab(t)}
               className={`px-4 py-1.5 text-xs font-medium rounded transition ${tab === t ? "bg-white shadow text-slate-900" : "text-slate-600 hover:text-slate-800"}`}
             >
               {t === "standard" ? "Standard" : t === "advanced" ? "Advanced" : "FAA"}
@@ -38,13 +49,16 @@ export default function MobileReport({
           ))}
         </div>
         {rangeOptions && rangeOptions.length > 0 && onRangeSelect && (
-          <select
-            className="input !w-auto !py-1.5"
-            value={rangeLabel ?? rangeOptions[0]}
-            onChange={(e) => onRangeSelect(e.target.value)}
-          >
-            {rangeOptions.map((r) => <option key={r}>{r}</option>)}
-          </select>
+          <div className="relative">
+            <select
+              className="input !w-auto !py-1.5 pr-8 appearance-none"
+              value={rangeLabel ?? rangeOptions[0]}
+              onChange={(e) => onRangeSelect(e.target.value)}
+            >
+              {rangeOptions.map((r) => <option key={r}>{r}</option>)}
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         )}
         {customRange}
         <div className="ml-auto flex gap-2">{headerActions}</div>
@@ -83,14 +97,28 @@ const num = (n: number | null | undefined, suffix = "", digits = 1): string =>
   n === null || n === undefined || Number.isNaN(Number(n)) ? DASH : `${Number(n).toFixed(digits)}${suffix}`;
 const intOrDash = (n: number | null | undefined): string =>
   n === null || n === undefined ? DASH : String(n);
+// The mobile app displays these settings verbatim (no toFixed/rounding
+// at all) — reproduce that exactly rather than forcing a decimal count.
+const rawNum = (n: number | null | undefined, suffix = ""): string =>
+  n === null || n === undefined ? DASH : `${n}${suffix}`;
 const pctOf = (used?: number, total?: number): string => {
   if (used === undefined || total === undefined || total === 0) return DASH;
-  const pct = (used / total) * 100;
-  return `${used} of ${total} days (${pct.toFixed(2)}%)`;
+  const pct = Math.max(0, (used / total) * 100);
+  return `${used} of ${total} ${total === 1 ? "day" : "days"} (${pct.toFixed(2)}%)`;
+};
+// Mirrors the mobile app's convertMinsToTime: pads minutes to 2 digits,
+// switches to "H Hrs:MM Mins" past an hour, and reads "Ramp Disabled"
+// at 0 (matching the CPAP's own "disabled" state for GentleRise).
+const rampDuration = (mins?: number | null): string => {
+  if (mins == null) return DASH;
+  if (mins <= 0) return "Ramp Disabled";
+  const hours = Math.floor(mins / 60);
+  const minutes = String(mins % 60).padStart(2, "0");
+  return hours > 0 ? `${hours} Hrs:${minutes} Mins` : `${minutes} Mins`;
 };
 
-function StandardTab({ vm }: { vm: ReportVM }) {
-  const { patientDetails: pd, patientSettings: ps, usage: u, ahi, leak, pressure: pr } = vm;
+function PatientOverviewSections({ vm }: { vm: ReportVM }) {
+  const { patientDetails: pd, patientSettings: ps, usage: u } = vm;
   return (
     <>
       <Section title="Patient Details">
@@ -101,24 +129,33 @@ function StandardTab({ vm }: { vm: ReportVM }) {
       </Section>
 
       <Section title="Patient Setting">
-        <Row label="Starting Pressure" value={num(ps.startingPressure, " (cmH2O)", 0)} />
-        <Row label="Minimum Pressure" value={num(ps.minPressure, " (cmH2O)", 0)} />
-        <Row label="Maximum Pressure" value={num(ps.maxPressure, " (cmH2O)", 0)} />
-        <Row label="GentleRise Pressure" value={num(ps.gentleRisePressure, " (cmH2O)", 0)} />
-        <Row label="GentleRise Duration" value={ps.gentleRiseDuration == null ? DASH : `${ps.gentleRiseDuration} Mins`} />
+        <Row label="Starting Pressure" value={rawNum(ps.startingPressure, " (cmH2O)")} />
+        <Row label="Minimum Pressure" value={rawNum(ps.minPressure, " (cmH2O)")} />
+        <Row label="Maximum Pressure" value={rawNum(ps.maxPressure, " (cmH2O)")} />
+        <Row label="GentleRise Pressure" value={rawNum(ps.gentleRisePressure, " (cmH2O)")} />
+        <Row label="GentleRise Duration" value={rampDuration(ps.gentleRiseDuration)} />
         <Row label="AirRelief" value={intOrDash(ps.airRelief)} />
       </Section>
 
       <Section
         title="Usage"
-        right={u.lastSyncDate ? <>Last Sync Date: <span className="text-slate-900">{formatDate(u.lastSyncDate)}</span></> : null}
+        right={u.lastSyncDate ? <>Last Sync Date: <span className="text-slate-900">{formatDate(u.lastSyncDate, true)}</span></> : null}
       >
         <Row label="Dates of Report" value={u.datesOfReport ?? DASH} />
         <Row label="Days Used" value={pctOf(u.daysUsed, u.totalDays)} />
-        <Row label="Average Hours/Night" value={num(u.averageHoursPerNight)} />
+        <Row label="Average Hours/Night" value={num(u.averageHoursPerNight, "", 2)} />
         <Row label="4+ Hours Usage" value={pctOf(u.fourPlusUsage, u.totalDays)} />
         <Row label="6+ Hours Usage" value={pctOf(u.sixPlusUsage, u.totalDays)} />
       </Section>
+    </>
+  );
+}
+
+function StandardTab({ vm }: { vm: ReportVM }) {
+  const { ahi, leak, pressure: pr } = vm;
+  return (
+    <>
+      <PatientOverviewSections vm={vm} />
 
       <Section title="AHI Summary">
         <Row label="AHI Index" value={num(ahi.ahiIndex, "", 2)} />
@@ -144,32 +181,49 @@ function StandardTab({ vm }: { vm: ReportVM }) {
 }
 
 function AdvancedTab({ vm }: { vm: ReportVM }) {
-  const { ahi, leak, pressure: pr, sleep, patientSettings: ps } = vm;
+  const { ahi, leak, pressure: pr, sleep } = vm;
   return (
     <>
-      <Section title="Breathing Events">
-        <Row label="Central Apnea Index" value={ahi.centralApneaIndex ?? DASH} />
-        <Row label="Central Hypopnea Index" value={ahi.centralHypopneaIndex ?? DASH} />
-        <Row label="Average Apnea Duration (sec)" value={num(ahi.averageApneaDuration, "", 2)} />
-        <Row label="Longest Apnea (sec)" value={intOrDash(ahi.longestApnea)} />
+      <PatientOverviewSections vm={vm} />
+
+      <Section title="AHI Summary">
+        <Row label="AHI Index" value={num(ahi.ahiIndex, "", 2)} />
+        <Row label="Apnea Index" value={num(ahi.apneaIndex, "", 2)} />
+        <Row label="Hypopnea Index" value={num(ahi.hypopneaIndex, "", 2)} />
+        <Row label="Total Apnea Duration (sec)" value={num(ahi.totalApneaDuration, "", 0)} />
+        <Row label="% of Time Spent in Apnea" value={num(ahi.percentTimeInApnea, "", 2)} />
+        <Row label="Average Length of Apneas (sec)" value={num(ahi.averageApneaDuration, "", 2)} />
+        <Row label="Longest Apnea (sec)" value={num(ahi.longestApnea, "", 0)} />
         <Row label="Flow-Limited Index" value={num(ahi.flowLtdIndex, "", 2)} />
         <Row label="Snore Index" value={num(ahi.snoreIndex, "", 2)} />
+        {ahi.centralApneaIndex != null && <Row label="Central Apnea Index" value={ahi.centralApneaIndex} />}
+        {ahi.centralHypopneaIndex != null && <Row label="Central Hypopnea Index" value={ahi.centralHypopneaIndex} />}
       </Section>
-      <Section title="Leak Detail">
-        <Row label="Max Leak" value={leak.maxLeak ?? DASH} />
-        <Row label="Leak Limit Exceedance" value={num(leak.leakLimitExceedance, "", 2)} />
-        <Row label="Leak Avg Range" value={num(leak.leakAvgRange, "", 2)} />
+
+      <Section title="Leak Summary">
+        <Row label="Average Leak" value={num(leak.averageLeak, " (L/Min)", 2)} />
+        <Row label="95 Percentile Leak" value={num(leak.p95Leak, " (L/Min)", 2)} />
+        <Row label="% of Time Spent with High Leak" value={num(leak.leakAvgRange, "", 2)} />
+        {leak.maxLeak != null && <Row label="Max Leak" value={leak.maxLeak} />}
+        {leak.leakLimitExceedance != null && <Row label="Leak Limit Exceedance" value={num(leak.leakLimitExceedance, "", 2)} />}
       </Section>
-      <Section title="Pressure Detail">
-        <Row label="90 Percentile Pressure" value={pr.p90Pressure ?? DASH} />
+
+      <Section title="Pressure Summary">
+        <Row label="Minimum Pressure" value={num(pr.minPressure, " (cmH2O)", 2)} />
+        <Row label="Maximum Pressure" value={num(pr.maxPressure, " (cmH2O)", 2)} />
+        <Row label="Average Pressure" value={num(pr.averagePressure, " (cmH2O)", 2)} />
+        <Row label="95 Percentile Pressure" value={num(pr.p95Pressure, " (cmH2O)", 2)} />
+        {pr.p90Pressure != null && <Row label="90 Percentile Pressure" value={pr.p90Pressure} />}
       </Section>
+
       {sleep && (
-        <Section title="Sleep">
-          <Row label="Sleep Score" value={intOrDash(sleep.sleepScore)} />
-          <Row label="Avg Mask Removed" value={intOrDash(sleep.avgMaskRemoved)} />
+        <Section title="Sleep Score Summary">
+          <Row label="Sleep Score" value={sleep.sleepScore == null ? DASH : `${Number(sleep.sleepScore).toFixed(0)} of 100`} />
+          <Row label="Mask Removed Average" value={num(sleep.avgMaskRemoved, "", 0)} />
         </Section>
       )}
-      <DeviceSettingsSection vm={vm} />
+
+      {vm.deviceSettings && <DeviceSettingsSection vm={vm} />}
     </>
   );
 }
@@ -206,39 +260,36 @@ function DeviceSettingsSection({ vm }: { vm: ReportVM }) {
 }
 
 function FAATab({ vm }: { vm: ReportVM }) {
-  const totalDays = vm.usage.totalDays ?? 0;
-  const sixPlus = vm.usage.sixPlusUsage;
-  const fourPlus = vm.usage.fourPlusUsage ?? 0;
-  // FAA Special Issuance: typically requires ~75% nights with >= 6h use + AHI < 5.
-  const sixPct = totalDays > 0 && sixPlus !== undefined ? (sixPlus / totalDays) * 100 : null;
-  const fourPct = totalDays > 0 ? (fourPlus / totalDays) * 100 : 0;
-  const ahi = vm.ahi.ahiIndex ?? Infinity;
-  const meetsUsage = sixPct === null ? false : sixPct >= 75;
-  const meetsAhi = ahi < 5;
-  const meets = meetsUsage && meetsAhi;
+  const { patientDetails: pd, usage: u, ahi } = vm;
+  // Both "Days in Report" and "Days Used" share the plurality of the
+  // report window itself (e.g. "Last 24 Hours" -> "1 day" for both),
+  // matching the mobile app's FAA screen rather than pluralizing each
+  // count independently.
+  const dayWord = u.totalDays === 1 ? "day" : "days";
+  const pctUsed = u.daysUsed == null || !u.totalDays
+    ? DASH
+    : `${Math.max(0, (u.daysUsed / u.totalDays) * 100).toFixed(0)}%`;
   return (
     <>
-      <Section title="FAA Special Issuance Criteria">
-        <Row
-          label="Usage ≥ 6 h on ≥ 75% of nights"
-          value={sixPct === null ? "Not available" : `${meetsUsage ? "Yes" : "No"} (${sixPct.toFixed(1)}%)`}
-        />
-        <Row
-          label="Compliance ≥ 4 h on nights"
-          value={`${fourPct.toFixed(1)}%`}
-        />
-        <Row
-          label="AHI < 5"
-          value={ahi === Infinity ? "Not available" : `${meetsAhi ? "Yes" : "No"} (${ahi.toFixed(2)})`}
-        />
-        <Row
-          label="Overall"
-          value={<span className={`badge ${meets ? "badge-green" : "badge-red"}`}>{meets ? "Meets criteria" : "Does not meet criteria"}</span>}
-        />
+      <Section title="Patient Details">
+        <Row label="Patient Name" value={pd.name ?? DASH} />
+        <Row label="Device Serial" value={pd.deviceSerial ?? DASH} />
       </Section>
-      <p className="text-xs text-slate-400 px-1">
-        Verdict is a heuristic shown for guidance only — submit the full report with your medical examiner.
-      </p>
+
+      <Section
+        title="Usage"
+        right={u.lastSyncDate ? <>Last Sync Date: <span className="text-slate-900">{formatDate(u.lastSyncDate, true)}</span></> : null}
+      >
+        <Row label="Dates of Report" value={u.datesOfReport ?? DASH} />
+        <Row label="Days in Report" value={u.totalDays == null ? DASH : `${u.totalDays} ${dayWord}`} />
+        <Row label="Days Used" value={u.daysUsed == null ? DASH : `${u.daysUsed} ${dayWord}`} />
+        <Row label="% of Days Used" value={pctUsed} />
+        <Row label="Average Hours/Night" value={num(u.averageHoursPerNight, "", 2)} />
+      </Section>
+
+      <Section title="AHI Summary">
+        <Row label="AHI Index" value={num(ahi.ahiIndex, "", 2)} />
+      </Section>
     </>
   );
 }

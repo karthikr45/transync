@@ -158,7 +158,7 @@ export const homeCareApi = {
       method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
   login: (dto: LoginDto) =>
-    apiFetch<LoginResult>("/home-care/login", {
+    apiFetch<LoginResult>("/home-care/portal/login", {
       method: "POST", body: JSON.stringify(dto), _skipAuth: true, _skipAuthRedirect: true,
     }),
 
@@ -284,31 +284,15 @@ export const endUserApi = {
   getParameter: (q: ParameterQuery) =>
     apiFetch<ParameterResult>(`/parameter/getByEmailAndDeviceId${qs(q as unknown as Record<string, unknown>)}`),
 
-  // Server-side PDF generation for reportBySession. Returns the raw
-  // PDF as a Blob so the caller can trigger a download.
-  generatePdf: async (dto: GeneratePdfDto): Promise<Blob> => {
-    if (!API_BASE_URL) throw new ApiError("API base URL is not configured.", 0);
-    const token = getToken();
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true",
-      Accept: "application/pdf, application/json",
-    };
-    if (token) (headers as Record<string, string>).Authorization = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE_URL}/event/generatePdf`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(dto),
-      cache: "no-store",
-    }).catch(() => { throw new ApiError("Network error — could not reach the server.", 0); });
-    if (!res.ok) {
-      let message = res.statusText || "PDF generation failed.";
-      try {
-        const body = await res.json();
-        if (body && typeof body.message === "string") message = body.message;
-      } catch { /* not JSON */ }
-      throw new ApiError(message, res.status);
-    }
-    return res.blob();
-  },
+  // Server-side PDF generation for reportBySession. Returns a URL to the
+  // generated PDF in blob storage (the API's result is the URL string,
+  // not the file itself) — GET with query params, per the server's
+  // /api-json spec.
+  generatePdf: (dto: GeneratePdfDto): Promise<string> =>
+    apiFetch<string>(`/event/generatePdf${qs(dto as unknown as Record<string, unknown>)}`),
+
+  // Same payload shape, but the report includes the daily event log —
+  // mirrors the mobile app's "download with daily log" option.
+  getReportWithDailyLog: (dto: GeneratePdfDto): Promise<string> =>
+    apiFetch<string>(`/event/getReportWithDailyLog${qs(dto as unknown as Record<string, unknown>)}`),
 };

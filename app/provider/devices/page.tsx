@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Plus, Search, X, AlertTriangle, Check, RefreshCw } from "lucide-react";
 import { homeCareApi, ApiError } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import type { ClaimedDevice, DeviceUploadResult } from "@/lib/types.api";
 
 export default function DevicesPage() {
@@ -121,7 +121,7 @@ export default function DevicesPage() {
                 <td className="px-5 py-3 text-slate-600">{d.model ?? "—"}</td>
                 <td className="px-5 py-3 text-slate-600">{d.firmware ?? "—"}</td>
                 <td className="px-5 py-3 text-slate-600">{formatDateTime(d.claimedAt) || "—"}</td>
-                <td className="px-5 py-3 text-slate-600">{formatDateTime(d.firstSyncDate) || "—"}</td>
+                <td className="px-5 py-3 text-slate-600">{formatDate(d.firstSyncDate, true) || "—"}</td>
                 <td className="px-5 py-3 text-slate-700">
                   {d.endUserName
                     ? d.endUserName

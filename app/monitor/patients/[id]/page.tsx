@@ -131,6 +131,7 @@ function ApiReport({
           rangeLabel={rangeLabel}
           rangeOptions={Object.keys(RANGE_TO_DAYS)}
           onRangeSelect={applyPreset}
+          onTabChange={() => load()}
           customRange={
             <div className="flex items-center gap-2 text-sm">
               <span className="text-xs text-slate-500">or pick range:</span>

@@ -343,12 +343,23 @@ export type BarChartResponse = EventGraphDto[] | { data?: EventGraphDto[]; value
 
 export interface TotalRuntimeDto { totalRunningTime: number }
 
+// Mirrors the mobile app's ReportTypeToShareOrDownload, indexed by the
+// selected report tab (standard/advanced/faa).
+export type ReportType = "STANDARD" | "ADVANCED" | "FAA";
+
+// Shared shape for both PDF endpoints (event/generatePdf and
+// event/getReportWithDailyLog) — matches the mobile app's share/download
+// payload verbatim.
 export interface GeneratePdfDto {
   email: string;
   deviceId: string;
   session: SessionWindow;
+  name: string;
+  provider?: string;
   timeZone?: number;
   timeZoneName?: string;
+  language: string;
+  type: ReportType;
   startDate?: string;
   endDate?: string;
 }

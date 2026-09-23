@@ -14,12 +14,21 @@ function ymdToFriendly(y: number, monthIdx: number, day: number): string {
   return `${day}-${MONTHS_LONG[monthIdx]}-${y}`;
 }
 
-/** Friendly date string ("1-june-2026") from either yyyy-MM-dd or an ISO timestamp. */
-export function formatDate(input: string | Date | null | undefined): string {
+/**
+ * Friendly date string ("1-june-2026") from either yyyy-MM-dd or an ISO
+ * timestamp. Pass utc=true for device-sync timestamps (lastSyncDate,
+ * lastSettingSyncDate, firstSyncDate) — the mobile app displays those
+ * against the UTC calendar date the API returned rather than converting
+ * to the viewer's local timezone, so a sync at 23:17 UTC stays on that
+ * UTC day instead of rolling into the next local day.
+ */
+export function formatDate(input: string | Date | null | undefined, utc = false): string {
   if (!input) return "";
   if (input instanceof Date) {
     if (Number.isNaN(input.getTime())) return "";
-    return ymdToFriendly(input.getFullYear(), input.getMonth(), input.getDate());
+    return utc
+      ? ymdToFriendly(input.getUTCFullYear(), input.getUTCMonth(), input.getUTCDate())
+      : ymdToFriendly(input.getFullYear(), input.getMonth(), input.getDate());
   }
   // Date-only yyyy-MM-dd
   const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
@@ -30,17 +39,21 @@ export function formatDate(input: string | Date | null | undefined): string {
   // Full ISO / parseable timestamp
   const d = new Date(input);
   if (Number.isNaN(d.getTime())) return input;
-  return ymdToFriendly(d.getFullYear(), d.getMonth(), d.getDate());
+  return utc
+    ? ymdToFriendly(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+    : ymdToFriendly(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-/** Friendly date+time ("1-june-2026 14:32"). */
-export function formatDateTime(input: string | Date | null | undefined): string {
+/** Friendly date+time ("1-june-2026 14:32"). See formatDate for the utc flag. */
+export function formatDateTime(input: string | Date | null | undefined, utc = false): string {
   if (!input) return "";
   const d = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(d.getTime())) return typeof input === "string" ? input : "";
-  const date = ymdToFriendly(d.getFullYear(), d.getMonth(), d.getDate());
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
+  const date = utc
+    ? ymdToFriendly(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+    : ymdToFriendly(d.getFullYear(), d.getMonth(), d.getDate());
+  const hh = String(utc ? d.getUTCHours() : d.getHours()).padStart(2, "0");
+  const mm = String(utc ? d.getUTCMinutes() : d.getMinutes()).padStart(2, "0");
   return `${date} ${hh}:${mm}`;
 }
 
