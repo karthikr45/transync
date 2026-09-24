@@ -1,5 +1,5 @@
 import WorkflowDirectory from "@/components/device-workflow/WorkflowDirectory";
 
 export default function Page() {
-  return <WorkflowDirectory area="inventory" mode="provider" />;
+  return <WorkflowDirectory area="transfers" mode="provider" />;
 }

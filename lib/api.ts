@@ -7,7 +7,7 @@ import { API_BASE_URL } from "./env";
 import { clearSession, getRefreshToken, getToken, getUserKind, setSession, getCurrentUser, getCurrentEndUser } from "./auth";
 import type {
   ApiEnvelope, LoginDto, LoginResult, RegisterDto, AccountUser,
-  DeviceUploadDto, DeviceUploadResult, DeviceUsersQuery, DeviceUsersResult,
+  DeviceUsersQuery, DeviceUsersResult,
   ClaimedDevicesResponse,
   ComplianceReportDto, ComplianceReportResult,
   SignUpOtpDto, ValidateOtpDto, CreateUserDto, EndUserLoginDto, EndUser,
@@ -106,7 +106,7 @@ function redirectToLogin(): void {
 
 type FetchOpts = RequestInit & { _retry?: boolean; _skipAuth?: boolean; _skipAuthRedirect?: boolean };
 
-async function apiFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
+export async function apiFetch<T>(path: string, init: FetchOpts = {}): Promise<T> {
   if (!API_BASE_URL) throw new ApiError("API base URL is not configured.", 0);
 
   const headers = new Headers(init.headers);
@@ -167,8 +167,6 @@ export const homeCareApi = {
   reject: (id: string, reason?: string) =>
     apiFetch<AccountUser>(`/home-care/reject/${id}`, { method: "POST", body: JSON.stringify({ reason }) }),
 
-  uploadDevices: (dto: DeviceUploadDto) =>
-    apiFetch<DeviceUploadResult>("/home-care/devices/upload", { method: "POST", body: JSON.stringify(dto) }),
   listDevices: () => apiFetch<ClaimedDevicesResponse>("/home-care/devices/list"),
   listDeviceUsers: (query: DeviceUsersQuery = {}) =>
     apiFetch<DeviceUsersResult>(`/home-care/devices/users${qs(query as unknown as Record<string, unknown>)}`),

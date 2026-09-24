@@ -112,3 +112,12 @@ The patient-side `sharing` / `profile`, the provider's `worklist` /
 `alerts` / `settings/*`, and the monitor's `dashboard` / `shares` /
 `audit` need new backend endpoints — they're listed for the backend
 team to triage.
+
+
+## Device management v1 (2026-09-24)
+
+Frontend implemented against the proposed contract in [DEVICE-WORKFLOW-API.md](./DEVICE-WORKFLOW-API.md).
+Backend implementation is pending. Registry, allocation, claim review, transfers, audit, inventory,
+and patient assignment use `/home-care/device-management/*`. The previous trust-on-upload UI
+has been removed. These screens deliberately show unavailable/error states until the new endpoints exist.
+The server must also replace or disable the legacy upload route.
