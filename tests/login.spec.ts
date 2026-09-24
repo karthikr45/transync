@@ -7,7 +7,7 @@ test.describe("Login", () => {
     await expect(page.getByRole("radio", { name: /Patient/i })).toBeVisible();
     await expect(page.getByRole("radio", { name: /Provider, Monitor or Admin/i })).toBeVisible();
     await expect(page.getByLabel("Email")).toBeVisible();
-    await expect(page.getByLabel("Password")).toBeVisible();
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
   });
 
   test("blank submission shows the browser's required-field validation", async ({ page }) => {

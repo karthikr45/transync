@@ -56,7 +56,7 @@ test("patients API errors support retry and empty results", async ({ page }) => 
     ? { status: 403, json: { message: "Super admin access required" } }
     : { json: { status: "Success", result: { patients: [], total: 0 } } }));
   await page.goto("/admin/patients");
-  await expect(page.getByRole("alert")).toContainText("Super admin access required");
+  await expect(page.getByRole("alert").filter({ hasText: "Super admin access required" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
   fail = false;
   await page.getByRole("button", { name: "Retry", exact: true }).click();

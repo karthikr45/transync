@@ -63,7 +63,7 @@ export default function ClaimDevices() {
       {error && <ErrorNotice message={error} />}
       {message && <div role="status" className="card p-4 mb-4 bg-green-50 text-green-800">{message} <Link href="/provider/devices" className="underline">View inventory</Link> · <Link href="/provider/claim-requests" className="underline">View requests</Link></div>}
       <form className="card p-5 max-w-3xl" onSubmit={verify}>
-        <label className="block text-sm font-medium">Device serials<textarea required disabled={checking || busy} className="input mt-2 min-h-[140px] font-mono" value={input} onChange={(e) => { setInput(e.target.value); setCheck(null); setResults(null); setMessage(null); setError(null); }} placeholder="Scan or paste serials, one per line" /></label>
+        <label className="block text-sm font-medium">Device serials<textarea aria-label="Device serials" required disabled={checking || busy} className="input mt-2 min-h-[140px] font-mono" value={input} onChange={(e) => { setInput(e.target.value); setCheck(null); setResults(null); setMessage(null); setError(null); }} placeholder="Scan or paste serials, one per line" /></label>
         <p className="text-xs text-slate-500 mt-2">Up to 100 serials. Duplicates are removed. Verification does not claim devices or grant access to patient data.</p>
         <button className="btn-primary mt-4" disabled={checking || busy || !input.trim()}>{checking ? "Verifying…" : "Verify serials"}</button>
       </form>

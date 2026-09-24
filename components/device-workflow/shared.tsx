@@ -67,7 +67,7 @@ export function ChoicePicker({ kind, label, value, onChange }: {
       <input className="input mt-1" value={search} placeholder="Type a name to search…" onChange={(e) => { setSearch(e.target.value); onChange(""); }} />
     </label>
     <label className="block text-sm">{label}
-      <select className="input mt-1" required value={value} disabled={loading || !!error} onChange={(e) => onChange(e.target.value)}>
+      <select aria-label={label} className="input mt-1" required value={value} disabled={loading || !!error} onChange={(e) => onChange(e.target.value)}>
         <option value="">{loading ? "Loading…" : "Select one"}</option>
         {items.map((item) => <option key={item.id} value={item.id}>{item.name}{item.detail ? ` — ${item.detail}` : ""}</option>)}
       </select>

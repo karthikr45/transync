@@ -138,13 +138,36 @@ test("unavailable backend does not simulate success or expose claim controls", a
   await session(page, false);
   await page.route("**/home-care/device-management/context", (route) => route.fulfill({ status: 404, json: { message: "Not found" } }));
   await page.goto("/provider/devices/claim");
-  await expect(page.getByRole("alert")).toContainText("not available yet");
+  await expect(page.getByRole("alert").filter({ hasText: "not available yet" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Verify serials", exact: true })).toHaveCount(0);
 });
 
 test("read-only HCP cannot use claim controls", async ({ page }) => {
   await session(page, false); await api(page, []);
   await page.goto("/provider/devices/claim");
-  await expect(page.getByRole("alert")).toContainText("Only authorized organization administrators");
+  await expect(page.getByRole("alert").filter({ hasText: "Only authorized organization administrators" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Verify serials", exact: true })).toHaveCount(0);
+});
+
+test("expired verification never enables claiming", async ({ page }) => {
+  await session(page, false); await api(page, ["claims:write"]);
+  await page.route("**/home-care/device-management/claim-checks", (route) => route.fulfill({ json: {
+    validationId: "expired", expiresAt: "2020-01-01T00:00:00Z", results: [{ serial: "TEST-1", outcome: "eligible", message: "Old allocation" }],
+  } }));
+  await page.goto("/provider/devices/claim");
+  await page.getByLabel("Device serials", { exact: true }).fill("TEST-1");
+  await page.getByRole("button", { name: "Verify serials", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Please verify again" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Claim 1 eligible devices" })).toHaveCount(0);
+});
+
+test("claim conflicts clear the old verification", async ({ page }) => {
+  await session(page, false); await api(page, ["claims:write"]);
+  await page.route("**/home-care/device-management/claims", (route) => route.fulfill({ status: 409, json: { message: "Allocation changed" } }));
+  await page.goto("/provider/devices/claim");
+  await page.getByLabel("Device serials", { exact: true }).fill("TEST-1");
+  await page.getByRole("button", { name: "Verify serials", exact: true }).click();
+  await page.getByRole("button", { name: "Claim 1 eligible devices" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "has changed" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Claim 1 eligible devices" })).toHaveCount(0);
 });
