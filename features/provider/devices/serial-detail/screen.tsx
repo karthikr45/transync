@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiSelect from "@/components/ui/Select";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -39,23 +43,25 @@ export default function DeviceDetail() {
           <div className="space-y-3">
             <div>
               <label className="label">Account</label>
-              <select className="input">
+              <UiSelect className="input">
                 <option>Northside Homecare (this account)</option>
                 <option>Northside — West Branch</option>
-              </select>
+              </UiSelect>
             </div>
             <div>
               <label className="label">Patient</label>
-              <select className="input" defaultValue={assigned?.id ?? ""}>
+              <UiSelect className="input" defaultValue={assigned?.id ?? ""}>
                 <option value="">— Unassigned —</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
-            <button className="btn-primary">Update</button>
+            <UiButton variant="primary" type="submit" className="btn-primary">
+              Update
+            </UiButton>
             <p className="text-xs text-slate-500">
               Reassigning records a Release Date for the previous link and a new Install Date — used
               for refurb / swap scenarios.
@@ -66,9 +72,14 @@ export default function DeviceDetail() {
 
       <div className="card p-5 mt-5">
         <h2 className="text-base font-semibold text-slate-900 mb-3">Device functions</h2>
-        <button className="btn-danger" onClick={() => setConfirmDeact(true)}>
+        <UiButton
+          variant="danger"
+          type="submit"
+          className="btn-danger"
+          onClick={() => setConfirmDeact(true)}
+        >
           <Ban className="w-4 h-4" /> Deactivate device
-        </button>
+        </UiButton>
       </div>
 
       {confirmDeact && (
@@ -83,12 +94,22 @@ export default function DeviceDetail() {
               for audit purposes.
             </p>
             <div className="mt-5 flex justify-end gap-2">
-              <button className="btn-secondary" onClick={() => setConfirmDeact(false)}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={() => setConfirmDeact(false)}
+              >
                 Cancel
-              </button>
-              <button className="btn-danger" onClick={() => setConfirmDeact(false)}>
+              </UiButton>
+              <UiButton
+                variant="danger"
+                type="submit"
+                className="btn-danger"
+                onClick={() => setConfirmDeact(false)}
+              >
                 Deactivate
-              </button>
+              </UiButton>
             </div>
           </div>
         </div>

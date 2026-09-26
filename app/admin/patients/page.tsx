@@ -1,3 +1,4 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 import Screen from "@/features/admin/patients/screen";
 
 export default function Page() {

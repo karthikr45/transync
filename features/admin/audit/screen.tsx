@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
 import { Download } from "lucide-react";
@@ -10,15 +14,15 @@ export default function AdminAudit() {
         title="Platform audit log"
         subtitle="Every platform-level action: approvals, suspensions, firmware, config."
         actions={
-          <button className="btn-secondary">
+          <UiButton variant="secondary" type="submit" className="btn-secondary">
             <Download className="w-4 h-4" /> Export
-          </button>
+          </UiButton>
         }
       />
       <MockBanner />
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Timestamp</th>
@@ -37,7 +41,7 @@ export default function AdminAudit() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

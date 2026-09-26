@@ -1,3 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiSelect from "@/components/ui/Select";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
 import { Download, FileText } from "lucide-react";
@@ -31,40 +37,40 @@ export default function MonitorReports() {
         <div className="grid md:grid-cols-3 gap-3">
           <div>
             <label className="label">Cohort</label>
-            <select className="input">
+            <UiSelect className="input">
               <option>All shared patients</option>
               <option>Non-compliant only</option>
               <option>Single patient</option>
-            </select>
+            </UiSelect>
           </div>
           <div>
             <label className="label">From</label>
-            <input className="input" type="date" />
+            <UiInput className="input" type="date" />
           </div>
           <div>
             <label className="label">To</label>
-            <input className="input" type="date" />
+            <UiInput className="input" type="date" />
           </div>
           <div>
             <label className="label">Format</label>
-            <select className="input">
+            <UiSelect className="input">
               <option>PDF</option>
               <option>CSV</option>
-            </select>
+            </UiSelect>
           </div>
           <div>
             <label className="label">Threshold</label>
-            <select className="input">
+            <UiSelect className="input">
               <option>Medicare (4h / 70% / 30d)</option>
               <option>BlueCross (4h / 70% / 30d)</option>
               <option>Aetna (4h / 65% / 30d)</option>
               <option>Custom</option>
-            </select>
+            </UiSelect>
           </div>
           <div className="flex items-end">
-            <button className="btn-primary w-full">
+            <UiButton variant="primary" type="submit" className="btn-primary w-full">
               <Download className="w-4 h-4" /> Generate
-            </button>
+            </UiButton>
           </div>
         </div>
       </div>
@@ -73,7 +79,7 @@ export default function MonitorReports() {
         <div className="px-5 py-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-900">Recent exports</h2>
         </div>
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Report</th>
@@ -91,14 +97,14 @@ export default function MonitorReports() {
                 <td className="px-5 py-3 text-slate-600">{r.date}</td>
                 <td className="px-5 py-3 text-slate-600">{r.size}</td>
                 <td className="px-5 py-3 text-right">
-                  <button className="btn-secondary">
+                  <UiButton variant="secondary" type="submit" className="btn-secondary">
                     <Download className="w-4 h-4" /> Download
-                  </button>
+                  </UiButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

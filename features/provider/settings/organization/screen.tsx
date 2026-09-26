@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiSelect from "@/components/ui/Select";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -24,33 +29,35 @@ export default function OrganizationSettings() {
           <div className="space-y-3">
             <div>
               <label className="label">Institution name</label>
-              <input className="input" defaultValue="Northside Homecare" />
+              <UiInput className="input" defaultValue="Northside Homecare" />
             </div>
             <div>
               <label className="label">Unique Provider Identifier</label>
-              <input className="input" defaultValue="UPI-NS-44120" readOnly />
+              <UiInput className="input" defaultValue="UPI-NS-44120" readOnly />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="label">Country</label>
-                <select className="input">
+                <UiSelect className="input">
                   {countries.map((c) => (
                     <option key={c.code} value={c.code}>
                       {c.name}
                     </option>
                   ))}
-                </select>
+                </UiSelect>
               </div>
               <div>
                 <label className="label">Time zone</label>
-                <select className="input">
+                <UiSelect className="input">
                   {timeZones.map((tz) => (
                     <option key={tz}>{tz}</option>
                   ))}
-                </select>
+                </UiSelect>
               </div>
             </div>
-            <button className="btn-primary">Save</button>
+            <UiButton variant="primary" type="submit" className="btn-primary">
+              Save
+            </UiButton>
           </div>
         </div>
 
@@ -63,21 +70,23 @@ export default function OrganizationSettings() {
           <div className="space-y-3">
             <div>
               <label className="label">Storage region</label>
-              <select className="input">
+              <UiSelect className="input">
                 {dataRegions.map((r) => (
                   <option key={r}>{r}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input type="checkbox" defaultChecked /> Restrict data export to in-region
+              <UiInput type="checkbox" defaultChecked /> Restrict data export to in-region
               destinations
             </label>
             <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input type="checkbox" defaultChecked /> Require BAA before granting Authorized
+              <UiInput type="checkbox" defaultChecked /> Require BAA before granting Authorized
               Monitor access
             </label>
-            <button className="btn-primary">Save</button>
+            <UiButton variant="primary" type="submit" className="btn-primary">
+              Save
+            </UiButton>
           </div>
         </div>
       </div>

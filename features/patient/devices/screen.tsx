@@ -1,4 +1,6 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
 
 import PageHeader from "@/components/PageHeader";
 import { Smartphone, Bluetooth, RefreshCw, AlertTriangle } from "lucide-react";
@@ -30,9 +32,15 @@ export default function PatientDevices() {
         title="My devices"
         subtitle="Devices linked to your account. Pairing happens in the Transcend mobile app."
         actions={
-          <button className="btn-secondary" onClick={load} disabled={loading}>
+          <UiButton
+            variant="secondary"
+            type="submit"
+            className="btn-secondary"
+            onClick={load}
+            disabled={loading}
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </button>
+          </UiButton>
         }
       />
 

@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
 
 import { AlertTriangle, ChevronDown, Printer, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -91,46 +94,57 @@ export default function PatientReports() {
           }}
           customRange={
             customActive ? (
-              <button
+              <UiButton
+                variant="plain"
                 type="button"
                 onClick={() => setShowRangeModal(true)}
                 className="text-xs text-slate-600 underline-offset-2 hover:underline"
                 title="Edit custom range"
               >
                 {formatDate(start)} → {formatDate(end)} (Edit)
-              </button>
+              </UiButton>
             ) : null
           }
           headerActions={
             <>
-              <button className="btn-secondary" onClick={load} disabled={loading}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={load}
+                disabled={loading}
+              >
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-              </button>
+              </UiButton>
               <div className="relative" ref={downloadMenuRef}>
-                <button
+                <UiButton
+                  variant="primary"
+                  type="submit"
                   className="btn-primary disabled:opacity-50 !pr-2"
                   onClick={() => (tab === "faa" ? viewPdf(false) : setDownloadMenuOpen((o) => !o))}
                   disabled={downloading || loading}
                 >
                   <Printer className="w-4 h-4" /> {downloading ? "Generating…" : "View PDF"}
                   {tab !== "faa" && <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
+                </UiButton>
                 {tab !== "faa" && downloadMenuOpen && (
                   <div className="absolute right-0 mt-1 w-48 card p-1 z-10 shadow-lg">
-                    <button
+                    <UiButton
+                      variant="plain"
                       type="button"
                       className="w-full text-left text-sm px-3 py-2 rounded hover:bg-slate-50"
                       onClick={() => viewPdf(false)}
                     >
                       {TAB_LABEL[tab]}
-                    </button>
-                    <button
+                    </UiButton>
+                    <UiButton
+                      variant="plain"
                       type="button"
                       className="w-full text-left text-sm px-3 py-2 rounded hover:bg-slate-50"
                       onClick={() => viewPdf(true)}
                     >
                       {TAB_LABEL[tab]} With Daily Log
-                    </button>
+                    </UiButton>
                   </div>
                 )}
               </div>
@@ -193,7 +207,7 @@ function RangeModal({
             <label className="label" htmlFor="range-start">
               Start Date <span className="text-red-500">*</span>
             </label>
-            <input
+            <UiInput
               id="range-start"
               type="date"
               className="input"
@@ -207,7 +221,7 @@ function RangeModal({
             <label className="label" htmlFor="range-end">
               End Date <span className="text-red-500">*</span>
             </label>
-            <input
+            <UiInput
               id="range-end"
               type="date"
               className="input"
@@ -230,12 +244,12 @@ function RangeModal({
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" className="btn-secondary" onClick={onCancel}>
+          <UiButton variant="secondary" type="button" className="btn-secondary" onClick={onCancel}>
             Cancel
-          </button>
-          <button type="submit" className="btn-primary">
+          </UiButton>
+          <UiButton variant="primary" type="submit" className="btn-primary">
             Submit
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>

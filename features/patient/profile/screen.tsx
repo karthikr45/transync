@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
 
 import { AlertTriangle, RefreshCw, Trash2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -26,7 +29,9 @@ export default function PatientProfile() {
         title="Profile"
         subtitle="Personal and prescription information."
         actions={
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             onClick={load}
             disabled={loading}
             className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -36,7 +41,7 @@ export default function PatientProfile() {
               aria-hidden="true"
             />
             Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -102,8 +107,12 @@ export default function PatientProfile() {
       <div className="card p-5 mt-5">
         <h2 className="text-base font-semibold text-slate-900 mb-4">Security</h2>
         <div className="grid md:grid-cols-3 gap-3">
-          <button className="btn-secondary">Change password</button>
-          <button className="btn-secondary">Enable 2FA</button>
+          <UiButton variant="secondary" type="submit" className="btn-secondary">
+            Change password
+          </UiButton>
+          <UiButton variant="secondary" type="submit" className="btn-secondary">
+            Enable 2FA
+          </UiButton>
           <DeleteAccountButton email={user.email} deviceId={user.deviceId} />
         </div>
       </div>
@@ -126,9 +135,9 @@ function DeleteAccountButton({ email, deviceId }: { email: string; deviceId?: st
   } = useDeleteAccountButtonModel({ email, deviceId });
   return (
     <>
-      <button className="btn-danger" onClick={() => setOpen(true)}>
+      <UiButton variant="danger" type="submit" className="btn-danger" onClick={() => setOpen(true)}>
         <Trash2 className="w-4 h-4" /> Delete account
-      </button>
+      </UiButton>
       {open && (
         <div
           className="fixed inset-0 bg-slate-900/40 flex items-center justify-center px-4 z-50"
@@ -166,7 +175,7 @@ function DeleteAccountButton({ email, deviceId }: { email: string; deviceId?: st
                   <label className="label" htmlFor="confirm-delete">
                     Type <span className="font-mono">DELETE</span> to confirm
                   </label>
-                  <input
+                  <UiInput
                     id="confirm-delete"
                     className="input"
                     value={confirmText}
@@ -183,7 +192,9 @@ function DeleteAccountButton({ email, deviceId }: { email: string; deviceId?: st
                   </div>
                 )}
                 <div className="mt-5 flex justify-end gap-2">
-                  <button
+                  <UiButton
+                    variant="secondary"
+                    type="submit"
                     className="btn-secondary"
                     onClick={() => {
                       setOpen(false);
@@ -193,14 +204,16 @@ function DeleteAccountButton({ email, deviceId }: { email: string; deviceId?: st
                     disabled={submitting}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </UiButton>
+                  <UiButton
+                    variant="danger"
+                    type="submit"
                     className="btn-danger disabled:opacity-50"
                     onClick={submit}
                     disabled={!canSubmit}
                   >
                     {submitting ? "Submitting…" : "Request deletion"}
-                  </button>
+                  </UiButton>
                 </div>
               </>
             )}

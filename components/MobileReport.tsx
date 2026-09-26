@@ -1,4 +1,6 @@
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiSelect from "@/components/ui/Select";
 
 import { useState, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
@@ -39,18 +41,20 @@ export default function MobileReport({
       <div className="card p-3 mb-4 flex flex-wrap items-center gap-2">
         <div className="inline-flex bg-slate-100 rounded-lg p-1">
           {(["standard", "advanced", "faa"] as Tab[]).map((t) => (
-            <button
+            <UiButton
+              variant="plain"
+              type="submit"
               key={t}
               onClick={() => selectTab(t)}
               className={`px-4 py-1.5 text-xs font-medium rounded transition ${tab === t ? "bg-white shadow text-slate-900" : "text-slate-600 hover:text-slate-800"}`}
             >
               {t === "standard" ? "Standard" : t === "advanced" ? "Advanced" : "FAA"}
-            </button>
+            </UiButton>
           ))}
         </div>
         {rangeOptions && rangeOptions.length > 0 && onRangeSelect && (
           <div className="relative">
-            <select
+            <UiSelect
               className="input !w-auto !py-1.5 pr-8 appearance-none"
               value={rangeLabel ?? rangeOptions[0]}
               onChange={(e) => onRangeSelect(e.target.value)}
@@ -58,7 +62,7 @@ export default function MobileReport({
               {rangeOptions.map((r) => (
                 <option key={r}>{r}</option>
               ))}
-            </select>
+            </UiSelect>
             <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         )}

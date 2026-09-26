@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import { notFound } from "next/navigation";
@@ -65,14 +69,14 @@ function ApiReport({
           customRange={
             <div className="flex items-center gap-2 text-sm">
               <span className="text-xs text-slate-500">or pick range:</span>
-              <input
+              <UiInput
                 className="input !py-1.5"
                 type="date"
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
               />
               <span className="text-slate-400">→</span>
-              <input
+              <UiInput
                 className="input !py-1.5"
                 type="date"
                 value={end}
@@ -82,12 +86,23 @@ function ApiReport({
           }
           headerActions={
             <>
-              <button className="btn-secondary" onClick={load} disabled={loading}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={load}
+                disabled={loading}
+              >
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-              </button>
-              <button className="btn-primary" onClick={() => window.print()}>
+              </UiButton>
+              <UiButton
+                variant="primary"
+                type="submit"
+                className="btn-primary"
+                onClick={() => window.print()}
+              >
                 <Printer className="w-4 h-4" /> Print to PDF
-              </button>
+              </UiButton>
             </>
           }
         />

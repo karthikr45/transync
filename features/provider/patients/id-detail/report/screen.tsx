@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+import UiSelect from "@/components/ui/Select";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -79,12 +84,24 @@ function ApiReport({
         subtitle={`${displayName} · Device ${deviceId}`}
         actions={
           <div className="flex gap-2">
-            <button className="btn-secondary" onClick={load} disabled={loading || !start || !end}>
+            <UiButton
+              variant="secondary"
+              type="submit"
+              className="btn-secondary"
+              onClick={load}
+              disabled={loading || !start || !end}
+            >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-            </button>
-            <button className="btn-primary" onClick={() => window.print()} disabled={!data}>
+            </UiButton>
+            <UiButton
+              variant="primary"
+              type="submit"
+              className="btn-primary"
+              onClick={() => window.print()}
+              disabled={!data}
+            >
               <Printer className="w-4 h-4" /> Print to PDF
-            </button>
+            </UiButton>
           </div>
         }
       />
@@ -150,7 +167,7 @@ function RequestControls({
     <div className="card p-4 mb-5">
       <div className="grid sm:grid-cols-3 gap-3 text-sm items-end">
         <Field label="Start date">
-          <input
+          <UiInput
             className="input"
             type="date"
             value={start}
@@ -159,7 +176,7 @@ function RequestControls({
           />
         </Field>
         <Field label="End date">
-          <input
+          <UiInput
             className="input"
             type="date"
             value={end}
@@ -168,7 +185,7 @@ function RequestControls({
           />
         </Field>
         <Field label="Time zone">
-          <select
+          <UiSelect
             className="input"
             value={timeZoneName}
             onChange={(e) => onTzChange(e.target.value)}
@@ -176,7 +193,7 @@ function RequestControls({
             {tzOptions.map((tz) => (
               <option key={tz}>{tz}</option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
       </div>
     </div>

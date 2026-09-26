@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+import UiTable from "@/components/ui/Table";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -18,9 +23,15 @@ export default function ProviderPatients() {
         title="Patients"
         subtitle="Users (patients) recorded against your claimed devices."
         actions={
-          <button className="btn-secondary" onClick={() => load(offset)} disabled={loading}>
+          <UiButton
+            variant="secondary"
+            type="submit"
+            className="btn-secondary"
+            onClick={() => load(offset)}
+            disabled={loading}
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -33,7 +44,7 @@ export default function ProviderPatients() {
       <div className="card p-3 mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
+          <UiInput
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="input pl-9"
@@ -46,7 +57,7 @@ export default function ProviderPatients() {
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Name</th>
@@ -105,7 +116,7 @@ export default function ProviderPatients() {
               })
             )}
           </tbody>
-        </table>
+        </UiTable>
       </div>
 
       <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
@@ -113,20 +124,24 @@ export default function ProviderPatients() {
           Offset {offset} · Limit {LIMIT}
         </span>
         <div className="flex gap-2">
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             className="btn-secondary"
             disabled={loading || offset === 0}
             onClick={() => load(Math.max(0, offset - LIMIT))}
           >
             Previous
-          </button>
-          <button
+          </UiButton>
+          <UiButton
+            variant="secondary"
+            type="submit"
             className="btn-secondary"
             disabled={loading || offset + users.length >= total}
             onClick={() => load(offset + LIMIT)}
           >
             Next
-          </button>
+          </UiButton>
         </div>
       </div>
     </>

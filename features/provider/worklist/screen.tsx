@@ -1,4 +1,6 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
 
 import PageHeader from "@/components/PageHeader";
 import { RefreshCw, Check, AlertTriangle } from "lucide-react";
@@ -30,7 +32,9 @@ export default function ProviderWorklist() {
         subtitle="Your daily action queue — who needs attention today."
         actions={
           <div className="flex items-center gap-2">
-            <button
+            <UiButton
+              variant="secondary"
+              type="submit"
               onClick={() => load(offset)}
               disabled={loading}
               className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -40,7 +44,7 @@ export default function ProviderWorklist() {
                 aria-hidden="true"
               />
               Refresh
-            </button>
+            </UiButton>
             <span className="badge badge-slate">
               {openCount} open · {done.size} done
             </span>
@@ -89,14 +93,16 @@ export default function ProviderWorklist() {
                       key={id}
                       className={`px-5 py-3 flex items-center gap-3 ${isDone ? "opacity-50" : ""}`}
                     >
-                      <button
+                      <UiButton
+                        variant="plain"
+                        type="submit"
                         onClick={() => toggle(id)}
                         className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${isDone ? "bg-green-600 border-green-600 text-white" : "border-slate-300"}`}
                         aria-pressed={isDone}
                         aria-label={isDone ? "Mark as not done" : "Mark as done"}
                       >
                         {isDone && <Check className="w-3 h-3" />}
-                      </button>
+                      </UiButton>
                       <div className="flex-1 min-w-0">
                         <div
                           className={`text-sm font-medium ${isDone ? "line-through text-slate-500" : "text-slate-900"}`}
@@ -105,9 +111,14 @@ export default function ProviderWorklist() {
                         </div>
                         <div className="text-xs text-slate-500 truncate">{t.detail}</div>
                       </div>
-                      <button className="btn-secondary shrink-0" onClick={() => toggle(id)}>
+                      <UiButton
+                        variant="secondary"
+                        type="submit"
+                        className="btn-secondary shrink-0"
+                        onClick={() => toggle(id)}
+                      >
                         {ACTION_LABEL[t.suggestedAction] ?? t.suggestedAction}
-                      </button>
+                      </UiButton>
                     </li>
                   );
                 })}
@@ -124,7 +135,9 @@ export default function ProviderWorklist() {
             {data.total}
           </span>
           <div className="flex gap-2">
-            <button
+            <UiButton
+              variant="secondary"
+              type="submit"
               className="btn-secondary text-sm disabled:opacity-50"
               disabled={offset === 0 || loading}
               onClick={() => {
@@ -133,8 +146,10 @@ export default function ProviderWorklist() {
               }}
             >
               Previous
-            </button>
-            <button
+            </UiButton>
+            <UiButton
+              variant="secondary"
+              type="submit"
               className="btn-secondary text-sm disabled:opacity-50"
               disabled={offset + PAGE_SIZE >= data.total || loading}
               onClick={() => {
@@ -143,7 +158,7 @@ export default function ProviderWorklist() {
               }}
             >
               Next
-            </button>
+            </UiButton>
           </div>
         </div>
       )}

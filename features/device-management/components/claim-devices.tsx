@@ -1,4 +1,9 @@
 "use client";
+import UiTextarea from "@/components/ui/Textarea";
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
+import UiInput from "@/components/ui/Input";
+
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { outcomeLabel } from "../domain/serials";
@@ -67,7 +72,7 @@ export default function ClaimDevices() {
           <form className="card p-5 max-w-3xl" onSubmit={verify}>
             <label className="block text-sm font-medium">
               Device serials
-              <textarea
+              <UiTextarea
                 aria-label="Device serials"
                 required
                 disabled={checking || busy}
@@ -87,9 +92,14 @@ export default function ClaimDevices() {
               Up to 100 serials. Duplicates are removed. Verification does not claim devices or
               grant access to patient data.
             </p>
-            <button className="btn-primary mt-4" disabled={checking || busy || !input.trim()}>
+            <UiButton
+              variant="primary"
+              type="submit"
+              className="btn-primary mt-4"
+              disabled={checking || busy || !input.trim()}
+            >
               {checking ? "Verifying…" : "Verify serials"}
-            </button>
+            </UiButton>
           </form>
           {rows && (
             <div className="mt-5">
@@ -99,7 +109,7 @@ export default function ClaimDevices() {
                 </p>
               )}
               <div className="card overflow-x-auto">
-                <table className="w-full text-sm">
+                <UiTable className="w-full text-sm">
                   <caption className="sr-only">Device verification results</caption>
                   <thead className="bg-slate-50">
                     <tr>
@@ -130,7 +140,7 @@ export default function ClaimDevices() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </UiTable>
               </div>
               {check && (
                 <div className="mt-4 space-y-4">
@@ -140,13 +150,15 @@ export default function ClaimDevices() {
                         {eligible.length} devices are eligible for your organization. Claiming adds
                         them to inventory; patient assignment is a separate step.
                       </p>
-                      <button
+                      <UiButton
+                        variant="primary"
+                        type="submit"
                         className="btn-primary"
                         disabled={busy || checking}
                         onClick={() => submit("claim")}
                       >
                         {busy ? "Submitting…" : `Claim ${eligible.length} eligible devices`}
-                      </button>
+                      </UiButton>
                     </div>
                   )}
                   {needsApproval.length > 0 && (
@@ -166,7 +178,7 @@ export default function ClaimDevices() {
                       </p>
                       <label className="block text-sm">
                         Order / shipment reference
-                        <input
+                        <UiInput
                           required
                           maxLength={200}
                           disabled={busy}
@@ -177,7 +189,7 @@ export default function ClaimDevices() {
                       </label>
                       <label className="block text-sm">
                         Reason
-                        <textarea
+                        <UiTextarea
                           required
                           maxLength={2000}
                           disabled={busy}
@@ -186,9 +198,14 @@ export default function ClaimDevices() {
                           onChange={(e) => setReason(e.target.value)}
                         />
                       </label>
-                      <button className="btn-primary" disabled={busy || checking}>
+                      <UiButton
+                        variant="primary"
+                        type="submit"
+                        className="btn-primary"
+                        disabled={busy || checking}
+                      >
                         {busy ? "Submitting…" : "Submit for approval"}
-                      </button>
+                      </UiButton>
                     </form>
                   )}
                 </div>

@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
@@ -11,17 +15,19 @@ export default function ProviderAlerts() {
 
       <div className="card p-3 mb-4 flex gap-2">
         {["All", "High", "Medium", "Low"].map((f) => (
-          <button
+          <UiButton
+            variant="plain"
+            type="submit"
             key={f}
             className="px-3 py-1.5 rounded-lg text-xs font-medium border bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
           >
             {f}
-          </button>
+          </UiButton>
         ))}
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Severity</th>
@@ -54,12 +60,14 @@ export default function ProviderAlerts() {
                 <td className="px-5 py-3 text-slate-700">{a.message}</td>
                 <td className="px-5 py-3 text-slate-600">{a.date}</td>
                 <td className="px-5 py-3 text-right">
-                  <button className="btn-secondary">Resolve</button>
+                  <UiButton variant="secondary" type="submit" className="btn-secondary">
+                    Resolve
+                  </UiButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

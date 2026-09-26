@@ -1,3 +1,6 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiTable from "@/components/ui/Table";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
 import { auditLog } from "@/lib/mock-data";
@@ -12,7 +15,7 @@ export default function AuditPage() {
       <MockBanner />
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Timestamp</th>
@@ -35,7 +38,7 @@ export default function AuditPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

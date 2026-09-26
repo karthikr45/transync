@@ -1,4 +1,7 @@
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiSelect from "@/components/ui/Select";
+
 import { useChoices } from "../hooks/use-choices";
 export function ChoicePicker({
   kind,
@@ -16,7 +19,7 @@ export function ChoicePicker({
     <div className="space-y-2">
       <label className="block text-sm">
         Search {label.toLowerCase()}
-        <input
+        <UiInput
           className="input mt-1"
           value={search}
           placeholder="Type a name to search…"
@@ -28,7 +31,7 @@ export function ChoicePicker({
       </label>
       <label className="block text-sm">
         {label}
-        <select
+        <UiSelect
           aria-label={label}
           className="input mt-1"
           required
@@ -43,7 +46,7 @@ export function ChoicePicker({
               {item.detail ? ` — ${item.detail}` : ""}
             </option>
           ))}
-        </select>
+        </UiSelect>
       </label>
       {!loading && !error && !items.length && (
         <p className="text-xs text-slate-500">No eligible matches. Try another name.</p>

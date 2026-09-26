@@ -49,3 +49,9 @@ The current browser client sends bearer tokens directly to the configured backen
 CSP and security headers are configured in `next.config.mjs`; the current CSP permits inline scripts for Next rendering and is not a substitute for XSS prevention. Error telemetry emits sanitized metadata only; a production collector is not configured. No regulatory compliance is implied by this codebase.
 
 Read [production release gates](docs/PRODUCTION-READINESS.md) and [deployment instructions](DEPLOYMENT.md) before release.
+
+## UI contribution standards
+
+Read [UI-STANDARDS.json](UI-STANDARDS.json) before editing any screen. It is the single registry for approved components, tokens, packages and accessibility rules. [AGENTS.md](AGENTS.md) applies these rules to AI contributors; [the contribution guide](docs/UI-CONTRIBUTING.md) explains adding a new pattern.
+
+Run `npm run ui:check` and `npm run test:ui`. The standards checker also runs through `npm run lint`, so existing CI enforces the UI boundaries. New shared components and dependencies require registry entries and tech-lead review.

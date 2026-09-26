@@ -1,4 +1,5 @@
 "use client";
+import UiButton from "@/components/ui/Button";
 
 import Link from "next/link";
 import { useEffect } from "react";
@@ -33,9 +34,9 @@ export default function GlobalError({
           <p className="mt-3 text-xs text-slate-400 font-mono">Reference: {error.digest}</p>
         )}
         <div className="mt-6 flex justify-center gap-2">
-          <button className="btn-secondary" onClick={reset}>
+          <UiButton variant="secondary" type="submit" className="btn-secondary" onClick={reset}>
             Try again
-          </button>
+          </UiButton>
           <Link href="/" className="btn-primary">
             Go home
           </Link>

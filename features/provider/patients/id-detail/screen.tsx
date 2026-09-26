@@ -1,4 +1,10 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiSelect from "@/components/ui/Select";
+import UiInput from "@/components/ui/Input";
+import UiTextarea from "@/components/ui/Textarea";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -70,9 +76,14 @@ export default function ProviderPatientDetail() {
               <Link href={`/provider/patients/${p.id}/report`} className="btn-secondary">
                 <FileBarChart className="w-4 h-4" /> Full report
               </Link>
-              <button className="btn-primary" onClick={() => setShowWindow((v) => !v)}>
+              <UiButton
+                variant="primary"
+                type="submit"
+                className="btn-primary"
+                onClick={() => setShowWindow((v) => !v)}
+              >
                 <CalendarCheck className="w-4 h-4" /> 30-day window
-              </button>
+              </UiButton>
             </>
           )
         }
@@ -86,9 +97,9 @@ export default function ProviderPatientDetail() {
             <strong>Awaiting patient consent.</strong> Compliance data is hidden until {p.name}{" "}
             approves monitoring via the confirmation email.
           </div>
-          <button className="btn-secondary">
+          <UiButton variant="secondary" type="submit" className="btn-secondary">
             <Mail className="w-4 h-4" /> Resend email
-          </button>
+          </UiButton>
         </div>
       )}
 
@@ -118,9 +129,14 @@ export default function ProviderPatientDetail() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold text-slate-900">Devices</h2>
-            <button className="btn-secondary" onClick={() => setModal("assign")}>
+            <UiButton
+              variant="secondary"
+              type="submit"
+              className="btn-secondary"
+              onClick={() => setModal("assign")}
+            >
               <Plus className="w-4 h-4" /> Assign
-            </button>
+            </UiButton>
           </div>
           {device ? (
             <dl className="space-y-2 text-sm">
@@ -154,9 +170,14 @@ export default function ProviderPatientDetail() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold text-slate-900">Authorized monitors</h2>
-            <button className="btn-secondary" onClick={() => setModal("monitor")}>
+            <UiButton
+              variant="secondary"
+              type="submit"
+              className="btn-secondary"
+              onClick={() => setModal("monitor")}
+            >
               <Plus className="w-4 h-4" /> Add
-            </button>
+            </UiButton>
           </div>
           {ex?.authorizedMonitors.length ? (
             <ul className="space-y-2">
@@ -178,9 +199,13 @@ export default function ProviderPatientDetail() {
                       {m.institution} · granted {m.grantedOn}
                     </div>
                   </div>
-                  <button className="text-slate-400 hover:text-red-600">
+                  <UiButton
+                    variant="plain"
+                    type="submit"
+                    className="text-slate-400 hover:text-red-600"
+                  >
                     <X className="w-4 h-4" />
-                  </button>
+                  </UiButton>
                 </li>
               ))}
             </ul>
@@ -195,25 +220,29 @@ export default function ProviderPatientDetail() {
         <div className="card p-5">
           <h2 className="text-base font-semibold text-slate-900 mb-3">Patient functions</h2>
           <div className="space-y-2">
-            <button
+            <UiButton
+              variant="secondary"
+              type="submit"
               className="btn-secondary w-full justify-start"
               onClick={() => setShowWindow(true)}
               disabled={pending}
             >
               <CalendarCheck className="w-4 h-4" /> View 30-day compliance window
-            </button>
+            </UiButton>
             <Link
               href={`/provider/patients/${p.id}/transfer`}
               className="btn-secondary w-full justify-start"
             >
               <ArrowRightLeft className="w-4 h-4" /> Transfer patient
             </Link>
-            <button
+            <UiButton
+              variant="danger"
+              type="submit"
               className="btn-danger w-full justify-start"
               onClick={() => setModal("deactivate")}
             >
               <Ban className="w-4 h-4" /> Deactivate patient
-            </button>
+            </UiButton>
           </div>
         </div>
       </div>
@@ -224,7 +253,7 @@ export default function ProviderPatientDetail() {
         <div className="grid md:grid-cols-2 gap-3 mb-3">
           <div>
             <label className="label">Note type</label>
-            <select
+            <UiSelect
               className="input"
               value={noteType}
               onChange={(e) => setNoteType(e.target.value as typeof noteType)}
@@ -232,11 +261,11 @@ export default function ProviderPatientDetail() {
               {noteTypes.map((t) => (
                 <option key={t}>{t}</option>
               ))}
-            </select>
+            </UiSelect>
           </div>
           <div>
             <label className="label">Follow-up date (optional)</label>
-            <input
+            <UiInput
               className="input"
               type="date"
               value={followUp}
@@ -244,7 +273,7 @@ export default function ProviderPatientDetail() {
             />
           </div>
         </div>
-        <textarea
+        <UiTextarea
           className="input min-h-[80px]"
           maxLength={500}
           value={noteText}
@@ -253,7 +282,9 @@ export default function ProviderPatientDetail() {
         />
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-slate-400">{noteText.length}/500</span>
-          <button
+          <UiButton
+            variant="primary"
+            type="submit"
             className="btn-primary"
             onClick={() => {
               setNoteText("");
@@ -261,7 +292,7 @@ export default function ProviderPatientDetail() {
             }}
           >
             Save note
-          </button>
+          </UiButton>
         </div>
         <ul className="mt-4 space-y-3">
           {(ex?.notes ?? []).map((n) => (
@@ -304,13 +335,13 @@ export default function ProviderPatientDetail() {
               <p className="text-sm text-slate-500 mt-1">
                 Only unassigned registered devices are listed. Install date is recorded today.
               </p>
-              <select className="input mt-4">
+              <UiSelect className="input mt-4">
                 {unassigned.length ? (
                   unassigned.map((d) => <option key={d.serial}>{d.serial}</option>)
                 ) : (
                   <option>No unassigned devices</option>
                 )}
-              </select>
+              </UiSelect>
               <DialogActions onClose={() => setModal(null)} confirm="Add device" />
             </>
           )}
@@ -325,7 +356,8 @@ export default function ProviderPatientDetail() {
               <div className="mt-4">
                 <label className="label">Access level</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button
+                  <UiButton
+                    variant="plain"
                     type="button"
                     onClick={() => setGrantAccess("read-only")}
                     className={`text-left rounded-lg border p-3 transition ${grantAccess === "read-only" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
@@ -334,8 +366,9 @@ export default function ProviderPatientDetail() {
                     <div className="text-xs text-slate-500 mt-0.5">
                       View compliance & reports. For payers / monitoring services.
                     </div>
-                  </button>
-                  <button
+                  </UiButton>
+                  <UiButton
+                    variant="plain"
                     type="button"
                     onClick={() => setGrantAccess("read-write")}
                     className={`text-left rounded-lg border p-3 transition ${grantAccess === "read-write" ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 hover:bg-slate-50"}`}
@@ -344,11 +377,11 @@ export default function ProviderPatientDetail() {
                     <div className="text-xs text-slate-500 mt-0.5">
                       Plus notes, prescription & setting-change requests. For clinicians.
                     </div>
-                  </button>
+                  </UiButton>
                 </div>
               </div>
 
-              <input
+              <UiInput
                 className="input mt-4"
                 placeholder="Search the network: name, institution, ID/NPI, country…"
                 value={monitorQuery}
@@ -377,12 +410,14 @@ export default function ProviderPatientDetail() {
                       </div>
                       <div className="text-xs text-slate-400 font-mono">{m.upi}</div>
                     </div>
-                    <button
+                    <UiButton
+                      variant="primary"
+                      type="submit"
                       className="btn-primary !py-1 !px-3 text-xs shrink-0"
                       onClick={() => setModal(null)}
                     >
                       Grant
-                    </button>
+                    </UiButton>
                   </div>
                 ))}
                 {monitorQuery && monitorResults.length === 0 && (
@@ -399,9 +434,14 @@ export default function ProviderPatientDetail() {
                 )}
               </div>
               <div className="mt-4 flex justify-end">
-                <button className="btn-secondary" onClick={() => setModal(null)}>
+                <UiButton
+                  variant="secondary"
+                  type="submit"
+                  className="btn-secondary"
+                  onClick={() => setModal(null)}
+                >
                   Close
-                </button>
+                </UiButton>
               </div>
             </>
           )}

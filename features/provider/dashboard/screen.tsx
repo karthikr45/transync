@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
@@ -18,7 +21,9 @@ export default function ProviderDashboard() {
         title="Dashboard"
         subtitle="Compliance overview across your patient population."
         actions={
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             onClick={load}
             disabled={loading}
             className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -28,7 +33,7 @@ export default function ProviderDashboard() {
               aria-hidden="true"
             />
             Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -89,7 +94,7 @@ export default function ProviderDashboard() {
           ) : !data || data.patientsNeedingAttention.length === 0 ? (
             <p className="text-sm text-slate-500">Nobody needs attention right now.</p>
           ) : (
-            <table className="w-full text-sm">
+            <UiTable className="w-full text-sm">
               <thead className="text-xs text-slate-500">
                 <tr>
                   <th className="text-left font-medium py-1">Patient</th>
@@ -108,7 +113,7 @@ export default function ProviderDashboard() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </UiTable>
           )}
         </div>
 

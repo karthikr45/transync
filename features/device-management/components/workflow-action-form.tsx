@@ -1,4 +1,8 @@
 "use client";
+import UiTextarea from "@/components/ui/Textarea";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
+
 import type { WorkflowRow, WorkflowArea } from "../domain/types";
 import type { FormKind } from "../domain/directory-config";
 import { ChoicePicker } from "./choice-picker";
@@ -56,7 +60,7 @@ export function WorkflowActionForm({
         {needsSerials && (
           <label className="block text-sm">
             {kind === "transfer" ? "Device serial" : "Device serials"}
-            <textarea
+            <UiTextarea
               required
               className="input mt-1 min-h-[90px] font-mono"
               value={serials}
@@ -71,7 +75,7 @@ export function WorkflowActionForm({
         {kind === "import" && (
           <label className="block text-sm">
             Model
-            <input
+            <UiInput
               aria-label="Model"
               required
               maxLength={120}
@@ -98,7 +102,7 @@ export function WorkflowActionForm({
         {(kind === "assign" || kind === "return") && (
           <label className="block text-sm">
             Effective date and time (your local time)
-            <input
+            <UiInput
               required
               className="input mt-1"
               type="datetime-local"
@@ -110,7 +114,7 @@ export function WorkflowActionForm({
         {needsReference && (
           <label className="block text-sm">
             {kind === "import" ? "Manufacturing reference" : "Order / shipment reference"}
-            <input
+            <UiInput
               required
               maxLength={200}
               className="input mt-1"
@@ -121,7 +125,7 @@ export function WorkflowActionForm({
         )}
         <label className="block text-sm">
           Reason
-          <textarea
+          <UiTextarea
             required
             maxLength={2000}
             className="input mt-1"
@@ -148,7 +152,7 @@ export function WorkflowActionForm({
           </p>
         )}
         <label className="flex items-start gap-2 text-sm">
-          <input
+          <UiInput
             type="checkbox"
             required
             checked={confirmed}
@@ -164,12 +168,12 @@ export function WorkflowActionForm({
           </span>
         </label>
         <div className="flex gap-2 justify-end">
-          <button className="btn-secondary" type="button" onClick={onCancel}>
+          <UiButton variant="secondary" className="btn-secondary" type="button" onClick={onCancel}>
             Cancel
-          </button>
-          <button className="btn-primary" type="submit">
+          </UiButton>
+          <UiButton variant="primary" className="btn-primary" type="submit">
             {busy ? "Submitting…" : title}
-          </button>
+          </UiButton>
         </div>
       </fieldset>
     </form>

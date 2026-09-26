@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { ArrowLeft, Download } from "lucide-react";
@@ -16,14 +20,14 @@ export default function ProviderAudit() {
         title="Audit log"
         subtitle="Every action on PHI and configuration is recorded. Required for HIPAA / regulated SaMD."
         actions={
-          <button className="btn-secondary">
+          <UiButton variant="secondary" type="submit" className="btn-secondary">
             <Download className="w-4 h-4" /> Export
-          </button>
+          </UiButton>
         }
       />
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Timestamp</th>
@@ -46,7 +50,7 @@ export default function ProviderAudit() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

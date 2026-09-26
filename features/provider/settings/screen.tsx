@@ -1,3 +1,4 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { ChevronRight } from "lucide-react";

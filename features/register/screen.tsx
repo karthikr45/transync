@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import { ArrowRight, Check, AlertTriangle } from "lucide-react";
@@ -67,7 +70,9 @@ function RegisterInner() {
               </div>
             )}
             <div className="mt-6 flex justify-between">
-              <button
+              <UiButton
+                variant="secondary"
+                type="submit"
                 onClick={() => {
                   setError(null);
                   setStep(Math.max(1, step - 1));
@@ -76,8 +81,10 @@ function RegisterInner() {
                 className="btn-secondary disabled:opacity-50"
               >
                 Back
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="primary"
+                type="submit"
                 onClick={next}
                 disabled={(step === 1 && !type) || submitting}
                 className="btn-primary disabled:opacity-50"
@@ -93,7 +100,7 @@ function RegisterInner() {
                     Finish <Check className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </UiButton>
             </div>
           </div>
         )}

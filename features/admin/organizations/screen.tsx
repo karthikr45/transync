@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+import UiTable from "@/components/ui/Table";
+import UiTextarea from "@/components/ui/Textarea";
 
 import PageHeader from "@/components/PageHeader";
 import { AlertTriangle, Ban, RefreshCw, RotateCcw, Search, X } from "lucide-react";
@@ -44,7 +49,9 @@ export default function AdminOrganizations() {
         title="Organizations"
         subtitle="All registered organizations on the platform."
         actions={
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             onClick={() => load(offset)}
             disabled={loading}
             className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -54,7 +61,7 @@ export default function AdminOrganizations() {
               aria-hidden="true"
             />
             Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -70,7 +77,7 @@ export default function AdminOrganizations() {
       <div className="card p-3 mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
+          <UiInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input pl-9"
@@ -79,30 +86,34 @@ export default function AdminOrganizations() {
         </div>
         <div className="flex gap-1">
           {(["all", "home_care_provider", "authorized_monitor"] as TypeFilter[]).map((t) => (
-            <button
+            <UiButton
+              variant="plain"
+              type="submit"
               key={t}
               onClick={() => setType(t)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${type === t ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
             >
               {t === "all" ? "All types" : TYPE_LABEL[t]}
-            </button>
+            </UiButton>
           ))}
         </div>
         <div className="flex gap-1">
           {(["all", "pending", "approved", "suspended", "rejected"] as StatusFilter[]).map((s) => (
-            <button
+            <UiButton
+              variant="plain"
+              type="submit"
               key={s}
               onClick={() => setStatus(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${status === s ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
             >
               {s === "all" ? "All statuses" : STATUS_LABEL[s]}
-            </button>
+            </UiButton>
           ))}
         </div>
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Organization</th>
@@ -147,7 +158,9 @@ export default function AdminOrganizations() {
                   </td>
                   <td className="px-5 py-3 text-right">
                     {o.status === "approved" && (
-                      <button
+                      <UiButton
+                        variant="secondary"
+                        type="submit"
                         className="btn-secondary disabled:opacity-50"
                         onClick={() => {
                           setConfirm({ row: o, action: "suspend" });
@@ -156,16 +169,18 @@ export default function AdminOrganizations() {
                         disabled={busyId === o.id}
                       >
                         <Ban className="w-4 h-4" /> Suspend
-                      </button>
+                      </UiButton>
                     )}
                     {o.status === "suspended" && (
-                      <button
+                      <UiButton
+                        variant="secondary"
+                        type="submit"
                         className="btn-secondary disabled:opacity-50"
                         onClick={() => setConfirm({ row: o, action: "reinstate" })}
                         disabled={busyId === o.id}
                       >
                         <RotateCcw className="w-4 h-4" /> Reinstate
-                      </button>
+                      </UiButton>
                     )}
                     {(o.status === "pending" || o.status === "rejected") && (
                       <span className="text-xs text-slate-400">—</span>
@@ -175,7 +190,7 @@ export default function AdminOrganizations() {
               );
             })}
           </tbody>
-        </table>
+        </UiTable>
       </div>
 
       {total > PAGE_SIZE && (
@@ -184,7 +199,9 @@ export default function AdminOrganizations() {
             Showing {offset + 1}–{Math.min(offset + rows.length, total)} of {total}
           </span>
           <div className="flex gap-2">
-            <button
+            <UiButton
+              variant="secondary"
+              type="submit"
               className="btn-secondary text-sm disabled:opacity-50"
               disabled={offset === 0 || loading}
               onClick={() => {
@@ -193,8 +210,10 @@ export default function AdminOrganizations() {
               }}
             >
               Previous
-            </button>
-            <button
+            </UiButton>
+            <UiButton
+              variant="secondary"
+              type="submit"
               className="btn-secondary text-sm disabled:opacity-50"
               disabled={offset + PAGE_SIZE >= total || loading}
               onClick={() => {
@@ -203,7 +222,7 @@ export default function AdminOrganizations() {
               }}
             >
               Next
-            </button>
+            </UiButton>
           </div>
         </div>
       )}
@@ -220,13 +239,15 @@ export default function AdminOrganizations() {
               <h2 className="text-lg font-semibold text-slate-900">
                 {confirm.action === "suspend" ? "Suspend organization" : "Reinstate organization"}
               </h2>
-              <button
+              <UiButton
+                variant="plain"
+                type="submit"
                 onClick={() => setConfirm(null)}
                 className="text-slate-400 hover:text-slate-700"
                 disabled={busy}
               >
                 <X className="w-4 h-4" />
-              </button>
+              </UiButton>
             </div>
             {confirm.action === "suspend" ? (
               <>
@@ -238,7 +259,7 @@ export default function AdminOrganizations() {
                   <label className="label" htmlFor="suspend-reason">
                     Reason (optional)
                   </label>
-                  <textarea
+                  <UiTextarea
                     id="suspend-reason"
                     className="input min-h-[80px] text-sm"
                     value={reason}
@@ -254,16 +275,24 @@ export default function AdminOrganizations() {
               </p>
             )}
             <div className="mt-5 flex justify-end gap-2">
-              <button className="btn-secondary" onClick={() => setConfirm(null)} disabled={busy}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={() => setConfirm(null)}
+                disabled={busy}
+              >
                 Cancel
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="primary"
+                type="submit"
                 className={`${confirm.action === "suspend" ? "btn-danger" : "btn-primary"} disabled:opacity-50`}
                 onClick={applyAction}
                 disabled={busy}
               >
                 {busy ? "Working…" : confirm.action === "suspend" ? "Suspend" : "Reinstate"}
-              </button>
+              </UiButton>
             </div>
           </div>
         </div>

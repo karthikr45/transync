@@ -1,18 +1,12 @@
 import type { Config } from "tailwindcss";
+import standards from "./UI-STANDARDS.json";
 
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./features/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          900: "#1e3a8a",
-        },
+        brand: standards.designTokens.brand,
       },
     },
   },

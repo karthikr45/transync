@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiTable from "@/components/ui/Table";
+import UiButton from "@/components/ui/Button";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { ArrowLeft } from "lucide-react";
@@ -20,7 +24,7 @@ export default function RemindersSettings() {
       />
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Patient</th>
@@ -55,12 +59,14 @@ export default function RemindersSettings() {
                   </span>
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <button className="btn-secondary">Mark shipped</button>
+                  <UiButton variant="secondary" type="submit" className="btn-secondary">
+                    Mark shipped
+                  </UiButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

@@ -1,3 +1,4 @@
+import UiButton from "@/components/ui/Button";
 export function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 py-1 border-b border-slate-100 last:border-0">
@@ -31,12 +32,17 @@ export function DialogActions({
 }) {
   return (
     <div className="mt-5 flex justify-end gap-2">
-      <button className="btn-secondary" onClick={onClose}>
+      <UiButton variant="secondary" type="submit" className="btn-secondary" onClick={onClose}>
         Cancel
-      </button>
-      <button className={danger ? "btn-danger" : "btn-primary"} onClick={onClose}>
+      </UiButton>
+      <UiButton
+        variant="primary"
+        type="submit"
+        className={danger ? "btn-danger" : "btn-primary"}
+        onClick={onClose}
+      >
         {confirm}
-      </button>
+      </UiButton>
     </div>
   );
 }

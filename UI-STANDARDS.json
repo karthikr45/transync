@@ -1,0 +1,287 @@
+{
+  "$schema": "./scripts/ui-standards.schema.json",
+  "version": 1,
+  "purpose": "Single approval registry for shared UI. Developers and AI must read this before every UI change.",
+  "changePolicy": [
+    "Reuse an approved component before creating one.",
+    "New reusable patterns belong in components/ui (or an explicitly registered feature composite).",
+    "Add the component path, purpose, accessibility contract and any package owner here in the same pull request.",
+    "A registry edit proposes approval; the tech lead must review its design, accessibility and tests before merge. Do not auto-approve unrelated packages or widen exceptions to pass checks.",
+    "Use className for layout and documented variants. Do not override control colors, typography, borders or interaction states in individual screens. Extend the central component instead."
+  ],
+  "screenRules": {
+    "referenceComment": "UI standard: UI-STANDARDS.json",
+    "requiredStates": [
+      "loading",
+      "empty",
+      "error with retry where safe",
+      "success",
+      "disabled/pending mutations"
+    ],
+    "accessibility": [
+      "Labels must be visible or have a clear accessible name. Associate validation text with aria-describedby and aria-invalid.",
+      "Do not use placeholder text as the only label. Icon-only controls need an accessible name.",
+      "Retain keyboard navigation and visible focus. Never use color as the only status indicator.",
+      "Dialogs require focus containment/restoration, Escape handling, a labelled title and background interaction control.",
+      "Tables require scoped headers and a responsive overflow container.",
+      "Check narrow mobile widths and 200% zoom."
+    ],
+    "layout": [
+      "Use PageHeader for portal titles.",
+      "Use existing card, label, badge and spacing patterns from app/globals.css.",
+      "Use lucide-react for icons; no second icon library.",
+      "No new dropdown library, CSS framework or component kit without a registry review."
+    ]
+  },
+  "designTokens": {
+    "source": "UI-STANDARDS.json \u2192 tailwind.config.ts; shared class definitions in app/globals.css",
+    "brand": {
+      "50": "#eff6ff",
+      "100": "#dbeafe",
+      "500": "#3b82f6",
+      "600": "#2563eb",
+      "700": "#1d4ed8",
+      "900": "#1e3a8a"
+    },
+    "controlClass": "input",
+    "buttonVariants": ["primary", "secondary", "danger", "plain"],
+    "surfaceClass": "card"
+  },
+  "components": [
+    {
+      "name": "AuthGuard",
+      "path": "components/AuthGuard.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing AuthGuard pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "BarChart",
+      "path": "components/BarChart.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing BarChart pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "ComplianceBadge",
+      "path": "components/ComplianceBadge.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing ComplianceBadge pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "ComplianceReport",
+      "path": "components/ComplianceReport.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing ComplianceReport pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "DobField",
+      "path": "components/DobField.tsx",
+      "status": "approved",
+      "useFor": "Date-of-birth entry with ISO values and standard display formatting.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "FeatureUnavailable",
+      "path": "components/FeatureUnavailable.tsx",
+      "status": "approved",
+      "useFor": "Unavailable features; never render sample records as live data.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "HomeCareShell",
+      "path": "components/HomeCareShell.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing HomeCareShell pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Logo",
+      "path": "components/Logo.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing Logo pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "MobileReport",
+      "path": "components/MobileReport.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing MobileReport pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "MockBanner",
+      "path": "components/MockBanner.tsx",
+      "status": "legacy-reference",
+      "useFor": "Legacy reference screens only; prohibited in active route dependencies.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "PageHeader",
+      "path": "components/PageHeader.tsx",
+      "status": "approved",
+      "useFor": "Screen title, subtitle and primary actions.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "PasswordInput",
+      "path": "components/PasswordInput.tsx",
+      "status": "approved",
+      "useFor": "Passwords with the standard visibility toggle.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "PhoneInputField",
+      "path": "components/PhoneInputField.tsx",
+      "status": "approved",
+      "useFor": "International telephone entry; only this wrapper imports react-phone-number-input.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "PortalShell",
+      "path": "components/PortalShell.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing PortalShell pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "PublicGuard",
+      "path": "components/PublicGuard.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing PublicGuard pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "StatCard",
+      "path": "components/StatCard.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing StatCard pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "ThirtyDayWindow",
+      "path": "components/ThirtyDayWindow.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing ThirtyDayWindow pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "UsageChart",
+      "path": "components/UsageChart.tsx",
+      "status": "approved",
+      "useFor": "Reuse this existing UsageChart pattern; extend it centrally instead of copying its UI.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Button",
+      "path": "components/ui/Button.tsx",
+      "status": "approved",
+      "useFor": "All actions. primary for the main action, secondary for alternatives, danger for destructive actions, plain for icon/tab/inline controls. Use explicit type=submit for form submission.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Input",
+      "path": "components/ui/Input.tsx",
+      "status": "approved",
+      "useFor": "Text, number, search, checkbox, radio and native date inputs. Specialized password/phone/DOB fields must use their registered wrappers.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Select",
+      "path": "components/ui/Select.tsx",
+      "status": "approved",
+      "useFor": "All dropdowns. Native select with option/optgroup children. Country, state, timezone, filters and page-size selectors must compose this component.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Table",
+      "path": "components/ui/Table.tsx",
+      "status": "approved",
+      "useFor": "All data tables. Use scoped headers, an accessible name/caption, responsive overflow and empty/loading/error states.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "Textarea",
+      "path": "components/ui/Textarea.tsx",
+      "status": "approved",
+      "useFor": "All multiline entry. Associate labels and error/help text.",
+      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+    },
+    {
+      "name": "ChoicePicker",
+      "path": "features/device-management/components/choice-picker.tsx",
+      "status": "approved",
+      "useFor": "Remote organization/patient choice using search plus the approved Select; not a custom combobox.",
+      "accessibility": "Keep label, loading, no-results and error states."
+    }
+  ],
+  "nativeOwners": {
+    "select": "components/ui/Select.tsx",
+    "input": "components/ui/Input.tsx",
+    "textarea": "components/ui/Textarea.tsx",
+    "button": "components/ui/Button.tsx",
+    "table": "components/ui/Table.tsx",
+    "dialog": null
+  },
+  "customWidgetRoles": ["combobox", "listbox", "dialog", "switch", "menu", "slider", "tree"],
+  "legacyRoleExceptions": [
+    {
+      "path": "features/patient/profile/screen.tsx",
+      "roles": ["dialog"],
+      "reason": "Existing modal pending shared accessible Dialog migration. This exception permits only the existing role count; do not copy this pattern.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "features/patient/reports/screen.tsx",
+      "roles": ["dialog"],
+      "reason": "Existing modal pending shared accessible Dialog migration. This exception permits only the existing role count; do not copy this pattern.",
+      "maxOccurrences": 1
+    },
+    {
+      "path": "features/patient/sharing/screen.tsx",
+      "roles": ["dialog"],
+      "reason": "Existing modal pending shared accessible Dialog migration. This exception permits only the existing role count; do not copy this pattern.",
+      "maxOccurrences": 1
+    }
+  ],
+  "packageApprovals": {
+    "i18n-iso-countries": {
+      "kind": "platform-or-data",
+      "owner": "*",
+      "reason": "Existing application dependency; review changes through the lockfile."
+    },
+    "lucide-react": {
+      "kind": "ui",
+      "owner": "*",
+      "reason": "Approved icon set."
+    },
+    "next": {
+      "kind": "platform-or-data",
+      "owner": "*",
+      "reason": "Existing application dependency; review changes through the lockfile."
+    },
+    "react": {
+      "kind": "platform-or-data",
+      "owner": "*",
+      "reason": "Existing application dependency; review changes through the lockfile."
+    },
+    "react-dom": {
+      "kind": "platform-or-data",
+      "owner": "*",
+      "reason": "Existing application dependency; review changes through the lockfile."
+    },
+    "react-phone-number-input": {
+      "kind": "ui",
+      "owner": "components/PhoneInputField.tsx",
+      "reason": "Approved phone field adapter.",
+      "allowedNamedImports": ["isValidPhoneNumber"]
+    },
+    "zod": {
+      "kind": "platform-or-data",
+      "owner": "*",
+      "reason": "Existing application dependency; review changes through the lockfile."
+    }
+  }
+}

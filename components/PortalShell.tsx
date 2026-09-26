@@ -1,4 +1,5 @@
 "use client";
+import UiButton from "@/components/ui/Button";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -57,10 +58,15 @@ export default function PortalShell({
             <div className="text-sm font-medium text-slate-900 truncate">{user.name}</div>
             <div className="text-xs text-slate-500 truncate">{user.email}</div>
           </div>
-          <button type="button" onClick={logout} className="nav-link w-full text-left">
+          <UiButton
+            variant="plain"
+            type="button"
+            onClick={logout}
+            className="nav-link w-full text-left"
+          >
             <LogOut className="w-4 h-4" />
             <span>Sign out</span>
-          </button>
+          </UiButton>
         </div>
       </aside>
       <main className="flex-1 min-w-0">

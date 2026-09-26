@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 
 import { AlertTriangle, Check, RefreshCw, X } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -16,7 +19,9 @@ export default function MonitorShares() {
         title="Shares"
         subtitle="Patients that Homecare Providers have shared with your monitoring account."
         actions={
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             onClick={load}
             disabled={loading}
             className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -26,7 +31,7 @@ export default function MonitorShares() {
               aria-hidden="true"
             />
             Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -49,7 +54,7 @@ export default function MonitorShares() {
         ) : pending.length === 0 ? (
           <p className="px-5 py-6 text-sm text-slate-500">No pending share requests.</p>
         ) : (
-          <table className="w-full text-sm">
+          <UiTable className="w-full text-sm">
             <thead className="bg-slate-50 text-xs text-slate-500">
               <tr>
                 <th className="text-left font-medium px-5 py-2">Patient</th>
@@ -72,26 +77,30 @@ export default function MonitorShares() {
                   <td className="px-5 py-3 text-slate-600">{formatDate(s.validTill) || "—"}</td>
                   <td className="px-5 py-3 text-right">
                     <div className="inline-flex gap-2">
-                      <button
+                      <UiButton
+                        variant="secondary"
+                        type="submit"
                         className="btn-secondary disabled:opacity-50"
                         disabled={busyId === s.id}
                         onClick={() => decide(s.id, "decline")}
                       >
                         <X className="w-4 h-4" /> Decline
-                      </button>
-                      <button
+                      </UiButton>
+                      <UiButton
+                        variant="primary"
+                        type="submit"
                         className="btn-primary disabled:opacity-50"
                         disabled={busyId === s.id}
                         onClick={() => decide(s.id, "accept")}
                       >
                         <Check className="w-4 h-4" /> Accept
-                      </button>
+                      </UiButton>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </UiTable>
         )}
       </div>
 
@@ -99,7 +108,7 @@ export default function MonitorShares() {
         <div className="px-5 py-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-900">Active & past shares</h2>
         </div>
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Patient</th>
@@ -131,7 +140,7 @@ export default function MonitorShares() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

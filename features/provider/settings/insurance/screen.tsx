@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -22,9 +26,14 @@ export default function InsuranceSettings() {
         title="Insurance providers"
         subtitle="Compliance rules and replacement schedules are set per payer — all patients on that payer inherit them."
         actions={
-          <button className="btn-primary" onClick={() => setShowAdd(true)}>
+          <UiButton
+            variant="primary"
+            type="submit"
+            className="btn-primary"
+            onClick={() => setShowAdd(true)}
+          >
             <Plus className="w-4 h-4" /> Add provider
-          </button>
+          </UiButton>
         }
       />
 
@@ -40,7 +49,9 @@ export default function InsuranceSettings() {
           const isOpen = open === ins.id;
           return (
             <div key={ins.id} className="card overflow-hidden">
-              <button
+              <UiButton
+                variant="plain"
+                type="submit"
                 className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50"
                 onClick={() => setOpen(isOpen ? null : ins.id)}
               >
@@ -54,7 +65,7 @@ export default function InsuranceSettings() {
                 <ChevronDown
                   className={`w-4 h-4 text-slate-400 transition ${isOpen ? "rotate-180" : ""}`}
                 />
-              </button>
+              </UiButton>
               {isOpen && (
                 <div className="px-5 pb-5 border-t border-slate-100 pt-4">
                   <h3 className="text-sm font-semibold text-slate-900 mb-2">Compliance rule</h3>
@@ -76,16 +87,18 @@ export default function InsuranceSettings() {
                   </div>
                   <div className="mt-3 flex gap-4 text-sm">
                     <label className="flex items-center gap-2 text-slate-700">
-                      <input type="checkbox" defaultChecked={ins.schedule.remindersOn} /> Reminders
-                      on
+                      <UiInput type="checkbox" defaultChecked={ins.schedule.remindersOn} />{" "}
+                      Reminders on
                     </label>
                     <label className="flex items-center gap-2 text-slate-700">
-                      <input type="checkbox" defaultChecked={ins.schedule.patientEmailOn} /> Patient
-                      email reminders
+                      <UiInput type="checkbox" defaultChecked={ins.schedule.patientEmailOn} />{" "}
+                      Patient email reminders
                     </label>
                   </div>
                   <div className="mt-4">
-                    <button className="btn-primary">Save</button>
+                    <UiButton variant="primary" type="submit" className="btn-primary">
+                      Save
+                    </UiButton>
                   </div>
                 </div>
               )}
@@ -105,12 +118,14 @@ export default function InsuranceSettings() {
           >
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-slate-900">Add insurance provider</h2>
-              <button
+              <UiButton
+                variant="plain"
+                type="submit"
                 onClick={() => setShowAdd(false)}
                 className="text-slate-400 hover:text-slate-700"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </UiButton>
             </div>
             <p className="text-sm text-slate-500 mt-1">
               Patients you later assign to this payer will inherit the rules below.
@@ -118,7 +133,7 @@ export default function InsuranceSettings() {
 
             <div className="mt-4">
               <label className="label">Provider name *</label>
-              <input
+              <UiInput
                 className="input"
                 placeholder="e.g. UnitedHealthcare"
                 value={draft.name}
@@ -192,7 +207,7 @@ export default function InsuranceSettings() {
             </div>
             <div className="mt-3 flex gap-4 text-sm">
               <label className="flex items-center gap-2 text-slate-700">
-                <input
+                <UiInput
                   type="checkbox"
                   checked={draft.schedule.remindersOn}
                   onChange={(e) =>
@@ -205,7 +220,7 @@ export default function InsuranceSettings() {
                 Reminders on
               </label>
               <label className="flex items-center gap-2 text-slate-700">
-                <input
+                <UiInput
                   type="checkbox"
                   checked={draft.schedule.patientEmailOn}
                   onChange={(e) =>
@@ -220,16 +235,23 @@ export default function InsuranceSettings() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2">
-              <button className="btn-secondary" onClick={() => setShowAdd(false)}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={() => setShowAdd(false)}
+              >
                 Cancel
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="primary"
+                type="submit"
                 className="btn-primary disabled:opacity-50"
                 disabled={!draft.name.trim()}
                 onClick={save}
               >
                 Add provider
-              </button>
+              </UiButton>
             </div>
           </div>
         </div>

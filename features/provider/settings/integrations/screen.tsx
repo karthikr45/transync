@@ -1,3 +1,6 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import { ArrowLeft } from "lucide-react";
@@ -31,9 +34,13 @@ export default function IntegrationsSettings() {
             </div>
             <p className="text-sm text-slate-600 mt-2">{i.description}</p>
             <div className="mt-4">
-              <button className={i.status === "connected" ? "btn-secondary" : "btn-primary"}>
+              <UiButton
+                variant="primary"
+                type="submit"
+                className={i.status === "connected" ? "btn-secondary" : "btn-primary"}
+              >
                 {i.status === "connected" ? "Manage" : "Connect"}
-              </button>
+              </UiButton>
             </div>
           </div>
         ))}

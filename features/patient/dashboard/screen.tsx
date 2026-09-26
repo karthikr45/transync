@@ -1,4 +1,6 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
 
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
@@ -68,22 +70,30 @@ export default function PatientDashboard() {
         title={`Hi, ${first}`}
         subtitle="Your CPAP therapy summary."
         actions={
-          <button className="btn-secondary" onClick={load} disabled={loading}>
+          <UiButton
+            variant="secondary"
+            type="submit"
+            className="btn-secondary"
+            onClick={load}
+            disabled={loading}
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </button>
+          </UiButton>
         }
       />
 
       <div className="card p-3 mb-4 flex flex-wrap items-center gap-2">
         <span className="text-sm text-slate-500 px-2">Window:</span>
         {SESSIONS.map((s) => (
-          <button
+          <UiButton
+            variant="plain"
+            type="submit"
             key={s.id}
             onClick={() => setSessionWindow(s.id)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${session === s.id ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
           >
             {s.label}
-          </button>
+          </UiButton>
         ))}
         {sync?.lastSyncDate && (
           <span className="ml-auto text-xs text-slate-500 inline-flex items-center gap-1 px-2">

@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
 
 import PageHeader from "@/components/PageHeader";
 import { Check, X, ShieldCheck, FileText, AlertTriangle, RefreshCw } from "lucide-react";
@@ -32,9 +35,15 @@ export default function AdminApprovals() {
         title="Approvals"
         subtitle="Review and activate new Home Care registrations."
         actions={
-          <button className="btn-secondary" onClick={load} disabled={loading}>
+          <UiButton
+            variant="secondary"
+            type="submit"
+            className="btn-secondary"
+            onClick={load}
+            disabled={loading}
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </button>
+          </UiButton>
         }
       />
 
@@ -45,20 +54,24 @@ export default function AdminApprovals() {
       )}
 
       <div className="card p-3 mb-4 flex gap-2">
-        <button
+        <UiButton
+          variant="plain"
+          type="submit"
           onClick={() => setTab("providers")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${tab === "providers" ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
         >
           Homecare Providers{" "}
           <span className="ml-1 badge badge-amber">{pendingProviders.length}</span>
-        </button>
-        <button
+        </UiButton>
+        <UiButton
+          variant="plain"
+          type="submit"
           onClick={() => setTab("monitors")}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${tab === "monitors" ? "bg-brand-50 border-brand-500 text-brand-700" : "bg-white border-slate-200 text-slate-600"}`}
         >
           Authorized Monitors{" "}
           <span className="ml-1 badge badge-slate">{pendingMonitors.length}</span>
-        </button>
+        </UiButton>
       </div>
 
       <div className="card p-4 mb-4 text-xs text-slate-600 bg-slate-50 border-slate-200 flex items-start gap-2">
@@ -110,26 +123,35 @@ export default function AdminApprovals() {
                     </dl>
                   )}
                 </div>
-                <button className="btn-secondary shrink-0" onClick={() => setDetail(r)}>
+                <UiButton
+                  variant="secondary"
+                  type="submit"
+                  className="btn-secondary shrink-0"
+                  onClick={() => setDetail(r)}
+                >
                   <FileText className="w-4 h-4" /> Review
-                </button>
+                </UiButton>
               </div>
 
               <div className="mt-4 flex justify-end gap-2">
-                <button
+                <UiButton
+                  variant="secondary"
+                  type="submit"
                   className="btn-secondary"
                   disabled={!!acting}
                   onClick={() => doReject(r._id, "")}
                 >
                   <X className="w-4 h-4" /> Reject
-                </button>
-                <button
+                </UiButton>
+                <UiButton
+                  variant="primary"
+                  type="submit"
                   className="btn-primary"
                   disabled={!!acting}
                   onClick={() => doApprove(r._id)}
                 >
                   <Check className="w-4 h-4" /> Approve
-                </button>
+                </UiButton>
               </div>
             </div>
           ))}
@@ -147,12 +169,14 @@ export default function AdminApprovals() {
           >
             <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="text-base font-semibold text-slate-900">Review registration</h2>
-              <button
+              <UiButton
+                variant="plain"
+                type="submit"
                 onClick={() => setDetail(null)}
                 className="text-slate-400 hover:text-slate-700"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </UiButton>
             </div>
             <div className="p-5 space-y-5">
               <div>
@@ -222,7 +246,7 @@ export default function AdminApprovals() {
 
               <div>
                 <label className="label">Rejection reason (optional)</label>
-                <input
+                <UiInput
                   className="input"
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
@@ -231,20 +255,24 @@ export default function AdminApprovals() {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
+                <UiButton
+                  variant="secondary"
+                  type="submit"
                   className="btn-secondary flex-1"
                   disabled={!!acting}
                   onClick={() => doReject(detail._id, rejectReason)}
                 >
                   <X className="w-4 h-4" /> Reject
-                </button>
-                <button
+                </UiButton>
+                <UiButton
+                  variant="primary"
+                  type="submit"
                   className="btn-primary flex-1"
                   disabled={!!acting}
                   onClick={() => doApprove(detail._id)}
                 >
                   <Check className="w-4 h-4" /> Approve
-                </button>
+                </UiButton>
               </div>
             </div>
           </div>

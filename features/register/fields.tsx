@@ -1,4 +1,7 @@
 "use client";
+import UiSelect from "@/components/ui/Select";
+import UiInput from "@/components/ui/Input";
+
 import { HelpCircle } from "lucide-react";
 import { useMemo } from "react";
 import { listCountries, statesForCode } from "@/lib/countries";
@@ -42,14 +45,14 @@ export function CountryField({
   return (
     <div>
       <FieldLabel label="Country" required />
-      <select className="input" value={code} onChange={(e) => onCodeChange(e.target.value)}>
+      <UiSelect className="input" value={code} onChange={(e) => onCodeChange(e.target.value)}>
         <option value="">-- Select Country --</option>
         {countries.map((c) => (
           <option key={c.code} value={c.code}>
             {c.name}
           </option>
         ))}
-      </select>
+      </UiSelect>
       <FieldErrorMsg err={err} />
     </div>
   );
@@ -71,25 +74,25 @@ export function StateField({
     <div>
       <FieldLabel label="State/Province" required />
       {options === null ? (
-        <input
+        <UiInput
           className="input"
           placeholder="State / Province"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : options.length === 0 ? (
-        <input
+        <UiInput
           className="input bg-slate-50 text-slate-500"
           disabled
           value="No states for this country"
         />
       ) : (
-        <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+        <UiSelect className="input" value={value} onChange={(e) => onChange(e.target.value)}>
           <option value="">-- Select State/Province --</option>
           {options.map((s) => (
             <option key={s}>{s}</option>
           ))}
-        </select>
+        </UiSelect>
       )}
       <FieldErrorMsg err={err} />
     </div>
@@ -113,14 +116,14 @@ export function TimeZoneField({
   return (
     <div>
       <FieldLabel label="Time Zone" required />
-      <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+      <UiSelect className="input" value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">-- Select Time Zone --</option>
         {options.map((tz) => (
           <option key={tz} value={tz}>
             {tz}
           </option>
         ))}
-      </select>
+      </UiSelect>
       <FieldErrorMsg err={err} />
     </div>
   );

@@ -7,14 +7,16 @@
     "dev:local": "next dev",
     "build": "next build --webpack",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "npm run ui:check && eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "check": "npm run typecheck && npm run lint && npm run test:unit && npm run test:ui && npm run build",
     "test": "playwright test",
     "test:install": "playwright install --with-deps chromium",
     "test:unit": "vitest run",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "ui:check": "node scripts/check-ui.mjs",
+    "test:ui": "node --test scripts/ui-standards.test.mjs"
   },
   "dependencies": {
     "i18n-iso-countries": "^7.14.0",

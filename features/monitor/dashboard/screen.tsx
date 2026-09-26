@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
@@ -40,7 +44,9 @@ export default function MonitorDashboard() {
             Give this to a Homecare Provider so they can grant you access to specific patients.
           </p>
         </div>
-        <button className="btn-secondary">Copy ID</button>
+        <UiButton variant="secondary" type="submit" className="btn-secondary">
+          Copy ID
+        </UiButton>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -84,7 +90,7 @@ export default function MonitorDashboard() {
             View all patients
           </Link>
         </div>
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium py-1">Patient</th>
@@ -112,7 +118,7 @@ export default function MonitorDashboard() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

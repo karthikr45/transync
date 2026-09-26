@@ -1,3 +1,4 @@
+import UiButton from "@/components/ui/Button";
 export function ErrorNotice({ message, retry }: { message: string; retry?: () => void }) {
   return (
     <div
@@ -6,9 +7,9 @@ export function ErrorNotice({ message, retry }: { message: string; retry?: () =>
     >
       <span className="flex-1 text-sm">{message}</span>
       {retry && (
-        <button type="button" className="btn-secondary" onClick={retry}>
+        <UiButton variant="secondary" type="button" className="btn-secondary" onClick={retry}>
           Retry
-        </button>
+        </UiButton>
       )}
     </div>
   );

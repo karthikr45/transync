@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+
 import Link from "next/link";
 
 import { Suspense } from "react";
@@ -47,7 +51,8 @@ function LoginInner() {
           <p className="text-sm text-slate-500 mt-1">{t("login.subtitle")}</p>
 
           <div role="radiogroup" aria-label="Account kind" className="mt-4 grid grid-cols-2 gap-2">
-            <button
+            <UiButton
+              variant="plain"
               type="button"
               role="radio"
               aria-checked={kind === "patient"}
@@ -59,8 +64,9 @@ function LoginInner() {
                 <div className="text-sm font-medium text-slate-900">{t("login.patient")}</div>
                 <div className="text-xs text-slate-500">{t("login.patientHint")}</div>
               </div>
-            </button>
-            <button
+            </UiButton>
+            <UiButton
+              variant="plain"
               type="button"
               role="radio"
               aria-checked={kind === "staff"}
@@ -72,7 +78,7 @@ function LoginInner() {
                 <div className="text-sm font-medium text-slate-900">{t("login.staff")}</div>
                 <div className="text-xs text-slate-500">{t("login.staffHint")}</div>
               </div>
-            </button>
+            </UiButton>
           </div>
 
           <form
@@ -84,7 +90,7 @@ function LoginInner() {
               <label htmlFor="login-email" className="label">
                 {t("login.email")}
               </label>
-              <input
+              <UiInput
                 id="login-email"
                 className="input"
                 type="email"
@@ -119,19 +125,20 @@ function LoginInner() {
 
             <div className="flex justify-between text-xs">
               <label className="flex items-center gap-2 text-slate-600">
-                <input type="checkbox" className="rounded" /> {t("login.rememberMe")}
+                <UiInput type="checkbox" className="rounded" /> {t("login.rememberMe")}
               </label>
               <Link href="#" className="text-brand-600">
                 {t("login.forgotPassword")}
               </Link>
             </div>
-            <button
+            <UiButton
+              variant="primary"
               type="submit"
               disabled={submitting}
               className="btn-primary w-full disabled:opacity-50"
             >
               {submitting ? t("login.signingIn") : t("common.logOn")}
-            </button>
+            </UiButton>
           </form>
 
           <div className="mt-5 text-sm text-center text-slate-600">

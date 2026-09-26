@@ -1,3 +1,5 @@
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
 import { CountryField, StateField, TimeZoneField, FieldLabel, FieldErrorMsg } from "./fields";
 import Link from "next/link";
 import { Check, Building2, Eye, User, Clock, Mail } from "lucide-react";
@@ -164,7 +166,8 @@ export function TypeCard({
   desc: React.ReactNode;
 }) {
   return (
-    <button
+    <UiButton
+      variant="plain"
       type="button"
       onClick={onClick}
       className={`w-full text-left rounded-xl border p-4 transition flex gap-4 ${selected ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/30" : "border-slate-200 bg-white hover:bg-slate-50"}`}
@@ -183,7 +186,7 @@ export function TypeCard({
           <span className="text-green-600">✓</span> {desc}
         </p>
       </div>
-    </button>
+    </UiButton>
   );
 }
 
@@ -502,7 +505,7 @@ export function Consent({ type }: { type: AccountType | null }) {
       <h2 className="text-lg font-semibold text-slate-900">Terms & privacy</h2>
       <p className="text-sm text-slate-500">Please review and accept before finishing.</p>
       <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-        <input type="checkbox" defaultChecked className="mt-1" />
+        <UiInput type="checkbox" defaultChecked className="mt-1" />
         <div>
           <div className="text-sm font-medium text-slate-900">
             I accept the Transcend Terms of Use
@@ -513,7 +516,7 @@ export function Consent({ type }: { type: AccountType | null }) {
         </div>
       </label>
       <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-        <input type="checkbox" defaultChecked className="mt-1" />
+        <UiInput type="checkbox" defaultChecked className="mt-1" />
         <div>
           <div className="text-sm font-medium text-slate-900">
             I acknowledge the HIPAA Privacy Notice
@@ -525,7 +528,7 @@ export function Consent({ type }: { type: AccountType | null }) {
       </label>
       {type === "provider" && (
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-          <input type="checkbox" defaultChecked className="mt-1" />
+          <UiInput type="checkbox" defaultChecked className="mt-1" />
           <div>
             <div className="text-sm font-medium text-slate-900">
               I am authorized to act on behalf of my institution
@@ -536,7 +539,7 @@ export function Consent({ type }: { type: AccountType | null }) {
       )}
       {type === "monitor" && (
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-          <input type="checkbox" defaultChecked className="mt-1" />
+          <UiInput type="checkbox" defaultChecked className="mt-1" />
           <div>
             <div className="text-sm font-medium text-slate-900">
               I will only access patient data I am authorized to view
@@ -573,7 +576,7 @@ export function TextField({
       {isPassword ? (
         <PasswordInput value={value} onChange={(e) => onChange(e.target.value)} />
       ) : (
-        <input
+        <UiInput
           className="input"
           type={type}
           value={value}

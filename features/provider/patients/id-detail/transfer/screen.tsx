@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -75,13 +79,15 @@ export default function TransferPatient() {
               />
             ))}
             <div className="flex justify-end pt-2">
-              <button
+              <UiButton
+                variant="primary"
+                type="submit"
                 className="btn-primary disabled:opacity-50"
                 disabled={!dest}
                 onClick={() => setStep(2)}
               >
                 Continue
-              </button>
+              </UiButton>
             </div>
           </div>
         )}
@@ -103,7 +109,7 @@ export default function TransferPatient() {
               </div>
             )}
             <label className="flex gap-2 items-start mt-4 text-sm text-slate-700">
-              <input
+              <UiInput
                 type="checkbox"
                 className="mt-0.5"
                 checked={accepted}
@@ -113,10 +119,17 @@ export default function TransferPatient() {
               {permanent ? " and understand this is irreversible." : "."}
             </label>
             <div className="mt-5 flex justify-between">
-              <button className="btn-secondary" onClick={() => setStep(1)}>
+              <UiButton
+                variant="secondary"
+                type="submit"
+                className="btn-secondary"
+                onClick={() => setStep(1)}
+              >
                 Back
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="primary"
+                type="submit"
                 className={
                   permanent ? "btn-danger disabled:opacity-50" : "btn-primary disabled:opacity-50"
                 }
@@ -124,7 +137,7 @@ export default function TransferPatient() {
                 onClick={() => setStep(3)}
               >
                 {permanent ? "Permanently transfer" : "Share to sub-account"}
-              </button>
+              </UiButton>
             </div>
           </div>
         )}

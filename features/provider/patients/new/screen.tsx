@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+import UiSelect from "@/components/ui/Select";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -28,9 +33,14 @@ export default function CreatePatient() {
             <Link href="/provider/patients" className="btn-secondary">
               Back to patients
             </Link>
-            <button className="btn-primary" onClick={() => setDone(false)}>
+            <UiButton
+              variant="primary"
+              type="submit"
+              className="btn-primary"
+              onClick={() => setDone(false)}
+            >
               Create another
-            </button>
+            </UiButton>
           </div>
         </div>
       </>
@@ -58,7 +68,7 @@ export default function CreatePatient() {
           <div className="grid md:grid-cols-2 gap-3">
             <div>
               <label className="label">Patient ID *</label>
-              <input
+              <UiInput
                 required
                 className="input"
                 placeholder="Your internal reference, e.g. NS-1007"
@@ -66,43 +76,43 @@ export default function CreatePatient() {
             </div>
             <div>
               <label className="label">Birth date *</label>
-              <input required className="input" type="date" />
+              <UiInput required className="input" type="date" />
             </div>
             <div>
               <label className="label">First name *</label>
-              <input required className="input" />
+              <UiInput required className="input" />
             </div>
             <div>
               <label className="label">Last name *</label>
-              <input required className="input" />
+              <UiInput required className="input" />
             </div>
             <div>
               <label className="label">Email *</label>
-              <input required className="input" type="email" />
+              <UiInput required className="input" type="email" />
             </div>
             <div>
               <label className="label">Confirm email *</label>
-              <input required className="input" type="email" />
+              <UiInput required className="input" type="email" />
             </div>
             <div>
               <label className="label">End of day cutoff *</label>
-              <select required className="input">
+              <UiSelect required className="input">
                 <option>12:00 PM (noon)</option>
                 <option>06:00 AM</option>
                 <option>09:00 AM</option>
                 <option>Midnight</option>
-              </select>
+              </UiSelect>
               <p className="text-xs text-slate-500 mt-1">
                 Defines what counts as one therapy &quot;night&quot; for compliance math.
               </p>
             </div>
             <div>
               <label className="label">Insurance provider</label>
-              <select className="input">
+              <UiSelect className="input">
                 {insuranceProviders.map((i) => (
                   <option key={i.id}>{i.name}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
           </div>
         </div>
@@ -112,39 +122,39 @@ export default function CreatePatient() {
           <div className="grid md:grid-cols-2 gap-3">
             <div>
               <label className="label">Transcend device</label>
-              <select className="input">
+              <UiSelect className="input">
                 <option value="">Assign later</option>
                 {unassigned.map((d) => (
                   <option key={d.serial}>{d.serial}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
             <div>
               <label className="label">Referring physician</label>
-              <select className="input">
+              <UiSelect className="input">
                 <option value="">None</option>
                 {careMonitors.map((c) => (
                   <option key={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
             <div>
               <label className="label">Prescribing physician</label>
-              <select className="input">
+              <UiSelect className="input">
                 <option value="">None</option>
                 {careMonitors.map((c) => (
                   <option key={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
             <div>
               <label className="label">Other health care monitor</label>
-              <select className="input">
+              <UiSelect className="input">
                 <option value="">None</option>
                 {careMonitors.map((c) => (
                   <option key={c.id}>{c.name}</option>
                 ))}
-              </select>
+              </UiSelect>
             </div>
           </div>
         </div>
@@ -153,9 +163,9 @@ export default function CreatePatient() {
           <Link href="/provider/patients" className="btn-secondary">
             Cancel
           </Link>
-          <button type="submit" className="btn-primary">
+          <UiButton variant="primary" type="submit" className="btn-primary">
             Create patient
-          </button>
+          </UiButton>
         </div>
       </form>
     </>

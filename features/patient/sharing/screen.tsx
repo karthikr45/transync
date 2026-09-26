@@ -1,4 +1,9 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
+import UiSelect from "@/components/ui/Select";
+import UiInput from "@/components/ui/Input";
 
 import { AlertTriangle, Plus, RefreshCw, ShieldCheck, Stethoscope, X } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -18,7 +23,9 @@ export default function PatientSharing() {
         subtitle="Choose who can see your therapy data. Revoke access anytime."
         actions={
           <div className="flex items-center gap-2">
-            <button
+            <UiButton
+              variant="secondary"
+              type="submit"
               onClick={load}
               disabled={loading}
               className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -28,10 +35,15 @@ export default function PatientSharing() {
                 aria-hidden="true"
               />
               Refresh
-            </button>
-            <button onClick={() => setShowInvite(true)} className="btn-primary">
+            </UiButton>
+            <UiButton
+              variant="primary"
+              type="submit"
+              onClick={() => setShowInvite(true)}
+              className="btn-primary"
+            >
               <Plus className="w-4 h-4" /> Invite
-            </button>
+            </UiButton>
           </div>
         }
       />
@@ -46,7 +58,7 @@ export default function PatientSharing() {
       )}
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Recipient</th>
@@ -83,9 +95,14 @@ export default function PatientSharing() {
                 </td>
                 <td className="px-5 py-3 text-right">
                   {s.status === "pending" || s.status === "accepted" ? (
-                    <button className="btn-secondary" onClick={() => revoke(s.id)}>
+                    <UiButton
+                      variant="secondary"
+                      type="submit"
+                      className="btn-secondary"
+                      onClick={() => revoke(s.id)}
+                    >
                       <X className="w-4 h-4" /> Revoke
-                    </button>
+                    </UiButton>
                   ) : (
                     <span className="text-xs text-slate-400">—</span>
                   )}
@@ -93,7 +110,7 @@ export default function PatientSharing() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
 
       {showInvite && (
@@ -147,7 +164,7 @@ function InviteModal({
             <label className="label" htmlFor="invite-type">
               Recipient type
             </label>
-            <select
+            <UiSelect
               id="invite-type"
               className="input"
               value={type}
@@ -157,14 +174,14 @@ function InviteModal({
               <option value="">Select a type…</option>
               <option value="home_care_provider">Homecare Provider</option>
               <option value="authorized_monitor">Authorized Monitor</option>
-            </select>
+            </UiSelect>
           </div>
 
           <div>
             <label className="label" htmlFor="invite-recipient">
               Recipient
             </label>
-            <select
+            <UiSelect
               id="invite-recipient"
               className="input"
               value={recipientId}
@@ -186,14 +203,14 @@ function InviteModal({
                   {r.name} — {r.email}
                 </option>
               ))}
-            </select>
+            </UiSelect>
           </div>
 
           <div>
             <label className="label" htmlFor="invite-valid">
               Access valid until
             </label>
-            <input
+            <UiInput
               id="invite-valid"
               className="input"
               type="date"
@@ -215,16 +232,23 @@ function InviteModal({
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" className="btn-secondary" onClick={onClose} disabled={submitting}>
+          <UiButton
+            variant="secondary"
+            type="button"
+            className="btn-secondary"
+            onClick={onClose}
+            disabled={submitting}
+          >
             Cancel
-          </button>
-          <button
+          </UiButton>
+          <UiButton
+            variant="primary"
             type="submit"
             className="btn-primary disabled:opacity-50"
             disabled={submitting || !recipientId || !validTill}
           >
             {submitting ? "Sending…" : "Send invite"}
-          </button>
+          </UiButton>
         </div>
       </form>
     </div>

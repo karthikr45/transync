@@ -1,8 +1,9 @@
+import UiInput from "@/components/ui/Input";
 export function Field({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <label className="label">{label}</label>
-      <input className="input" type="number" defaultValue={value} />
+      <UiInput className="input" type="number" defaultValue={value} />
     </div>
   );
 }
@@ -19,7 +20,7 @@ export function ModalField({
   return (
     <div>
       <label className="label">{label}</label>
-      <input
+      <UiInput
         className="input"
         type="number"
         value={value}

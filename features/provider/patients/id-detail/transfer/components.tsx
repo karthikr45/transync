@@ -1,3 +1,4 @@
+import UiButton from "@/components/ui/Button";
 export function DestRow({
   selected,
   onClick,
@@ -14,7 +15,8 @@ export function DestRow({
   desc: string;
 }) {
   return (
-    <button
+    <UiButton
+      variant="plain"
       type="button"
       onClick={onClick}
       className={`w-full text-left rounded-lg border p-4 transition flex items-start gap-3 ${
@@ -33,6 +35,6 @@ export function DestRow({
         </div>
         <p className="text-sm text-slate-600 mt-0.5">{desc}</p>
       </div>
-    </button>
+    </UiButton>
   );
 }

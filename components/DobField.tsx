@@ -1,4 +1,6 @@
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
 
 import { useRef } from "react";
 import { Calendar } from "lucide-react";
@@ -42,7 +44,7 @@ export default function DobField({
 
   return (
     <div className="relative">
-      <input
+      <UiInput
         type="text"
         readOnly
         value={value ? displayDob(value) : ""}
@@ -52,18 +54,19 @@ export default function DobField({
         className="input pr-10 cursor-pointer"
         aria-label={ariaLabel}
       />
-      <button
+      <UiButton
+        variant="plain"
         type="button"
         onClick={openPicker}
         className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
         aria-label="Open calendar"
       >
         <Calendar className="w-4 h-4" />
-      </button>
+      </UiButton>
       {/* The actual date picker. It sits behind the text input, invisible
           but interactive, so the native picker chrome shows up under the
           field. */}
-      <input
+      <UiInput
         ref={dateRef}
         type="date"
         value={value}

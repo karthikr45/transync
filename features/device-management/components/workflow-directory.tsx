@@ -1,4 +1,9 @@
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiInput from "@/components/ui/Input";
+import UiSelect from "@/components/ui/Select";
+import UiTable from "@/components/ui/Table";
+
 import Link from "next/link";
 import { RefreshCw, Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -43,28 +48,30 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
         subtitle={descriptions[area]}
         actions={
           <div className="flex flex-wrap gap-2">
-            <button
+            <UiButton
+              variant="secondary"
               type="button"
               className="btn-secondary disabled:opacity-50"
               onClick={refresh}
               disabled={!context || loading || !!form}
             >
               <RefreshCw className="w-4 h-4" /> Refresh
-            </button>
+            </UiButton>
             {area === "inventory" && context?.permissions.includes("claims:write") && (
               <Link href="/provider/devices/claim" className="btn-primary">
                 Verify & claim
               </Link>
             )}
             {create && allowed(create) && (
-              <button
+              <UiButton
+                variant="primary"
                 type="button"
                 className="btn-primary"
                 disabled={!!form}
                 onClick={() => open(create)}
               >
                 <Plus className="w-4 h-4" /> {createLabel}
-              </button>
+              </UiButton>
             )}
           </div>
         }
@@ -109,7 +116,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
           >
             <label className="text-sm flex-1 min-w-[180px]">
               Search
-              <input
+              <UiInput
                 className="input mt-1"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -119,7 +126,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
             {!!statuses[area].length && (
               <label className="text-sm">
                 Status
-                <select
+                <UiSelect
                   className="input mt-1"
                   value={status}
                   onChange={(e) => {
@@ -133,12 +140,12 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
                       {outcomeLabel(s)}
                     </option>
                   ))}
-                </select>
+                </UiSelect>
               </label>
             )}
-            <button className="btn-secondary" type="submit">
+            <UiButton variant="secondary" className="btn-secondary" type="submit">
               Search
-            </button>
+            </UiButton>
           </form>
           {error && <ErrorNotice message={error} retry={refresh} />}
           <div className="card overflow-x-auto" aria-busy={loading}>
@@ -150,7 +157,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
               !error &&
               data &&
               (data.items.length ? (
-                <table className="w-full text-sm">
+                <UiTable className="w-full text-sm">
                   <caption className="sr-only">
                     {titles[area]}, page {page}
                   </caption>
@@ -207,7 +214,8 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
                               {(row.allowedActions ?? [])
                                 .filter((action) => allowed(action))
                                 .map((action) => (
-                                  <button
+                                  <UiButton
+                                    variant="secondary"
                                     key={action}
                                     type="button"
                                     className="btn-secondary text-xs"
@@ -215,7 +223,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
                                     onClick={() => open(action, row)}
                                   >
                                     {outcomeLabel(action)}
-                                  </button>
+                                  </UiButton>
                                 ))}
                             </div>
                             {!row.allowedActions?.length && !row.reason && !row.reviewReason && (
@@ -226,7 +234,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </UiTable>
               ) : (
                 <p className="p-8 text-center text-slate-500">
                   No {titles[area].toLowerCase()} match these filters.
@@ -246,7 +254,7 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
             </span>
             <label>
               Per page{" "}
-              <select
+              <UiSelect
                 className="input !w-auto"
                 value={limit}
                 onChange={(e) => {
@@ -259,23 +267,27 @@ export default function WorkflowDirectory({ area, mode }: { area: WorkflowArea; 
                     {n}
                   </option>
                 ))}
-              </select>
+              </UiSelect>
             </label>
             <div className="flex gap-2">
-              <button
+              <UiButton
+                variant="secondary"
+                type="submit"
                 className="btn-secondary"
                 disabled={loading || page === 1}
                 onClick={() => setPage((n) => n - 1)}
               >
                 Previous
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="secondary"
+                type="submit"
                 className="btn-secondary"
                 disabled={loading || !!error || !data || page * limit >= data.total}
                 onClick={() => setPage((n) => n + 1)}
               >
                 Next
-              </button>
+              </UiButton>
             </div>
           </nav>
         </>

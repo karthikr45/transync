@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -26,7 +29,9 @@ export default function SuperAdminDashboard() {
         title="Super Admin"
         subtitle="Transcend platform — global oversight & control."
         actions={
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             onClick={load}
             disabled={loading}
             className="btn-secondary text-sm flex items-center gap-1 disabled:opacity-50"
@@ -36,7 +41,7 @@ export default function SuperAdminDashboard() {
               aria-hidden="true"
             />
             Refresh
-          </button>
+          </UiButton>
         }
       />
 

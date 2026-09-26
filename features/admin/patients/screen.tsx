@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+import UiSelect from "@/components/ui/Select";
+import UiTable from "@/components/ui/Table";
 
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -17,10 +21,16 @@ export default function AdminPatients() {
         title="Patients"
         subtitle="All registered patients across the platform."
         actions={
-          <button className="btn-secondary disabled:opacity-50" onClick={reload} disabled={loading}>
+          <UiButton
+            variant="secondary"
+            type="submit"
+            className="btn-secondary disabled:opacity-50"
+            onClick={reload}
+            disabled={loading}
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />{" "}
             Refresh
-          </button>
+          </UiButton>
         }
       />
       <div className="card p-3 mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -35,7 +45,7 @@ export default function AdminPatients() {
         </span>
         <label className="flex items-center gap-2 text-sm text-slate-600">
           Patients per page
-          <select
+          <UiSelect
             className="input !w-auto"
             value={limit}
             disabled={loading}
@@ -49,7 +59,7 @@ export default function AdminPatients() {
                 {size}
               </option>
             ))}
-          </select>
+          </UiSelect>
         </label>
       </div>
       {error && (
@@ -59,9 +69,9 @@ export default function AdminPatients() {
         >
           <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
           <span className="flex-1 text-sm">{error}</span>
-          <button className="btn-secondary" onClick={reload}>
+          <UiButton variant="secondary" type="submit" className="btn-secondary" onClick={reload}>
             Retry
-          </button>
+          </UiButton>
         </div>
       )}
       <div aria-busy={loading}>
@@ -79,7 +89,7 @@ export default function AdminPatients() {
             </div>
           ) : (
             <div className="card overflow-x-auto">
-              <table className="w-full text-sm">
+              <UiTable className="w-full text-sm">
                 <caption className="sr-only">Patients, page {page}</caption>
                 <thead className="bg-slate-50 text-xs text-slate-500">
                   <tr>
@@ -114,7 +124,7 @@ export default function AdminPatients() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </UiTable>
             </div>
           ))}
         {!loading && !error && list.rows === null && (
@@ -135,20 +145,24 @@ export default function AdminPatients() {
           {list.totalPages ? ` of ${list.totalPages}` : ""}
         </span>
         <div className="flex gap-2">
-          <button
+          <UiButton
+            variant="secondary"
+            type="submit"
             className="btn-secondary disabled:opacity-50"
             disabled={loading || page === 1}
             onClick={() => setPage((n) => n - 1)}
           >
             Previous
-          </button>
-          <button
+          </UiButton>
+          <UiButton
+            variant="secondary"
+            type="submit"
             className="btn-secondary disabled:opacity-50"
             disabled={loading || !!error || !list.hasNext}
             onClick={() => setPage((n) => n + 1)}
           >
             Next
-          </button>
+          </UiButton>
         </div>
       </nav>
       {!loading && !error && list.rows !== null && (

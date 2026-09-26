@@ -1,4 +1,6 @@
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
 
 import { InputHTMLAttributes, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -16,8 +18,13 @@ export default function PasswordInput({ className = "", toggleLabel, ...rest }: 
   const [shown, setShown] = useState(false);
   return (
     <div className="relative">
-      <input type={shown ? "text" : "password"} className={`input pr-10 ${className}`} {...rest} />
-      <button
+      <UiInput
+        type={shown ? "text" : "password"}
+        className={`input pr-10 ${className}`}
+        {...rest}
+      />
+      <UiButton
+        variant="plain"
         type="button"
         onClick={() => setShown((s) => !s)}
         className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 rounded"
@@ -32,7 +39,7 @@ export default function PasswordInput({ className = "", toggleLabel, ...rest }: 
         ) : (
           <Eye className="w-4 h-4" aria-hidden="true" />
         )}
-      </button>
+      </UiButton>
     </div>
   );
 }

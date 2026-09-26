@@ -1,3 +1,4 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 import Link from "next/link";
 import { User, Building2, Eye, ArrowRight } from "lucide-react";
 import Logo from "@/components/Logo";

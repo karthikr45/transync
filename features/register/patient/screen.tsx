@@ -1,4 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import { AlertTriangle, ArrowRight, Check, ShieldCheck } from "lucide-react";
@@ -121,7 +124,8 @@ function PatientRegisterInner() {
 
           {step !== 5 && (
             <div className="mt-6 flex justify-between">
-              <button
+              <UiButton
+                variant="secondary"
                 type="button"
                 onClick={() => {
                   clearMsgs();
@@ -131,8 +135,9 @@ function PatientRegisterInner() {
                 className="btn-secondary disabled:opacity-50"
               >
                 Back
-              </button>
-              <button
+              </UiButton>
+              <UiButton
+                variant="primary"
                 type="button"
                 onClick={goNext}
                 disabled={submitting}
@@ -157,7 +162,7 @@ function PatientRegisterInner() {
                     Verify <Check className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </UiButton>
             </div>
           )}
         </div>

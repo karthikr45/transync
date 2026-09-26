@@ -1,3 +1,6 @@
+import UiSelect from "@/components/ui/Select";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
 import Link from "next/link";
 import { Check, Mail } from "lucide-react";
 import { isValidPhoneNumber } from "react-phone-number-input";
@@ -61,7 +64,7 @@ export function Step1({
       <p className="text-sm text-slate-500 mb-4">Fields marked * are required.</p>
       <div className="space-y-3">
         <Field label="Country" required>
-          <select
+          <UiSelect
             className="input"
             value={form.countryCode}
             onChange={(e) => {
@@ -74,24 +77,24 @@ export function Step1({
                 {c.name}
               </option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
         <Field label="State" required>
           {stateOptions === null ? (
-            <input
+            <UiInput
               className="input"
               placeholder="State / Province"
               value={form.state}
               onChange={(e) => upd("state", e.target.value)}
             />
           ) : stateOptions.length === 0 ? (
-            <input
+            <UiInput
               className="input bg-slate-50 text-slate-500"
               disabled
               value="No states for this country"
             />
           ) : (
-            <select
+            <UiSelect
               className="input"
               value={form.state}
               onChange={(e) => upd("state", e.target.value)}
@@ -100,7 +103,7 @@ export function Step1({
               {stateOptions.map((s) => (
                 <option key={s}>{s}</option>
               ))}
-            </select>
+            </UiSelect>
           )}
         </Field>
         <Field
@@ -108,7 +111,7 @@ export function Step1({
           required
           err={fnInvalid ? "Only letters, apostrophes and single spaces are allowed." : null}
         >
-          <input
+          <UiInput
             className={`input ${fnInvalid ? "border-red-300" : ""}`}
             placeholder="Enter your First Name"
             value={form.firstName}
@@ -122,7 +125,7 @@ export function Step1({
           required
           err={lnInvalid ? "Only letters, apostrophes and single spaces are allowed." : null}
         >
-          <input
+          <UiInput
             className={`input ${lnInvalid ? "border-red-300" : ""}`}
             placeholder="Enter your Last Name"
             value={form.lastName}
@@ -132,7 +135,7 @@ export function Step1({
           />
         </Field>
         <Field label="Email" required err={emInvalid ? "Enter a valid email address." : null}>
-          <input
+          <UiInput
             className={`input ${emInvalid ? "border-red-300" : ""}`}
             type="email"
             placeholder="Enter your Email"
@@ -171,7 +174,7 @@ export function Step2({
           <DobField value={form.dob} onChange={(iso) => upd("dob", iso)} />
         </Field>
         <Field label="Occupation">
-          <select
+          <UiSelect
             className="input"
             value={form.occupation}
             onChange={(e) => upd("occupation", e.target.value)}
@@ -179,10 +182,10 @@ export function Step2({
             {occupations.map((o) => (
               <option key={o}>{o}</option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
         <Field label="How long have you been a CPAP user?" required>
-          <select
+          <UiSelect
             className="input"
             value={form.cpapUser}
             onChange={(e) => upd("cpapUser", e.target.value)}
@@ -190,10 +193,10 @@ export function Step2({
             {cpapOpts.map((o) => (
               <option key={o}>{o}</option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
         <Field label="How are you using the Transcend device?" required>
-          <select
+          <UiSelect
             className="input"
             value={form.transcendUsage}
             onChange={(e) => upd("transcendUsage", e.target.value)}
@@ -201,10 +204,10 @@ export function Step2({
             {usageOpts.map((o) => (
               <option key={o}>{o}</option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
         <Field label="Where was the Transcend device purchased?" required>
-          <select
+          <UiSelect
             className="input"
             value={form.devicePurchased}
             onChange={(e) => upd("devicePurchased", e.target.value)}
@@ -212,7 +215,7 @@ export function Step2({
             {purchaseOpts.map((o) => (
               <option key={o}>{o}</option>
             ))}
-          </select>
+          </UiSelect>
         </Field>
       </div>
     </div>
@@ -242,7 +245,7 @@ export function Step3({
       </p>
       <div className="space-y-3">
         <Field label="Care Provider">
-          <input
+          <UiInput
             className="input"
             placeholder="Enter Care Provider"
             value={form.provider}
@@ -250,7 +253,7 @@ export function Step3({
           />
         </Field>
         <Field label="Care Provider Email">
-          <input
+          <UiInput
             className="input"
             type="email"
             placeholder="Enter Care Provider Email"
@@ -297,7 +300,7 @@ export function Step3({
           )}
         </Field>
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-          <input
+          <UiInput
             type="checkbox"
             className="mt-1"
             checked={form.consentTerms}
@@ -316,7 +319,7 @@ export function Step3({
           </div>
         </label>
         <label className="flex gap-3 items-start p-3 border border-slate-200 rounded-lg">
-          <input
+          <UiInput
             type="checkbox"
             className="mt-1"
             checked={form.consentMarketing}
@@ -358,7 +361,7 @@ export function VerifyStep({
         Enter the code we sent to <strong>{email}</strong>.
       </p>
       <Field label="Verification code" required>
-        <input
+        <UiInput
           className="input tracking-widest text-center font-mono text-lg"
           inputMode="numeric"
           autoComplete="one-time-code"
@@ -367,14 +370,15 @@ export function VerifyStep({
           onChange={(e) => setOtp(e.target.value)}
         />
       </Field>
-      <button
+      <UiButton
+        variant="plain"
         type="button"
         onClick={onResend}
         disabled={disabled}
         className="text-xs text-brand-600 hover:underline"
       >
         Resend code
-      </button>
+      </UiButton>
     </div>
   );
 }

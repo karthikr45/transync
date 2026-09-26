@@ -1,3 +1,7 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
+
+import UiButton from "@/components/ui/Button";
+import UiTable from "@/components/ui/Table";
 import PageHeader from "@/components/PageHeader";
 import MockBanner from "@/components/MockBanner";
 import { Plus } from "lucide-react";
@@ -10,9 +14,9 @@ export default function AdminUsers() {
         title="Admin users"
         subtitle="Transcend platform staff and their roles."
         actions={
-          <button className="btn-primary">
+          <UiButton variant="primary" type="submit" className="btn-primary">
             <Plus className="w-4 h-4" /> Invite admin
-          </button>
+          </UiButton>
         }
       />
       <MockBanner />
@@ -32,7 +36,7 @@ export default function AdminUsers() {
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+        <UiTable className="w-full text-sm">
           <thead className="bg-slate-50 text-xs text-slate-500">
             <tr>
               <th className="text-left font-medium px-5 py-2">Name</th>
@@ -60,12 +64,14 @@ export default function AdminUsers() {
                 </td>
                 <td className="px-5 py-3 text-slate-600">{u.lastActive}</td>
                 <td className="px-5 py-3 text-right">
-                  <button className="btn-secondary">Edit</button>
+                  <UiButton variant="secondary" type="submit" className="btn-secondary">
+                    Edit
+                  </UiButton>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </UiTable>
       </div>
     </>
   );

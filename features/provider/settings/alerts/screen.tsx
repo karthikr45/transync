@@ -1,4 +1,8 @@
+// UI standard: UI-STANDARDS.json (enforced by npm run ui:check).
 "use client";
+import UiInput from "@/components/ui/Input";
+import UiButton from "@/components/ui/Button";
+
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -28,17 +32,19 @@ export default function AlertsSettings() {
               <p className="text-sm text-slate-600 mt-0.5">{r.description}</p>
               <div className="mt-2 flex items-center gap-2 text-sm">
                 <span className="text-slate-500">Threshold:</span>
-                <input className="input !py-1 !w-auto text-xs" defaultValue={r.threshold} />
+                <UiInput className="input !py-1 !w-auto text-xs" defaultValue={r.threshold} />
               </div>
             </div>
-            <button
+            <UiButton
+              variant="plain"
+              type="submit"
               onClick={() => toggle(r.id)}
               className={`relative w-11 h-6 rounded-full transition shrink-0 ${r.enabled ? "bg-brand-600" : "bg-slate-300"}`}
             >
               <span
                 className={`absolute top-0.5 ${r.enabled ? "left-5" : "left-0.5"} w-5 h-5 bg-white rounded-full transition`}
               />
-            </button>
+            </UiButton>
           </div>
         ))}
       </div>
@@ -47,17 +53,19 @@ export default function AlertsSettings() {
         <h2 className="text-base font-semibold text-slate-900 mb-3">Delivery</h2>
         <div className="space-y-2 text-sm text-slate-700">
           <label className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked /> Show in Alerts dashboard
+            <UiInput type="checkbox" defaultChecked /> Show in Alerts dashboard
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked /> Email assigned staff
+            <UiInput type="checkbox" defaultChecked /> Email assigned staff
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" /> Daily digest instead of real-time
+            <UiInput type="checkbox" /> Daily digest instead of real-time
           </label>
         </div>
         <div className="mt-4">
-          <button className="btn-primary">Save</button>
+          <UiButton variant="primary" type="submit" className="btn-primary">
+            Save
+          </UiButton>
         </div>
       </div>
     </>
