@@ -6,6 +6,7 @@ import {
   Users,
   ScrollText,
   Settings,
+  Database,
 } from "lucide-react";
 import HomeCareShell from "@/components/HomeCareShell";
 import AuthGuard from "@/components/AuthGuard";
@@ -13,6 +14,7 @@ import AuthGuard from "@/components/AuthGuard";
 const nav = [
   { href: "/admin/dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
   { href: "/admin/patients", label: "Patients", icon: <Users className="w-4 h-4" /> },
+  { href: "/admin/metadata", label: "Metadata", icon: <Database className="w-4 h-4" /> },
   { href: "/admin/approvals", label: "Approvals", icon: <ClipboardCheck className="w-4 h-4" /> },
   { href: "/admin/organizations", label: "Organizations", icon: <Building2 className="w-4 h-4" /> },
   { href: "/admin/devices", label: "Device Registry", icon: <HardDrive className="w-4 h-4" /> },

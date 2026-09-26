@@ -215,6 +215,13 @@
       "status": "approved",
       "useFor": "Remote organization/patient choice using search plus the approved Select; not a custom combobox.",
       "accessibility": "Keep label, loading, no-results and error states."
+    },
+    {
+      "name": "MetadataEditor",
+      "path": "features/admin/metadata/editor.tsx",
+      "status": "approved",
+      "useFor": "Inline metadata editor using approved Input, Textarea and Button controls. Reuse for whole-record or section edits. No custom modal or switch.",
+      "accessibility": "Visible labels, fieldset/legend grouping, validation summary with associated invalid fields, native checkbox keyboard behavior and pending-state controls."
     }
   ],
   "nativeOwners": {
