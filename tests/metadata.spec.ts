@@ -66,7 +66,9 @@ test("metadata section edits preserve option values and unrelated settings", asy
   await page.getByRole("button", { name: "Add occupation option", exact: true }).click();
   await page.getByLabel("Occupation option 2", { exact: true }).fill("Teacher");
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Metadata updated.");
+  await expect(page.getByRole("status").filter({ hasText: "Metadata updated." })).toHaveText(
+    "Metadata updated.",
+  );
   expect(api.writes).toHaveLength(1);
   expect(api.writes[0].method).toBe("PATCH");
   expect(api.writes[0].body?.occupation).toEqual([
@@ -91,7 +93,9 @@ test("metadata create and explicit delete confirmation work", async ({ page }) =
   ])
     await page.getByLabel(`${label} option 1`, { exact: true }).fill(value);
   await page.getByRole("button", { name: "Create metadata", exact: true }).click();
-  await expect(page.getByRole("status")).toHaveText("Metadata created.");
+  await expect(page.getByRole("status").filter({ hasText: "Metadata created." })).toHaveText(
+    "Metadata created.",
+  );
   expect(api.writes[0].path).toBe("/metadata/save");
   expect(api.writes[0].body?.occupation).toEqual([{ label: "Teacher", value: 0 }]);
   await page.getByRole("button", { name: "Delete metadata", exact: true }).click();
@@ -111,7 +115,9 @@ test("stale metadata cannot overwrite a teammate's changes", async ({ page }) =>
   await page.getByLabel("Occupation option 1", { exact: true }).fill("Renamed");
   api.setData({ ...record, showPopUp: false });
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("changed since you opened");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "changed since you opened" }),
+  ).toContainText("changed since you opened");
   expect(api.writes).toHaveLength(0);
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.getByRole("button", { name: "Refresh metadata", exact: true }).click();
@@ -131,11 +137,15 @@ test("missing ID is read-only and malformed responses support retry", async ({ p
       }),
   );
   await page.goto("/admin/metadata");
-  await expect(page.getByRole("alert")).toContainText("invalid metadata");
+  await expect(page.getByRole("alert").filter({ hasText: "invalid metadata" })).toContainText(
+    "invalid metadata",
+  );
   await expect(page.getByRole("button", { name: "Create metadata", exact: true })).toHaveCount(0);
   malformed = false;
   await page.getByRole("button", { name: "Try again", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("no identifier");
+  await expect(page.getByRole("status").filter({ hasText: "no identifier" })).toContainText(
+    "no identifier",
+  );
   await expect(page.getByRole("button", { name: "Update metadata", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Delete metadata", exact: true })).toBeDisabled();
 });
@@ -157,7 +167,9 @@ test("ambiguous save failure keeps the form and prevents blind retry", async ({ 
   await page.getByRole("button", { name: "Edit Occupation", exact: true }).click();
   await page.getByLabel("Occupation option 1", { exact: true }).fill("Renamed");
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("could not be confirmed");
+  await expect(page.getByRole("alert").filter({ hasText: "could not be confirmed" })).toContainText(
+    "could not be confirmed",
+  );
   await expect(page.getByRole("button", { name: "Save changes", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Cancel", exact: true })).toBeEnabled();
   expect(writes).toBe(1);
@@ -169,7 +181,9 @@ test("metadata network errors do not offer unsafe creation", async ({ page }) =>
     (route) => route.fulfill({ status: 404, json: { message: "Endpoint unavailable" } }),
   );
   await page.goto("/admin/metadata");
-  await expect(page.getByRole("alert")).toContainText("Endpoint unavailable");
+  await expect(page.getByRole("alert").filter({ hasText: "Endpoint unavailable" })).toContainText(
+    "Endpoint unavailable",
+  );
   await expect(page.getByRole("button", { name: "Create metadata", exact: true })).toHaveCount(0);
 });
 test("non-admin users cannot mount metadata tools or call the metadata API", async ({ page }) => {
@@ -204,8 +218,31 @@ test("forbidden metadata writes keep edits available without reporting success",
   await page.getByRole("button", { name: "Edit clinical mode", exact: true }).click();
   await page.getByLabel("Clinical mode enabled", { exact: true }).check();
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await expect(page.getByRole("alert")).toHaveText("Super admin permission required");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Super admin permission required" }),
+  ).toHaveText("Super admin permission required");
   await expect(page.getByLabel("Clinical mode enabled", { exact: true })).toBeChecked();
   await expect(page.getByRole("button", { name: "Save changes", exact: true })).toBeEnabled();
   await expect(page.getByText("Metadata updated.", { exact: true })).toHaveCount(0);
+});
+
+test("metadata editing fits a narrow viewport and uses keyboard-accessible fields", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page);
+  await mockMetadata(page);
+  await page.goto("/admin/metadata");
+  await page.getByRole("button", { name: "Edit Occupation", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Edit Occupation", exact: true })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Occupation option 1", { exact: true })).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await expect(page.getByRole("button", { name: "Save changes", exact: true })).toBeVisible();
+  await testInfo.attach("metadata-editor-mobile", {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: "image/png",
+  });
 });
