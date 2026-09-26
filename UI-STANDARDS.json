@@ -143,8 +143,8 @@
       "name": "PortalShell",
       "path": "components/PortalShell.tsx",
       "status": "approved",
-      "useFor": "Reuse this existing PortalShell pattern; extend it centrally instead of copying its UI.",
-      "accessibility": "Preserve semantic HTML, accessible names, keyboard operation and visible focus."
+      "useFor": "Shared portal layout: desktop sidebar, stacked mobile header with horizontally scrollable navigation, responsive content spacing and account/sign-out controls.",
+      "accessibility": "Named navigation landmark, aria-current on the active page, keyboard-operable links, visible focus and no page-level horizontal overflow at narrow widths."
     },
     {
       "name": "PublicGuard",

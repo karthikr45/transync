@@ -27,9 +27,9 @@ export default function PortalShell({
 }) {
   const pathname = usePathname();
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col md:flex-row">
       <aside
-        className="w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 self-start h-screen flex flex-col"
+        className="w-full md:w-64 shrink-0 bg-white border-b md:border-b-0 md:border-r border-slate-200 md:sticky md:top-0 md:self-start md:h-screen flex flex-col"
         aria-label={`${role} navigation`}
       >
         <div className="px-5 py-5 border-b border-slate-200">
@@ -38,14 +38,18 @@ export default function PortalShell({
             <div className="text-xs text-slate-500 mt-1.5">{role}</div>
           </Link>
         </div>
-        <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1" aria-label="Primary">
+        <nav
+          className="flex md:block md:flex-1 min-h-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto p-3 gap-1 md:space-y-1"
+          aria-label="Primary"
+        >
           {nav.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={active ? "nav-link-active" : "nav-link"}
+                aria-current={active ? "page" : undefined}
+                className={`${active ? "nav-link-active" : "nav-link"} shrink-0 whitespace-nowrap`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -53,8 +57,8 @@ export default function PortalShell({
             );
           })}
         </nav>
-        <div className="p-3 border-t border-slate-200">
-          <div className="px-3 py-2">
+        <div className="p-3 border-t border-slate-200 flex md:block items-center gap-2">
+          <div className="px-3 py-2 min-w-0 flex-1">
             <div className="text-sm font-medium text-slate-900 truncate">{user.name}</div>
             <div className="text-xs text-slate-500 truncate">{user.email}</div>
           </div>
@@ -62,7 +66,7 @@ export default function PortalShell({
             variant="plain"
             type="button"
             onClick={logout}
-            className="nav-link w-full text-left"
+            className="nav-link shrink-0 md:w-full text-left"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign out</span>
@@ -70,7 +74,7 @@ export default function PortalShell({
         </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="max-w-6xl mx-auto px-8 py-8">{children}</div>
+        <div className="max-w-6xl mx-auto px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
     </div>
   );

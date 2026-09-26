@@ -16,6 +16,7 @@ The Next route composes the feature screen. Endpoint calls live in api.ts; schem
 - Duplicate/blank option labels and duplicate IDs are rejected on edited lists. Delay must be a safe non-negative integer. Update prompts require a version. New store links require HTTPS without credentials; unsafe links are never clickable.
 - Reads are cancellable. Mutations have a synchronous in-flight guard. Uncertain network/server failures keep the form and require cancellation/refresh before another attempt.
 - A fresh read before mutation detects stale snapshots and duplicate create attempts. This reduces accidental overwrites but is NOT atomic concurrency protection.
+- The shared portal shell now stacks on mobile with scrollable navigation; the previous fixed sidebar squeezed metadata forms on narrow screens. The desktop sidebar remains.
 - Deletion has an explicit typed confirmation. Failure preserves the confirmation view and provides a recoverable error.
 
 ## Backend contract inherited from source
