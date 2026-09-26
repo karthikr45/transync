@@ -1,4 +1,12 @@
-import { LayoutDashboard, ClipboardCheck, Building2, HardDrive, Users, ScrollText, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  ClipboardCheck,
+  Building2,
+  HardDrive,
+  Users,
+  ScrollText,
+  Settings,
+} from "lucide-react";
 import HomeCareShell from "@/components/HomeCareShell";
 import AuthGuard from "@/components/AuthGuard";
 
@@ -9,7 +17,11 @@ const nav = [
   { href: "/admin/organizations", label: "Organizations", icon: <Building2 className="w-4 h-4" /> },
   { href: "/admin/devices", label: "Device Registry", icon: <HardDrive className="w-4 h-4" /> },
   { href: "/admin/allocations", label: "Allocations", icon: <HardDrive className="w-4 h-4" /> },
-  { href: "/admin/claim-requests", label: "Claim Requests", icon: <ClipboardCheck className="w-4 h-4" /> },
+  {
+    href: "/admin/claim-requests",
+    label: "Claim Requests",
+    icon: <ClipboardCheck className="w-4 h-4" />,
+  },
   { href: "/admin/transfers", label: "Device Transfers", icon: <HardDrive className="w-4 h-4" /> },
   { href: "/admin/device-audit", label: "Device Audit", icon: <ScrollText className="w-4 h-4" /> },
   { href: "/admin/users", label: "Admin users", icon: <Users className="w-4 h-4" /> },

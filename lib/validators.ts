@@ -5,8 +5,7 @@ export const NAME_REGEX = /^([a-zA-Z'’]+\s)*[a-zA-Z'’]+$/;
 
 // Same broad email shape the project uses on the mobile app. Backend
 // also runs IsEmail validation; this is the client-side fast check.
-export const EMAIL_REGEX =
-  /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+export const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
 
 // Strong password: 8–16 chars, at least one lowercase, one uppercase,
 // one digit and one special from @$!%*?&. Used by /users/create-user.

@@ -1,3 +1,5 @@
-import ClaimDevices from "@/components/device-workflow/ClaimDevices";
+import ClaimDevices from "@/features/device-management/components/claim-devices";
 
-export default function Page() { return <ClaimDevices />; }
+export default function Page() {
+  return <ClaimDevices />;
+}

@@ -34,16 +34,18 @@ Areas: `registry`, `allocations`, `inventory`, `claim-requests`, `transfers`, `a
 
 ```json
 {
-  "items": [{
-    "id": "device-record-id",
-    "serial": "EXAMPLE-001",
-    "model": "Transcend model",
-    "status": "claimed",
-    "organizationName": "Example HCP",
-    "patientName": null,
-    "updatedAt": "2026-09-24T08:00:00Z",
-    "allowedActions": ["assign"]
-  }],
+  "items": [
+    {
+      "id": "device-record-id",
+      "serial": "EXAMPLE-001",
+      "model": "Transcend model",
+      "status": "claimed",
+      "organizationName": "Example HCP",
+      "patientName": null,
+      "updatedAt": "2026-09-24T08:00:00Z",
+      "allowedActions": ["assign"]
+    }
+  ],
   "total": 1,
   "page": 1,
   "limit": 25
@@ -52,16 +54,17 @@ Areas: `registry`, `allocations`, `inventory`, `claim-requests`, `transfers`, `a
 
 Optional display fields are omitted rather than null where possible. Types are in `lib/device-workflow.ts`.
 
-| Area | Display fields besides id | Status filters |
-|---|---|---|
-| registry | serial, model, organizationName, status, updatedAt | available, allocated, claimed, assigned, returned, restricted, retired |
-| allocations | serial, organizationName, reference, status, updatedAt | active, released |
-| inventory | serial, model, patientName, status, updatedAt | allocated, claimed, assigned, returned, restricted |
-| claim-requests | serials (array), organizationName, reference, status, reason, reviewReason, requestedAt | pending, approved, rejected |
-| transfers | serial, sourceOrganizationName, targetOrganizationName, status, reason, reviewReason, requestedAt | pending_release, pending_acceptance, pending_review, completed, rejected |
-| audit | serial, actorName, organizationName, action, previousStatus, newStatus, reason, effectiveAt | none |
+| Area           | Display fields besides id                                                                         | Status filters                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| registry       | serial, model, organizationName, status, updatedAt                                                | available, allocated, claimed, assigned, returned, restricted, retired   |
+| allocations    | serial, organizationName, reference, status, updatedAt                                            | active, released                                                         |
+| inventory      | serial, model, patientName, status, updatedAt                                                     | allocated, claimed, assigned, returned, restricted                       |
+| claim-requests | serials (array), organizationName, reference, status, reason, reviewReason, requestedAt           | pending, approved, rejected                                              |
+| transfers      | serial, sourceOrganizationName, targetOrganizationName, status, reason, reviewReason, requestedAt | pending_release, pending_acceptance, pending_review, completed, rejected |
+| audit          | serial, actorName, organizationName, action, previousStatus, newStatus, reason, effectiveAt       | none                                                                     |
 
 `allowedActions` is computed server-side per record and actor:
+
 - Registry: `restrict`, `retire` when eligible.
 - Inventory: `assign`, `return` when eligible.
 - Pending claim requests: `approve`, `reject` for authorized Super Admin reviewers.
@@ -80,20 +83,20 @@ Organizations must be approved/active HCPs; expose only the minimal permitted di
 
 All persisted mutations below use `POST` and an `Idempotency-Key` UUID header. The UI preserves the key when retrying an identical failed submission. Scope deduplication by actor and operation; reject a reused key with a different payload. Responses include a human-readable `message` and optionally per-serial `results`. Do not report blanket success for partial batch failures.
 
-| Path | Request body |
-|---|---|
-| `/registry/import` | `{ devices: [{ serial, model }], reference, reason }` |
-| `/allocations` | `{ serials, organizationId, reference, reason }` |
-| `/claims` | `{ serials, validationId }` |
-| `/claim-requests` | `{ serials, reference, reason, validationId? }` |
-| `/claim-requests/{id}/review` | `{ decision: "approved" \| "rejected", reason }` |
-| `/transfers` | `{ serial, targetOrganizationId, reference, reason }` |
-| `/transfers/{id}/release` | `{ reason }` |
-| `/transfers/{id}/accept` | `{ reason }` |
-| `/transfers/{id}/review` | `{ decision: "approved" \| "rejected", reason }` |
-| `/registry/{id}/status` | `{ status: "restricted" \| "retired", reason }` |
-| `/inventory/{id}/assignment` | `{ patientId, effectiveAt, reason }` |
-| `/inventory/{id}/return` | `{ effectiveAt, reason }` |
+| Path                          | Request body                                          |
+| ----------------------------- | ----------------------------------------------------- |
+| `/registry/import`            | `{ devices: [{ serial, model }], reference, reason }` |
+| `/allocations`                | `{ serials, organizationId, reference, reason }`      |
+| `/claims`                     | `{ serials, validationId }`                           |
+| `/claim-requests`             | `{ serials, reference, reason, validationId? }`       |
+| `/claim-requests/{id}/review` | `{ decision: "approved" \| "rejected", reason }`      |
+| `/transfers`                  | `{ serial, targetOrganizationId, reference, reason }` |
+| `/transfers/{id}/release`     | `{ reason }`                                          |
+| `/transfers/{id}/accept`      | `{ reason }`                                          |
+| `/transfers/{id}/review`      | `{ decision: "approved" \| "rejected", reason }`      |
+| `/registry/{id}/status`       | `{ status: "restricted" \| "retired", reason }`       |
+| `/inventory/{id}/assignment`  | `{ patientId, effectiveAt, reason }`                  |
+| `/inventory/{id}/return`      | `{ effectiveAt, reason }`                             |
 
 `effectiveAt` is UTC ISO timestamp, converted from the user's selected local time. Validate allowable dates on the server. Models are entered once per import batch. Batches accept up to 100 serials; UI trims and deduplicates exact values but does not invent manufacturer serial patterns or case normalization. Validate the manufacturer's actual serial/model rules on the backend.
 
@@ -114,6 +117,7 @@ Assignments require eligible device, verified patient identity/care relationship
 ```
 
 Return exactly one result for every distinct input serial. Valid verification outcomes:
+
 - `eligible`: may submit claim.
 - `already_added`: idempotent informational result; no new claim needed.
 - `approval_required`: may submit request with supporting reference/reason.
@@ -130,7 +134,11 @@ The verification reference must be bound to actor/organization/serials with a fi
   "message": "Processed 2 device claims.",
   "results": [
     { "serial": "EXAMPLE-001", "outcome": "claimed", "message": "Added to inventory." },
-    { "serial": "EXAMPLE-002", "outcome": "transfer_required", "message": "Allocation changed. Contact Transcend." }
+    {
+      "serial": "EXAMPLE-002",
+      "outcome": "transfer_required",
+      "message": "Allocation changed. Contact Transcend."
+    }
   ]
 }
 ```

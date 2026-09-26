@@ -10,7 +10,9 @@ test.describe("Registration", () => {
     await expect(continueBtn).toBeEnabled();
   });
 
-  test("Continue with Homecare Provider opens the two-column Account Information form", async ({ page }) => {
+  test("Continue with Homecare Provider opens the two-column Account Information form", async ({
+    page,
+  }) => {
     await page.goto("/register");
     await page.getByText(/Homecare Provider Account/i).click();
     await page.getByRole("button", { name: /Continue Registration/i }).click();
@@ -18,7 +20,9 @@ test.describe("Registration", () => {
     await expect(page.getByText("User Information").first()).toBeVisible();
   });
 
-  test("Continue with Individual User routes to /register/patient (multi-step)", async ({ page }) => {
+  test("Continue with Individual User routes to /register/patient (multi-step)", async ({
+    page,
+  }) => {
     await page.goto("/register");
     await page.getByText(/Individual User Account/i).click();
     await page.getByRole("button", { name: /Continue Registration/i }).click();

@@ -9,15 +9,14 @@ export default defineConfig({
   expect: { timeout: 5_000 },
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
+  testIgnore: ["**/unit/**"],
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     // Build then start, so the suite runs against the production output.
     command: `npm run build && npx next start -p ${PORT}`,
@@ -25,11 +24,6 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
     env: {
-      // Tests don't depend on a live backend; the API base URL just has to
-      // be set so the env validation doesn't throw at boot. The proxy
-      // routes will only be exercised by tests that intentionally mock
-      // the upstream.
-      API_BASE_URL: "http://127.0.0.1:9",
       // Browser API calls are intercepted by tests; keep them same-origin.
       NEXT_PUBLIC_API_BASE_URL: BASE_URL,
     },

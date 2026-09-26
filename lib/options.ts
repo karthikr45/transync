@@ -14,7 +14,9 @@ export function normaliseOptions(input: unknown): string[] {
     if (item && typeof item === "object") {
       const o = item as Record<string, unknown>;
       const candidates = [o.label, o.name, o.value, o.code, o.id];
-      const picked = candidates.find((c) => typeof c === "string" && (c as string).trim().length > 0);
+      const picked = candidates.find(
+        (c) => typeof c === "string" && (c as string).trim().length > 0,
+      );
       if (typeof picked === "string") out.push(picked.trim());
     }
   }

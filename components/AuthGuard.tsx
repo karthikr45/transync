@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  getCurrentEndUser,
-  getCurrentUser,
-  getUserKind,
-} from "@/lib/auth";
+import { getCurrentEndUser, getCurrentUser, getUserKind } from "@/lib/auth";
 import type { UserType } from "@/lib/types.api";
 
 type Props = {
@@ -16,12 +12,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-export default function AuthGuard({
-  requireKind,
-  requireRole,
-  requireUserType,
-  children,
-}: Props) {
+export default function AuthGuard({ requireKind, requireRole, requireUserType, children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
@@ -40,12 +31,24 @@ export default function AuthGuard({
 
     if (requireKind === "home-care") {
       const user = getCurrentUser();
-      if (!user) { goLogin(); return; }
-      if (requireRole && user.role !== requireRole) { goLogin(); return; }
-      if (requireUserType && user.userType !== requireUserType) { goLogin(); return; }
+      if (!user) {
+        goLogin();
+        return;
+      }
+      if (requireRole && user.role !== requireRole) {
+        goLogin();
+        return;
+      }
+      if (requireUserType && user.userType !== requireUserType) {
+        goLogin();
+        return;
+      }
     } else {
       const eu = getCurrentEndUser();
-      if (!eu) { goLogin(); return; }
+      if (!eu) {
+        goLogin();
+        return;
+      }
     }
 
     setReady(true);

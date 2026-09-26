@@ -5,7 +5,10 @@ async function signIn(page: Page, role = "super_admin") {
   await page.addInitScript((role) => {
     localStorage.setItem("tc_kind", "home-care");
     localStorage.setItem("tc_at", "test-admin-token");
-    localStorage.setItem("tc_user", JSON.stringify({ role, email: "admin@example.test", firstName: "Test" }));
+    localStorage.setItem(
+      "tc_user",
+      JSON.stringify({ role, email: "admin@example.test", firstName: "Test" }),
+    );
   }, role);
 }
 
@@ -30,10 +33,22 @@ test("super admin can view details, request page 2, and change page size", async
     const url = new URL(req.url());
     requests.push(url.search);
     const current = Number(url.searchParams.get("page"));
-    await route.fulfill({ json: { status: "Success", result: {
-      patients: [{ id: `patient-${current}`, firstName: current === 1 ? "Alice" : "Bob", device: { serial: "TEST-123" } }],
-      total: 26, totalPages: Math.ceil(26 / Number(url.searchParams.get("limit"))),
-    } } });
+    await route.fulfill({
+      json: {
+        status: "Success",
+        result: {
+          patients: [
+            {
+              id: `patient-${current}`,
+              firstName: current === 1 ? "Alice" : "Bob",
+              device: { serial: "TEST-123" },
+            },
+          ],
+          total: 26,
+          totalPages: Math.ceil(26 / Number(url.searchParams.get("limit"))),
+        },
+      },
+    });
   });
   await page.goto("/admin/patients");
   await expect(page.getByRole("link", { name: "Patients", exact: true })).toBeVisible();
@@ -52,11 +67,17 @@ test("super admin can view details, request page 2, and change page size", async
 test("patients API errors support retry and empty results", async ({ page }) => {
   await signIn(page);
   let fail = true;
-  await page.route("**/home-care/admin/patients?*", (route) => route.fulfill(fail
-    ? { status: 403, json: { message: "Super admin access required" } }
-    : { json: { status: "Success", result: { patients: [], total: 0 } } }));
+  await page.route("**/home-care/admin/patients?*", (route) =>
+    route.fulfill(
+      fail
+        ? { status: 403, json: { message: "Super admin access required" } }
+        : { json: { status: "Success", result: { patients: [], total: 0 } } },
+    ),
+  );
   await page.goto("/admin/patients");
-  await expect(page.getByRole("alert").filter({ hasText: "Super admin access required" })).toBeVisible();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Super admin access required" }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
   fail = false;
   await page.getByRole("button", { name: "Retry", exact: true }).click();
@@ -66,7 +87,10 @@ test("patients API errors support retry and empty results", async ({ page }) => 
 test("non-admin accounts cannot open the patients page or fetch its data", async ({ page }) => {
   await signIn(page, "user");
   let called = false;
-  await page.route("**/home-care/admin/patients?*", (route) => { called = true; return route.abort(); });
+  await page.route("**/home-care/admin/patients?*", (route) => {
+    called = true;
+    return route.abort();
+  });
   await page.goto("/admin/patients");
   await expect(page).toHaveURL(/\/login\?next=/);
   expect(called).toBe(false);

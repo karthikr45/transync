@@ -247,11 +247,51 @@ export const alerts: Alert[] = [
 ];
 
 export const auditLog: AuditEntry[] = [
-  { id: "l1", user: "claims@bluecross.com", role: "Insurance", action: "Viewed compliance report", patientId: "p001", patientName: "John Carter", timestamp: "2026-05-06 09:14" },
-  { id: "l2", user: "claims@bluecross.com", role: "Insurance", action: "Exported PDF report", patientId: "p005", patientName: "Robert Hayes", timestamp: "2026-05-06 09:11" },
-  { id: "l3", user: "nurse@northside.com", role: "Provider", action: "Added clinical note", patientId: "p002", patientName: "Maria Lopez", timestamp: "2026-05-06 08:42" },
-  { id: "l4", user: "claims@bluecross.com", role: "Insurance", action: "Viewed patient detail", patientId: "p002", patientName: "Maria Lopez", timestamp: "2026-05-06 08:30" },
-  { id: "l5", user: "nurse@northside.com", role: "Provider", action: "Sent reminder", patientId: "p003", patientName: "David Nguyen", timestamp: "2026-05-05 17:21" },
+  {
+    id: "l1",
+    user: "claims@bluecross.com",
+    role: "Insurance",
+    action: "Viewed compliance report",
+    patientId: "p001",
+    patientName: "John Carter",
+    timestamp: "2026-05-06 09:14",
+  },
+  {
+    id: "l2",
+    user: "claims@bluecross.com",
+    role: "Insurance",
+    action: "Exported PDF report",
+    patientId: "p005",
+    patientName: "Robert Hayes",
+    timestamp: "2026-05-06 09:11",
+  },
+  {
+    id: "l3",
+    user: "nurse@northside.com",
+    role: "Provider",
+    action: "Added clinical note",
+    patientId: "p002",
+    patientName: "Maria Lopez",
+    timestamp: "2026-05-06 08:42",
+  },
+  {
+    id: "l4",
+    user: "claims@bluecross.com",
+    role: "Insurance",
+    action: "Viewed patient detail",
+    patientId: "p002",
+    patientName: "Maria Lopez",
+    timestamp: "2026-05-06 08:30",
+  },
+  {
+    id: "l5",
+    user: "nurse@northside.com",
+    role: "Provider",
+    action: "Sent reminder",
+    patientId: "p003",
+    patientName: "David Nguyen",
+    timestamp: "2026-05-05 17:21",
+  },
 ];
 
 export const insuranceThresholds = {
@@ -274,10 +314,38 @@ export type OrgUser = {
 };
 
 export const orgUsers: OrgUser[] = [
-  { id: "u1", name: "Sarah Kim", email: "skim@northside.com", role: "IT Administrator", status: "active", lastActive: "2026-05-06 09:02" },
-  { id: "u2", name: "James Rivera", email: "jrivera@northside.com", role: "Full Access User", status: "active", lastActive: "2026-05-06 08:40" },
-  { id: "u3", name: "Donna Webb", email: "dwebb@northside.com", role: "Read-Only User", status: "active", lastActive: "2026-05-05 16:11" },
-  { id: "u4", name: "Mark Ellis", email: "mellis@northside.com", role: "Full Access User", status: "invited", lastActive: "—" },
+  {
+    id: "u1",
+    name: "Sarah Kim",
+    email: "skim@northside.com",
+    role: "IT Administrator",
+    status: "active",
+    lastActive: "2026-05-06 09:02",
+  },
+  {
+    id: "u2",
+    name: "James Rivera",
+    email: "jrivera@northside.com",
+    role: "Full Access User",
+    status: "active",
+    lastActive: "2026-05-06 08:40",
+  },
+  {
+    id: "u3",
+    name: "Donna Webb",
+    email: "dwebb@northside.com",
+    role: "Read-Only User",
+    status: "active",
+    lastActive: "2026-05-05 16:11",
+  },
+  {
+    id: "u4",
+    name: "Mark Ellis",
+    email: "mellis@northside.com",
+    role: "Full Access User",
+    status: "invited",
+    lastActive: "—",
+  },
 ];
 
 export type CareMonitor = {
@@ -289,10 +357,34 @@ export type CareMonitor = {
 };
 
 export const careMonitors: CareMonitor[] = [
-  { id: "cm1", name: "Dr. Helen Park", kind: "Prescribing Physician", npi: "1841299104", institution: "Lakeside Sleep Center" },
-  { id: "cm2", name: "Dr. Alan Cho", kind: "Referring Physician", npi: "1730455821", institution: "Northgate Pulmonology" },
-  { id: "cm3", name: "Dr. Priya Nair", kind: "Prescribing Physician", npi: "1992017345", institution: "Lakeside Sleep Center" },
-  { id: "cm4", name: "RN Teresa Gould", kind: "Other Clinician", npi: "—", institution: "Northside Homecare" },
+  {
+    id: "cm1",
+    name: "Dr. Helen Park",
+    kind: "Prescribing Physician",
+    npi: "1841299104",
+    institution: "Lakeside Sleep Center",
+  },
+  {
+    id: "cm2",
+    name: "Dr. Alan Cho",
+    kind: "Referring Physician",
+    npi: "1730455821",
+    institution: "Northgate Pulmonology",
+  },
+  {
+    id: "cm3",
+    name: "Dr. Priya Nair",
+    kind: "Prescribing Physician",
+    npi: "1992017345",
+    institution: "Lakeside Sleep Center",
+  },
+  {
+    id: "cm4",
+    name: "RN Teresa Gould",
+    kind: "Other Clinician",
+    npi: "—",
+    institution: "Northside Homecare",
+  },
 ];
 
 export type ReplacementSchedule = {
@@ -317,29 +409,66 @@ export const insuranceProviders: InsuranceProvider[] = [
     id: "ins1",
     name: "Medicare",
     compliance: { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 },
-    schedule: { maskDays: 90, tubeDays: 90, filterDays: 14, preReminderDays: 7, postReminderDays: 14, remindersOn: true, patientEmailOn: true },
+    schedule: {
+      maskDays: 90,
+      tubeDays: 90,
+      filterDays: 14,
+      preReminderDays: 7,
+      postReminderDays: 14,
+      remindersOn: true,
+      patientEmailOn: true,
+    },
   },
   {
     id: "ins2",
     name: "Medicaid",
     compliance: { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 },
-    schedule: { maskDays: 180, tubeDays: 180, filterDays: 30, preReminderDays: 7, postReminderDays: 10, remindersOn: true, patientEmailOn: false },
+    schedule: {
+      maskDays: 180,
+      tubeDays: 180,
+      filterDays: 30,
+      preReminderDays: 7,
+      postReminderDays: 10,
+      remindersOn: true,
+      patientEmailOn: false,
+    },
   },
   {
     id: "ins3",
     name: "BlueCross",
     compliance: { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 },
-    schedule: { maskDays: 90, tubeDays: 90, filterDays: 30, preReminderDays: 10, postReminderDays: 14, remindersOn: true, patientEmailOn: true },
+    schedule: {
+      maskDays: 90,
+      tubeDays: 90,
+      filterDays: 30,
+      preReminderDays: 10,
+      postReminderDays: 14,
+      remindersOn: true,
+      patientEmailOn: true,
+    },
   },
   {
     id: "ins4",
     name: "Patient Pay",
     compliance: { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 },
-    schedule: { maskDays: 180, tubeDays: 180, filterDays: 60, preReminderDays: 14, postReminderDays: 0, remindersOn: false, patientEmailOn: false },
+    schedule: {
+      maskDays: 180,
+      tubeDays: 180,
+      filterDays: 60,
+      preReminderDays: 14,
+      postReminderDays: 0,
+      remindersOn: false,
+      patientEmailOn: false,
+    },
   },
 ];
 
-export type MaskType = { id: string; sku: string; name: string; style: "Nasal" | "Nasal Pillow" | "Full Face" };
+export type MaskType = {
+  id: string;
+  sku: string;
+  name: string;
+  style: "Nasal" | "Nasal Pillow" | "Full Face";
+};
 
 export const maskTypes: MaskType[] = [
   { id: "m1", sku: "TR-NS-01", name: "Transcend Nasal Mask", style: "Nasal" },
@@ -360,14 +489,78 @@ export type Device = {
 };
 
 export const devices: Device[] = [
-  { serial: "TR-MC3-88421", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-01-10", assignedPatientId: "p001", installDate: "2026-01-12", status: "active" },
-  { serial: "TR-MC3-77105", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-01-18", assignedPatientId: "p002", installDate: "2026-01-20", status: "active" },
-  { serial: "TR-MC3-61320", model: "Transcend miniCPAP 3", firmware: "v3.1.9", registeredOn: "2026-02-02", assignedPatientId: "p003", installDate: "2026-02-04", status: "active" },
-  { serial: "TR-MC3-90211", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-02-12", assignedPatientId: "p004", installDate: "2026-02-14", status: "active" },
-  { serial: "TR-MC3-44872", model: "Transcend miniCPAP 3", firmware: "v3.2.0", registeredOn: "2026-02-20", assignedPatientId: "p005", installDate: "2026-02-22", status: "active" },
-  { serial: "TR-MC3-55119", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-03-01", assignedPatientId: "p006", installDate: "2026-03-03", status: "active" },
-  { serial: "TR-MC3-70004", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-04-28", assignedPatientId: null, installDate: null, status: "active" },
-  { serial: "TR-MC3-70128", model: "Transcend miniCPAP 3", firmware: "v3.2.1", registeredOn: "2026-05-02", assignedPatientId: null, installDate: null, status: "active" },
+  {
+    serial: "TR-MC3-88421",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-01-10",
+    assignedPatientId: "p001",
+    installDate: "2026-01-12",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-77105",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-01-18",
+    assignedPatientId: "p002",
+    installDate: "2026-01-20",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-61320",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.1.9",
+    registeredOn: "2026-02-02",
+    assignedPatientId: "p003",
+    installDate: "2026-02-04",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-90211",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-02-12",
+    assignedPatientId: "p004",
+    installDate: "2026-02-14",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-44872",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.0",
+    registeredOn: "2026-02-20",
+    assignedPatientId: "p005",
+    installDate: "2026-02-22",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-55119",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-03-01",
+    assignedPatientId: "p006",
+    installDate: "2026-03-03",
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-70004",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-04-28",
+    assignedPatientId: null,
+    installDate: null,
+    status: "active",
+  },
+  {
+    serial: "TR-MC3-70128",
+    model: "Transcend miniCPAP 3",
+    firmware: "v3.2.1",
+    registeredOn: "2026-05-02",
+    assignedPatientId: null,
+    installDate: null,
+    status: "active",
+  },
 ];
 
 // ---------- Patient enrichment (Phase 3 / 5) ----------
@@ -383,46 +576,111 @@ export type PatientExtra = {
   referringPhysicianId?: string;
   prescribingPhysicianId?: string;
   otherMonitorId?: string;
-  authorizedMonitors: { id: string; name: string; institution: string; grantedOn: string; access: MonitorAccess }[];
+  authorizedMonitors: {
+    id: string;
+    name: string;
+    institution: string;
+    grantedOn: string;
+    access: MonitorAccess;
+  }[];
   notes: { id: string; author: string; date: string; text: string }[];
 };
 
 export const patientExtras: Record<string, PatientExtra> = {
   p001: {
-    patientId: "NS-1001", endOfDayCutoff: "12:00 PM", consent: "approved",
-    referringPhysicianId: "cm2", prescribingPhysicianId: "cm1",
+    patientId: "NS-1001",
+    endOfDayCutoff: "12:00 PM",
+    consent: "approved",
+    referringPhysicianId: "cm2",
+    prescribingPhysicianId: "cm1",
     authorizedMonitors: [
-      { id: "am1", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-04", access: "read-only" },
-      { id: "am1b", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", grantedOn: "2026-02-05", access: "read-write" },
+      {
+        id: "am1",
+        name: "BlueCross Claims",
+        institution: "BlueCross",
+        grantedOn: "2026-02-04",
+        access: "read-only",
+      },
+      {
+        id: "am1b",
+        name: "Dr. Helen Park",
+        institution: "Lakeside Sleep Center",
+        grantedOn: "2026-02-05",
+        access: "read-write",
+      },
     ],
     notes: [
-      { id: "n1", author: "Sarah Kim", date: "2026-04-15", text: "Reviewed pressure setting; patient reports better sleep." },
+      {
+        id: "n1",
+        author: "Sarah Kim",
+        date: "2026-04-15",
+        text: "Reviewed pressure setting; patient reports better sleep.",
+      },
     ],
   },
   p002: {
-    patientId: "NS-1002", endOfDayCutoff: "12:00 PM", consent: "approved",
+    patientId: "NS-1002",
+    endOfDayCutoff: "12:00 PM",
+    consent: "approved",
     prescribingPhysicianId: "cm3",
-    authorizedMonitors: [{ id: "am2", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-02-10", access: "read-only" }],
-    notes: [{ id: "n2", author: "Sarah Kim", date: "2026-04-30", text: "Called patient about mask leak. Replacing cushion on next visit." }],
+    authorizedMonitors: [
+      {
+        id: "am2",
+        name: "BlueCross Claims",
+        institution: "BlueCross",
+        grantedOn: "2026-02-10",
+        access: "read-only",
+      },
+    ],
+    notes: [
+      {
+        id: "n2",
+        author: "Sarah Kim",
+        date: "2026-04-30",
+        text: "Called patient about mask leak. Replacing cushion on next visit.",
+      },
+    ],
   },
   p003: {
-    patientId: "NS-1003", endOfDayCutoff: "06:00 AM", consent: "approved",
-    referringPhysicianId: "cm2", prescribingPhysicianId: "cm1",
-    authorizedMonitors: [], notes: [],
+    patientId: "NS-1003",
+    endOfDayCutoff: "06:00 AM",
+    consent: "approved",
+    referringPhysicianId: "cm2",
+    prescribingPhysicianId: "cm1",
+    authorizedMonitors: [],
+    notes: [],
   },
   p004: {
-    patientId: "NS-1004", endOfDayCutoff: "12:00 PM", consent: "approved",
-    prescribingPhysicianId: "cm3", authorizedMonitors: [], notes: [],
+    patientId: "NS-1004",
+    endOfDayCutoff: "12:00 PM",
+    consent: "approved",
+    prescribingPhysicianId: "cm3",
+    authorizedMonitors: [],
+    notes: [],
   },
   p005: {
-    patientId: "NS-1005", endOfDayCutoff: "12:00 PM", consent: "approved",
+    patientId: "NS-1005",
+    endOfDayCutoff: "12:00 PM",
+    consent: "approved",
     prescribingPhysicianId: "cm1",
-    authorizedMonitors: [{ id: "am3", name: "BlueCross Claims", institution: "BlueCross", grantedOn: "2026-03-01", access: "read-only" }],
+    authorizedMonitors: [
+      {
+        id: "am3",
+        name: "BlueCross Claims",
+        institution: "BlueCross",
+        grantedOn: "2026-03-01",
+        access: "read-only",
+      },
+    ],
     notes: [],
   },
   p006: {
-    patientId: "NS-1006", endOfDayCutoff: "12:00 PM", consent: "pending",
-    prescribingPhysicianId: "cm3", authorizedMonitors: [], notes: [],
+    patientId: "NS-1006",
+    endOfDayCutoff: "12:00 PM",
+    consent: "pending",
+    prescribingPhysicianId: "cm3",
+    authorizedMonitors: [],
+    notes: [],
   },
 };
 
@@ -441,7 +699,7 @@ export type WindowResult = {
 // >= minNightsPercent of nights had >= minHoursPerNight hours.
 export function find30DayWindow(
   sessions: Session[],
-  rule = { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 }
+  rule = { minHoursPerNight: 4, minNightsPercent: 70, windowDays: 30 },
 ): WindowResult {
   const { minHoursPerNight, minNightsPercent, windowDays } = rule;
   const requiredNights = Math.ceil((minNightsPercent / 100) * windowDays);
@@ -492,7 +750,8 @@ export function fullComplianceReport(sessions: Session[]): FullReport {
   const leaks = sessions.map((s) => s.leak).sort((a, b) => a - b);
   const totalHours = sessions.reduce((a, s) => a + s.hours, 0);
   const used = sessions.filter((s) => s.hours > 0);
-  const pct = (arr: number[], p: number) => arr[Math.min(arr.length - 1, Math.floor((p / 100) * arr.length))] ?? 0;
+  const pct = (arr: number[], p: number) =>
+    arr[Math.min(arr.length - 1, Math.floor((p / 100) * arr.length))] ?? 0;
   return {
     totalDays: n,
     daysUsed: used.length,
@@ -509,8 +768,8 @@ export function fullComplianceReport(sessions: Session[]): FullReport {
       notUsed: sessions.filter((s) => s.hours === 0).length,
     },
     ahi: +(sessions.reduce((a, s) => a + s.ahi, 0) / n).toFixed(1),
-    apneaIndex: +(sessions.reduce((a, s) => a + s.ahi, 0) / n * 0.6).toFixed(1),
-    hypopneaIndex: +(sessions.reduce((a, s) => a + s.ahi, 0) / n * 0.4).toFixed(1),
+    apneaIndex: +((sessions.reduce((a, s) => a + s.ahi, 0) / n) * 0.6).toFixed(1),
+    hypopneaIndex: +((sessions.reduce((a, s) => a + s.ahi, 0) / n) * 0.4).toFixed(1),
     leakAvg: +(leaks.reduce((a, b) => a + b, 0) / n).toFixed(0),
     leakMedian: +pct(leaks, 50).toFixed(0),
     leakP90: +pct(leaks, 90).toFixed(0),
@@ -555,8 +814,22 @@ export type SubAccount = {
 };
 
 export const subAccounts: SubAccount[] = [
-  { id: "sa1", name: "Northside — West Branch", location: "Denver, CO", admin: "jrivera@northside.com", patients: 18, status: "active" },
-  { id: "sa2", name: "Northside — South Clinic", location: "Pueblo, CO", admin: "dwebb@northside.com", patients: 7, status: "active" },
+  {
+    id: "sa1",
+    name: "Northside — West Branch",
+    location: "Denver, CO",
+    admin: "jrivera@northside.com",
+    patients: 18,
+    status: "active",
+  },
+  {
+    id: "sa2",
+    name: "Northside — South Clinic",
+    location: "Pueblo, CO",
+    admin: "dwebb@northside.com",
+    patients: 7,
+    status: "active",
+  },
 ];
 
 // Inbound share requests on the Authorized Monitor side
@@ -570,20 +843,73 @@ export type MonitorShare = {
 };
 
 export const monitorShares: MonitorShare[] = [
-  { id: "ms1", patientName: "John Carter", patientRef: "NS-1001", fromProvider: "Northside Homecare", requestedOn: "2026-02-04", status: "active" },
-  { id: "ms2", patientName: "Maria Lopez", patientRef: "NS-1002", fromProvider: "Northside Homecare", requestedOn: "2026-02-10", status: "active" },
-  { id: "ms3", patientName: "Robert Hayes", patientRef: "NS-1005", fromProvider: "Northside Homecare", requestedOn: "2026-03-01", status: "active" },
-  { id: "ms4", patientName: "Karen Diaz", patientRef: "NS-1101", fromProvider: "Apria Healthcare", requestedOn: "2026-05-17", status: "pending" },
-  { id: "ms5", patientName: "Tom Becker", patientRef: "AP-2207", fromProvider: "Apria Healthcare", requestedOn: "2026-05-18", status: "pending" },
+  {
+    id: "ms1",
+    patientName: "John Carter",
+    patientRef: "NS-1001",
+    fromProvider: "Northside Homecare",
+    requestedOn: "2026-02-04",
+    status: "active",
+  },
+  {
+    id: "ms2",
+    patientName: "Maria Lopez",
+    patientRef: "NS-1002",
+    fromProvider: "Northside Homecare",
+    requestedOn: "2026-02-10",
+    status: "active",
+  },
+  {
+    id: "ms3",
+    patientName: "Robert Hayes",
+    patientRef: "NS-1005",
+    fromProvider: "Northside Homecare",
+    requestedOn: "2026-03-01",
+    status: "active",
+  },
+  {
+    id: "ms4",
+    patientName: "Karen Diaz",
+    patientRef: "NS-1101",
+    fromProvider: "Apria Healthcare",
+    requestedOn: "2026-05-17",
+    status: "pending",
+  },
+  {
+    id: "ms5",
+    patientName: "Tom Becker",
+    patientRef: "AP-2207",
+    fromProvider: "Apria Healthcare",
+    requestedOn: "2026-05-18",
+    status: "pending",
+  },
 ];
 
 export type NoteType = "Clinical" | "Equipment" | "Billing" | "Follow-up";
 export const noteTypes: NoteType[] = ["Clinical", "Equipment", "Billing", "Follow-up"];
 
-export type DeactivatedPatient = { id: string; name: string; patientId: string; deactivatedOn: string; reason: string };
+export type DeactivatedPatient = {
+  id: string;
+  name: string;
+  patientId: string;
+  deactivatedOn: string;
+  reason: string;
+};
 export const deactivatedPatients: DeactivatedPatient[] = [
-  { id: "d001", name: "Gary Holt", patientId: "NS-0912", deactivatedOn: "2026-03-22", reason: "Therapy discontinued by physician" },
-  { id: "d002", name: "Susan Frye", patientId: "NS-0945", deactivatedOn: "2026-04-09", reason: "Transferred to another provider" },
+  {
+    id: "d001",
+    name: "Gary Holt",
+    patientId: "NS-0912",
+    deactivatedOn: "2026-03-22",
+    reason: "Therapy discontinued by physician",
+  },
+  {
+    id: "d002",
+    name: "Susan Frye",
+    patientId: "NS-0945",
+    deactivatedOn: "2026-04-09",
+    reason: "Transferred to another provider",
+  },
 ];
 
 export type AlertRule = {
@@ -595,22 +921,87 @@ export type AlertRule = {
 };
 
 export const alertRules: AlertRule[] = [
-  { id: "ar1", label: "Low usage", description: "Average nightly use below threshold over a rolling window", enabled: true, threshold: "< 2h avg over 5 days" },
-  { id: "ar2", label: "Missed sync", description: "No data uploaded for N days", enabled: true, threshold: "≥ 3 days no sync" },
-  { id: "ar3", label: "High leak", description: "Average mask leak above threshold", enabled: true, threshold: "> 30 L/min avg" },
-  { id: "ar4", label: "High AHI", description: "AHI trending above threshold", enabled: false, threshold: "> 10 events/hr" },
-  { id: "ar5", label: "Compliance window at risk", description: "Patient will miss the 30-day window if usage continues", enabled: true, threshold: "Projected < required nights" },
+  {
+    id: "ar1",
+    label: "Low usage",
+    description: "Average nightly use below threshold over a rolling window",
+    enabled: true,
+    threshold: "< 2h avg over 5 days",
+  },
+  {
+    id: "ar2",
+    label: "Missed sync",
+    description: "No data uploaded for N days",
+    enabled: true,
+    threshold: "≥ 3 days no sync",
+  },
+  {
+    id: "ar3",
+    label: "High leak",
+    description: "Average mask leak above threshold",
+    enabled: true,
+    threshold: "> 30 L/min avg",
+  },
+  {
+    id: "ar4",
+    label: "High AHI",
+    description: "AHI trending above threshold",
+    enabled: false,
+    threshold: "> 10 events/hr",
+  },
+  {
+    id: "ar5",
+    label: "Compliance window at risk",
+    description: "Patient will miss the 30-day window if usage continues",
+    enabled: true,
+    threshold: "Projected < required nights",
+  },
 ];
 
-export type Integration = { id: string; name: string; category: string; status: "connected" | "available"; description: string };
+export type Integration = {
+  id: string;
+  name: string;
+  category: string;
+  status: "connected" | "available";
+  description: string;
+};
 export const integrations: Integration[] = [
-  { id: "i1", name: "Brightree", category: "DME billing", status: "connected", description: "Sync patients and compliance status to Brightree for billing & resupply." },
-  { id: "i2", name: "HL7 / FHIR API", category: "EHR", status: "available", description: "Push therapy summaries to an EHR via FHIR resources." },
-  { id: "i3", name: "Webhooks", category: "Automation", status: "available", description: "Receive events (new data, alert fired, consent approved) at your endpoint." },
-  { id: "i4", name: "REST API keys", category: "Developer", status: "connected", description: "Programmatic access to patients, devices, and compliance reports." },
+  {
+    id: "i1",
+    name: "Brightree",
+    category: "DME billing",
+    status: "connected",
+    description: "Sync patients and compliance status to Brightree for billing & resupply.",
+  },
+  {
+    id: "i2",
+    name: "HL7 / FHIR API",
+    category: "EHR",
+    status: "available",
+    description: "Push therapy summaries to an EHR via FHIR resources.",
+  },
+  {
+    id: "i3",
+    name: "Webhooks",
+    category: "Automation",
+    status: "available",
+    description: "Receive events (new data, alert fired, consent approved) at your endpoint.",
+  },
+  {
+    id: "i4",
+    name: "REST API keys",
+    category: "Developer",
+    status: "connected",
+    description: "Programmatic access to patients, devices, and compliance reports.",
+  },
 ];
 
-export const dataRegions = ["United States (us-east)", "European Union (eu-central)", "Australia (ap-southeast)", "Canada (ca-central)"];
+export const dataRegions = [
+  "United States (us-east)",
+  "European Union (eu-central)",
+  "Australia (ap-southeast)",
+  "Canada (ca-central)",
+];
 
 // ---------- Platform-operator approval (Transcend back-office) ----------
 
@@ -637,14 +1028,110 @@ export type OrgRegistration = {
 };
 
 export const orgRegistrations: OrgRegistration[] = [
-  { id: "reg1", type: "Homecare Provider", name: "Summit Respiratory Care", contact: "Dana Wells", email: "dwells@summitresp.com", country: "United States", submittedOn: "2026-05-19", status: "pending", license: "DME-CO-77120", accreditation: "ACHC", baaSigned: true },
-  { id: "reg2", type: "Homecare Provider", name: "CoastalCPAP Ltd", contact: "Ben Ortiz", email: "ben@coastalcpap.co.uk", country: "United Kingdom", submittedOn: "2026-05-18", status: "pending", license: "Awaiting upload", accreditation: "—", baaSigned: false },
-  { id: "reg3", type: "Authorized Monitor", name: "Dr. Aaron Blake", contact: "Dr. Aaron Blake", email: "ablake@sleepwell.com", country: "United States", submittedOn: "2026-05-19", status: "pending", orgKind: "Clinician", npi: "1356789021", verified: false },
-  { id: "reg4", type: "Authorized Monitor", name: "Meridian Health Plan", contact: "Claims Dept", email: "claims@meridian.com", country: "United States", submittedOn: "2026-05-17", status: "pending", orgKind: "Insurance", npi: "—", verified: false },
-  { id: "reg5", type: "Homecare Provider", name: "Northside Homecare", contact: "Sarah Kim", email: "skim@northside.com", country: "United States", submittedOn: "2026-01-04", status: "approved", license: "DME-CO-44120", accreditation: "ACHC", baaSigned: true },
-  { id: "reg6", type: "Homecare Provider", name: "Apria Healthcare", contact: "Ops", email: "ops@apria.com", country: "United States", submittedOn: "2026-02-11", status: "approved", license: "DME-TX-90551", accreditation: "JCAHO", baaSigned: true },
-  { id: "reg7", type: "Authorized Monitor", name: "BlueCross Claims", contact: "Claims", email: "claims@bluecross.com", country: "United States", submittedOn: "2026-01-30", status: "approved", orgKind: "Insurance", npi: "—", verified: true },
-  { id: "reg8", type: "Authorized Monitor", name: "Lakeside Sleep Center", contact: "Dr. Helen Park", email: "hpark@lakeside.com", country: "United States", submittedOn: "2026-02-02", status: "approved", orgKind: "Clinician", npi: "1841299104", verified: true },
+  {
+    id: "reg1",
+    type: "Homecare Provider",
+    name: "Summit Respiratory Care",
+    contact: "Dana Wells",
+    email: "dwells@summitresp.com",
+    country: "United States",
+    submittedOn: "2026-05-19",
+    status: "pending",
+    license: "DME-CO-77120",
+    accreditation: "ACHC",
+    baaSigned: true,
+  },
+  {
+    id: "reg2",
+    type: "Homecare Provider",
+    name: "CoastalCPAP Ltd",
+    contact: "Ben Ortiz",
+    email: "ben@coastalcpap.co.uk",
+    country: "United Kingdom",
+    submittedOn: "2026-05-18",
+    status: "pending",
+    license: "Awaiting upload",
+    accreditation: "—",
+    baaSigned: false,
+  },
+  {
+    id: "reg3",
+    type: "Authorized Monitor",
+    name: "Dr. Aaron Blake",
+    contact: "Dr. Aaron Blake",
+    email: "ablake@sleepwell.com",
+    country: "United States",
+    submittedOn: "2026-05-19",
+    status: "pending",
+    orgKind: "Clinician",
+    npi: "1356789021",
+    verified: false,
+  },
+  {
+    id: "reg4",
+    type: "Authorized Monitor",
+    name: "Meridian Health Plan",
+    contact: "Claims Dept",
+    email: "claims@meridian.com",
+    country: "United States",
+    submittedOn: "2026-05-17",
+    status: "pending",
+    orgKind: "Insurance",
+    npi: "—",
+    verified: false,
+  },
+  {
+    id: "reg5",
+    type: "Homecare Provider",
+    name: "Northside Homecare",
+    contact: "Sarah Kim",
+    email: "skim@northside.com",
+    country: "United States",
+    submittedOn: "2026-01-04",
+    status: "approved",
+    license: "DME-CO-44120",
+    accreditation: "ACHC",
+    baaSigned: true,
+  },
+  {
+    id: "reg6",
+    type: "Homecare Provider",
+    name: "Apria Healthcare",
+    contact: "Ops",
+    email: "ops@apria.com",
+    country: "United States",
+    submittedOn: "2026-02-11",
+    status: "approved",
+    license: "DME-TX-90551",
+    accreditation: "JCAHO",
+    baaSigned: true,
+  },
+  {
+    id: "reg7",
+    type: "Authorized Monitor",
+    name: "BlueCross Claims",
+    contact: "Claims",
+    email: "claims@bluecross.com",
+    country: "United States",
+    submittedOn: "2026-01-30",
+    status: "approved",
+    orgKind: "Insurance",
+    npi: "—",
+    verified: true,
+  },
+  {
+    id: "reg8",
+    type: "Authorized Monitor",
+    name: "Lakeside Sleep Center",
+    contact: "Dr. Helen Park",
+    email: "hpark@lakeside.com",
+    country: "United States",
+    submittedOn: "2026-02-02",
+    status: "approved",
+    orgKind: "Clinician",
+    npi: "1841299104",
+    verified: true,
+  },
 ];
 
 // The current Authorized Monitor's access level per patient (prototype: the
@@ -660,12 +1147,60 @@ export function currentMonitorAccess(patientId: string): MonitorAccess {
 }
 
 export const providerAuditLog: AuditEntry[] = [
-  { id: "pl1", user: "skim@northside.com", role: "IT Administrator", action: "Granted Authorized Monitor (BlueCross Claims)", patientId: "p001", patientName: "John Carter", timestamp: "2026-05-18 14:22" },
-  { id: "pl2", user: "jrivera@northside.com", role: "Full Access User", action: "Created patient", patientId: "p006", patientName: "Linda Schmidt", timestamp: "2026-05-18 11:05" },
-  { id: "pl3", user: "jrivera@northside.com", role: "Full Access User", action: "Assigned device TR-MC3-90211", patientId: "p004", patientName: "Aisha Patel", timestamp: "2026-05-17 16:40" },
-  { id: "pl4", user: "skim@northside.com", role: "IT Administrator", action: "Edited Medicare replacement schedule", patientId: "—", patientName: "—", timestamp: "2026-05-17 09:31" },
-  { id: "pl5", user: "dwebb@northside.com", role: "Read-Only User", action: "Exported Group Compliance Report (30d)", patientId: "—", patientName: "—", timestamp: "2026-05-16 17:12" },
-  { id: "pl6", user: "skim@northside.com", role: "IT Administrator", action: "Deactivated patient", patientId: "d001", patientName: "Gary Holt", timestamp: "2026-03-22 10:08" },
+  {
+    id: "pl1",
+    user: "skim@northside.com",
+    role: "IT Administrator",
+    action: "Granted Authorized Monitor (BlueCross Claims)",
+    patientId: "p001",
+    patientName: "John Carter",
+    timestamp: "2026-05-18 14:22",
+  },
+  {
+    id: "pl2",
+    user: "jrivera@northside.com",
+    role: "Full Access User",
+    action: "Created patient",
+    patientId: "p006",
+    patientName: "Linda Schmidt",
+    timestamp: "2026-05-18 11:05",
+  },
+  {
+    id: "pl3",
+    user: "jrivera@northside.com",
+    role: "Full Access User",
+    action: "Assigned device TR-MC3-90211",
+    patientId: "p004",
+    patientName: "Aisha Patel",
+    timestamp: "2026-05-17 16:40",
+  },
+  {
+    id: "pl4",
+    user: "skim@northside.com",
+    role: "IT Administrator",
+    action: "Edited Medicare replacement schedule",
+    patientId: "—",
+    patientName: "—",
+    timestamp: "2026-05-17 09:31",
+  },
+  {
+    id: "pl5",
+    user: "dwebb@northside.com",
+    role: "Read-Only User",
+    action: "Exported Group Compliance Report (30d)",
+    patientId: "—",
+    patientName: "—",
+    timestamp: "2026-05-16 17:12",
+  },
+  {
+    id: "pl6",
+    user: "skim@northside.com",
+    role: "IT Administrator",
+    action: "Deactivated patient",
+    patientId: "d001",
+    patientName: "Gary Holt",
+    timestamp: "2026-03-22 10:08",
+  },
 ];
 
 // ---------- Super Admin (platform-wide) ----------
@@ -682,21 +1217,91 @@ export type AdminUser = {
 };
 
 export const adminUsers: AdminUser[] = [
-  { id: "au1", name: "Alex Mercer", email: "amercer@transcend.com", role: "Super Admin", status: "active", lastActive: "2026-05-19 09:40" },
-  { id: "au2", name: "Priya Shah", email: "pshah@transcend.com", role: "Approver", status: "active", lastActive: "2026-05-19 08:55" },
-  { id: "au3", name: "Tom Reyes", email: "treyes@transcend.com", role: "Support", status: "active", lastActive: "2026-05-18 17:20" },
-  { id: "au4", name: "Nina Patel", email: "npatel@transcend.com", role: "Read-only", status: "invited", lastActive: "—" },
+  {
+    id: "au1",
+    name: "Alex Mercer",
+    email: "amercer@transcend.com",
+    role: "Super Admin",
+    status: "active",
+    lastActive: "2026-05-19 09:40",
+  },
+  {
+    id: "au2",
+    name: "Priya Shah",
+    email: "pshah@transcend.com",
+    role: "Approver",
+    status: "active",
+    lastActive: "2026-05-19 08:55",
+  },
+  {
+    id: "au3",
+    name: "Tom Reyes",
+    email: "treyes@transcend.com",
+    role: "Support",
+    status: "active",
+    lastActive: "2026-05-18 17:20",
+  },
+  {
+    id: "au4",
+    name: "Nina Patel",
+    email: "npatel@transcend.com",
+    role: "Read-only",
+    status: "invited",
+    lastActive: "—",
+  },
 ];
 
-export type PlatformAudit = { id: string; actor: string; action: string; target: string; timestamp: string };
+export type PlatformAudit = {
+  id: string;
+  actor: string;
+  action: string;
+  target: string;
+  timestamp: string;
+};
 
 export const platformAuditLog: PlatformAudit[] = [
-  { id: "sa1", actor: "amercer@transcend.com", action: "Approved Homecare Provider", target: "Summit Respiratory Care", timestamp: "2026-05-19 09:42" },
-  { id: "sa2", actor: "pshah@transcend.com", action: "Verified Authorized Monitor", target: "Dr. Aaron Blake", timestamp: "2026-05-19 09:10" },
-  { id: "sa3", actor: "amercer@transcend.com", action: "Updated compliance default", target: "Country: Germany", timestamp: "2026-05-18 15:02" },
-  { id: "sa4", actor: "treyes@transcend.com", action: "Suspended organization", target: "OldCare DME (fraud review)", timestamp: "2026-05-17 11:48" },
-  { id: "sa5", actor: "amercer@transcend.com", action: "Pushed firmware v3.2.1", target: "Fleet: miniCPAP 3 (1,204 devices)", timestamp: "2026-05-16 13:30" },
-  { id: "sa6", actor: "pshah@transcend.com", action: "Rejected Homecare Provider", target: "QuickCPAP (no BAA)", timestamp: "2026-05-16 10:14" },
+  {
+    id: "sa1",
+    actor: "amercer@transcend.com",
+    action: "Approved Homecare Provider",
+    target: "Summit Respiratory Care",
+    timestamp: "2026-05-19 09:42",
+  },
+  {
+    id: "sa2",
+    actor: "pshah@transcend.com",
+    action: "Verified Authorized Monitor",
+    target: "Dr. Aaron Blake",
+    timestamp: "2026-05-19 09:10",
+  },
+  {
+    id: "sa3",
+    actor: "amercer@transcend.com",
+    action: "Updated compliance default",
+    target: "Country: Germany",
+    timestamp: "2026-05-18 15:02",
+  },
+  {
+    id: "sa4",
+    actor: "treyes@transcend.com",
+    action: "Suspended organization",
+    target: "OldCare DME (fraud review)",
+    timestamp: "2026-05-17 11:48",
+  },
+  {
+    id: "sa5",
+    actor: "amercer@transcend.com",
+    action: "Pushed firmware v3.2.1",
+    target: "Fleet: miniCPAP 3 (1,204 devices)",
+    timestamp: "2026-05-16 13:30",
+  },
+  {
+    id: "sa6",
+    actor: "pshah@transcend.com",
+    action: "Rejected Homecare Provider",
+    target: "QuickCPAP (no BAA)",
+    timestamp: "2026-05-16 10:14",
+  },
 ];
 
 export type CountryConfig = {
@@ -710,12 +1315,60 @@ export type CountryConfig = {
 };
 
 export const countriesConfig: CountryConfig[] = [
-  { code: "US", name: "United States", region: "us-east", language: "English", payers: 6, providers: 142, status: "live" },
-  { code: "CA", name: "Canada", region: "ca-central", language: "English / French", payers: 3, providers: 28, status: "live" },
-  { code: "GB", name: "United Kingdom", region: "eu-central", language: "English", payers: 1, providers: 19, status: "live" },
-  { code: "DE", name: "Germany", region: "eu-central", language: "German", payers: 4, providers: 11, status: "pilot" },
-  { code: "AU", name: "Australia", region: "ap-southeast", language: "English", payers: 5, providers: 22, status: "live" },
-  { code: "IN", name: "India", region: "ap-southeast", language: "English / Hindi", payers: 0, providers: 6, status: "pilot" },
+  {
+    code: "US",
+    name: "United States",
+    region: "us-east",
+    language: "English",
+    payers: 6,
+    providers: 142,
+    status: "live",
+  },
+  {
+    code: "CA",
+    name: "Canada",
+    region: "ca-central",
+    language: "English / French",
+    payers: 3,
+    providers: 28,
+    status: "live",
+  },
+  {
+    code: "GB",
+    name: "United Kingdom",
+    region: "eu-central",
+    language: "English",
+    payers: 1,
+    providers: 19,
+    status: "live",
+  },
+  {
+    code: "DE",
+    name: "Germany",
+    region: "eu-central",
+    language: "German",
+    payers: 4,
+    providers: 11,
+    status: "pilot",
+  },
+  {
+    code: "AU",
+    name: "Australia",
+    region: "ap-southeast",
+    language: "English",
+    payers: 5,
+    providers: 22,
+    status: "live",
+  },
+  {
+    code: "IN",
+    name: "India",
+    region: "ap-southeast",
+    language: "English / Hindi",
+    payers: 0,
+    providers: 6,
+    status: "pilot",
+  },
 ];
 
 export type FirmwareRow = { model: string; firmware: string; devices: number; latest: boolean };
@@ -734,11 +1387,36 @@ export const deviceFleet = {
 };
 
 export const platformFeatureFlags = [
-  { id: "ff1", label: "Self-service provider registration", desc: "Allow DMEs to self-register (vs. sales-provisioned only).", on: true },
-  { id: "ff2", label: "Monitor self-registration", desc: "Allow clinicians/payers to self-register as Authorized Monitors.", on: true },
-  { id: "ff3", label: "Remote setting changes", desc: "Expose device setting-change requests (hardware-gated).", on: false },
-  { id: "ff4", label: "Background auto-sync", desc: "Push session data from the mobile app automatically.", on: true },
-  { id: "ff5", label: "Brightree integration", desc: "Platform-wide billing integration availability.", on: true },
+  {
+    id: "ff1",
+    label: "Self-service provider registration",
+    desc: "Allow DMEs to self-register (vs. sales-provisioned only).",
+    on: true,
+  },
+  {
+    id: "ff2",
+    label: "Monitor self-registration",
+    desc: "Allow clinicians/payers to self-register as Authorized Monitors.",
+    on: true,
+  },
+  {
+    id: "ff3",
+    label: "Remote setting changes",
+    desc: "Expose device setting-change requests (hardware-gated).",
+    on: false,
+  },
+  {
+    id: "ff4",
+    label: "Background auto-sync",
+    desc: "Push session data from the mobile app automatically.",
+    on: true,
+  },
+  {
+    id: "ff5",
+    label: "Brightree integration",
+    desc: "Platform-wide billing integration availability.",
+    on: true,
+  },
 ];
 
 // ---------- Global Authorized Monitor directory (network-wide, like AirView sharing) ----------
@@ -755,20 +1433,132 @@ export type DirectoryMonitor = {
 
 // Approved Authorized Monitor accounts from many organizations & countries.
 export const monitorDirectory: DirectoryMonitor[] = [
-  { id: "md1", name: "BlueCross Claims", institution: "BlueCross", upi: "MON-7K3-92H", kind: "Insurance", country: "United States", verified: true },
-  { id: "md2", name: "Dr. Helen Park", institution: "Lakeside Sleep Center", upi: "NPI-1841299104", kind: "Clinician", country: "United States", verified: true },
-  { id: "md3", name: "Dr. Alan Cho", institution: "Northgate Pulmonology", upi: "NPI-1730455821", kind: "Clinician", country: "United States", verified: true },
-  { id: "md4", name: "SleepWell Monitoring", institution: "SleepWell Inc.", upi: "MON-9C8-55B", kind: "Monitoring service", country: "United States", verified: false },
-  { id: "md5", name: "Aetna Compliance", institution: "Aetna", upi: "MON-3T1-77P", kind: "Insurance", country: "United States", verified: true },
-  { id: "md6", name: "Dr. Priya Nair", institution: "Lakeside Sleep Center", upi: "NPI-1992017345", kind: "Clinician", country: "United States", verified: true },
-  { id: "md7", name: "NHS Sleep Services", institution: "NHS Greater Manchester", upi: "GMC-7720104", kind: "Clinician", country: "United Kingdom", verified: true },
-  { id: "md8", name: "Dr. Klaus Berger", institution: "Charité Schlafmedizin", upi: "DE-LANR-554120", kind: "Clinician", country: "Germany", verified: true },
-  { id: "md9", name: "Medibank Compliance", institution: "Medibank", upi: "AU-PAY-30021", kind: "Insurance", country: "Australia", verified: true },
-  { id: "md10", name: "Dr. Sarah Lin", institution: "Toronto Sleep Institute", upi: "CA-CPSO-88210", kind: "Clinician", country: "Canada", verified: true },
-  { id: "md11", name: "RespCare Telemonitoring", institution: "RespCare Ltd", upi: "MON-5R9-11Q", kind: "Monitoring service", country: "United Kingdom", verified: true },
-  { id: "md12", name: "Meridian Health Plan", institution: "Meridian", upi: "MON-2M4-08K", kind: "Insurance", country: "United States", verified: false },
-  { id: "md13", name: "Apollo Sleep Clinic", institution: "Apollo Hospitals", upi: "IN-NMC-440021", kind: "Clinician", country: "India", verified: true },
-  { id: "md14", name: "United Compliance", institution: "UnitedHealthcare", upi: "MON-8U2-63D", kind: "Insurance", country: "United States", verified: true },
+  {
+    id: "md1",
+    name: "BlueCross Claims",
+    institution: "BlueCross",
+    upi: "MON-7K3-92H",
+    kind: "Insurance",
+    country: "United States",
+    verified: true,
+  },
+  {
+    id: "md2",
+    name: "Dr. Helen Park",
+    institution: "Lakeside Sleep Center",
+    upi: "NPI-1841299104",
+    kind: "Clinician",
+    country: "United States",
+    verified: true,
+  },
+  {
+    id: "md3",
+    name: "Dr. Alan Cho",
+    institution: "Northgate Pulmonology",
+    upi: "NPI-1730455821",
+    kind: "Clinician",
+    country: "United States",
+    verified: true,
+  },
+  {
+    id: "md4",
+    name: "SleepWell Monitoring",
+    institution: "SleepWell Inc.",
+    upi: "MON-9C8-55B",
+    kind: "Monitoring service",
+    country: "United States",
+    verified: false,
+  },
+  {
+    id: "md5",
+    name: "Aetna Compliance",
+    institution: "Aetna",
+    upi: "MON-3T1-77P",
+    kind: "Insurance",
+    country: "United States",
+    verified: true,
+  },
+  {
+    id: "md6",
+    name: "Dr. Priya Nair",
+    institution: "Lakeside Sleep Center",
+    upi: "NPI-1992017345",
+    kind: "Clinician",
+    country: "United States",
+    verified: true,
+  },
+  {
+    id: "md7",
+    name: "NHS Sleep Services",
+    institution: "NHS Greater Manchester",
+    upi: "GMC-7720104",
+    kind: "Clinician",
+    country: "United Kingdom",
+    verified: true,
+  },
+  {
+    id: "md8",
+    name: "Dr. Klaus Berger",
+    institution: "Charité Schlafmedizin",
+    upi: "DE-LANR-554120",
+    kind: "Clinician",
+    country: "Germany",
+    verified: true,
+  },
+  {
+    id: "md9",
+    name: "Medibank Compliance",
+    institution: "Medibank",
+    upi: "AU-PAY-30021",
+    kind: "Insurance",
+    country: "Australia",
+    verified: true,
+  },
+  {
+    id: "md10",
+    name: "Dr. Sarah Lin",
+    institution: "Toronto Sleep Institute",
+    upi: "CA-CPSO-88210",
+    kind: "Clinician",
+    country: "Canada",
+    verified: true,
+  },
+  {
+    id: "md11",
+    name: "RespCare Telemonitoring",
+    institution: "RespCare Ltd",
+    upi: "MON-5R9-11Q",
+    kind: "Monitoring service",
+    country: "United Kingdom",
+    verified: true,
+  },
+  {
+    id: "md12",
+    name: "Meridian Health Plan",
+    institution: "Meridian",
+    upi: "MON-2M4-08K",
+    kind: "Insurance",
+    country: "United States",
+    verified: false,
+  },
+  {
+    id: "md13",
+    name: "Apollo Sleep Clinic",
+    institution: "Apollo Hospitals",
+    upi: "IN-NMC-440021",
+    kind: "Clinician",
+    country: "India",
+    verified: true,
+  },
+  {
+    id: "md14",
+    name: "United Compliance",
+    institution: "UnitedHealthcare",
+    upi: "MON-8U2-63D",
+    kind: "Insurance",
+    country: "United States",
+    verified: true,
+  },
 ];
 
 export function searchMonitorDirectory(q: string): DirectoryMonitor[] {
@@ -780,6 +1570,6 @@ export function searchMonitorDirectory(q: string): DirectoryMonitor[] {
       m.institution.toLowerCase().includes(s) ||
       m.upi.toLowerCase().includes(s) ||
       m.kind.toLowerCase().includes(s) ||
-      m.country.toLowerCase().includes(s)
+      m.country.toLowerCase().includes(s),
   );
 }

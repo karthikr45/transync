@@ -28,9 +28,7 @@ export function getLocale(): Locale {
 
 type DotPath<T> = T extends object
   ? {
-      [K in keyof T & string]: T[K] extends object
-        ? `${K}.${DotPath<T[K]>}`
-        : `${K}`;
+      [K in keyof T & string]: T[K] extends object ? `${K}.${DotPath<T[K]>}` : `${K}`;
     }[keyof T & string]
   : never;
 

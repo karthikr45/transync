@@ -1,18 +1,13 @@
-// Client-visible backend URL. Must be NEXT_PUBLIC_* so it's available
-// in the browser bundle (the client now calls the upstream directly).
-// API_BASE_URL (without NEXT_PUBLIC_) is honoured as a fallback so an
-// older .env still works during the transition.
-
-export const API_BASE_URL: string = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  process.env.API_BASE_URL ??
-  ""
-).trim().replace(/\/$/, "");
-
-export const HAS_API_BASE_URL: boolean = API_BASE_URL.length > 0;
-
-if (!HAS_API_BASE_URL) {
-  console.error(
-    "[Transcend] NEXT_PUBLIC_API_BASE_URL is not set. Configure it in .env.local before running the app.",
-  );
+// Only explicitly public configuration belongs in browser bundles.
+export function parseApiBaseUrl(value: string | undefined): string {
+  if (!value?.trim()) return "";
+  const url = new URL(value.trim());
+  if (url.username || url.password || url.search || url.hash)
+    throw new Error("API base URL must not contain credentials, query parameters, or fragments.");
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (url.protocol !== "https:" && !(url.protocol === "http:" && local))
+    throw new Error("API base URL must use HTTPS (HTTP is allowed only for local development).");
+  return url.toString().replace(/\/$/, "");
 }
+export const API_BASE_URL = parseApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
+export const HAS_API_BASE_URL = !!API_BASE_URL;

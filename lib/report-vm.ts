@@ -21,18 +21,50 @@ const firstBool = (...candidates: (boolean | null | undefined)[]): boolean | nul
  * older firmware still wires up correctly. First non-null match wins,
  * falling back to whatever was already on the VM.
  */
-export function mergeParameterIntoVM(vm: ReportVM, p: ParameterResult | null | undefined): ReportVM {
+export function mergeParameterIntoVM(
+  vm: ReportVM,
+  p: ParameterResult | null | undefined,
+): ReportVM {
   if (!p) return vm;
   const existing = vm.patientSettings;
   return {
     ...vm,
     patientSettings: {
-      startingPressure: firstNumber(p.startingPressure, p.rampStartPressure, existing.startingPressure) ?? null,
-      minPressure: firstNumber(p.minimumPressure, p.minPressure, p.pressureMin, p.therapyPressureMin, existing.minPressure) ?? null,
-      maxPressure: firstNumber(p.maximumPressure, p.maxPressure, p.pressureMax, p.therapyPressureMax, existing.maxPressure) ?? null,
-      gentleRisePressure: firstNumber(p.startingRampPressure, p.gentleRisePressure, p.rampStartPressure, existing.gentleRisePressure) ?? null,
-      gentleRiseDuration: firstNumber(p.rampDuration, p.gentleRiseDuration, p.ramp, p.rampTime, existing.gentleRiseDuration) ?? null,
-      airRelief: firstNumber(p.EZEX, p.airRelief, p.comfortControlPlusLevel, existing.airRelief) ?? null,
+      startingPressure:
+        firstNumber(p.startingPressure, p.rampStartPressure, existing.startingPressure) ?? null,
+      minPressure:
+        firstNumber(
+          p.minimumPressure,
+          p.minPressure,
+          p.pressureMin,
+          p.therapyPressureMin,
+          existing.minPressure,
+        ) ?? null,
+      maxPressure:
+        firstNumber(
+          p.maximumPressure,
+          p.maxPressure,
+          p.pressureMax,
+          p.therapyPressureMax,
+          existing.maxPressure,
+        ) ?? null,
+      gentleRisePressure:
+        firstNumber(
+          p.startingRampPressure,
+          p.gentleRisePressure,
+          p.rampStartPressure,
+          existing.gentleRisePressure,
+        ) ?? null,
+      gentleRiseDuration:
+        firstNumber(
+          p.rampDuration,
+          p.gentleRiseDuration,
+          p.ramp,
+          p.rampTime,
+          existing.gentleRiseDuration,
+        ) ?? null,
+      airRelief:
+        firstNumber(p.EZEX, p.airRelief, p.comfortControlPlusLevel, existing.airRelief) ?? null,
       mode: firstString(p.mode, existing.mode) ?? null,
       tubingType: firstString(p.tubingType, existing.tubingType) ?? null,
       heatedHumidifier: firstBool(p.heatedHumidifier, existing.heatedHumidifier) ?? null,
@@ -125,7 +157,10 @@ export type ReportCtx = {
 };
 
 // Home Care compliance-report -> VM
-export function fromComplianceReportResult(r: ComplianceReportResult, ctx: ReportCtx = {}): ReportVM {
+export function fromComplianceReportResult(
+  r: ComplianceReportResult,
+  ctx: ReportCtx = {},
+): ReportVM {
   const total = ctx.totalDaysOverride ?? r.HeaderMetrics?.daysFromTo;
   return {
     patientDetails: {
@@ -151,7 +186,10 @@ export function fromComplianceReportResult(r: ComplianceReportResult, ctx: Repor
       datesOfReport: ctx.datesOfReportOverride,
       daysUsed: r.UsageMetrics.daysUsed ?? undefined,
       totalDays: total,
-      averageHoursPerNight: r.UsageMetrics.averageUsageTimePerUsedDays ?? r.AnalysisSummaryMetrics.averageUsageTime ?? undefined,
+      averageHoursPerNight:
+        r.UsageMetrics.averageUsageTimePerUsedDays ??
+        r.AnalysisSummaryMetrics.averageUsageTime ??
+        undefined,
       fourPlusUsage: r.UsageMetrics.daysUsedOver4Hours ?? undefined,
       sixPlusUsage: undefined, // not exposed by this API
       notUsed: r.UsageMetrics.daysNotUsed ?? undefined,
@@ -174,7 +212,8 @@ export function fromComplianceReportResult(r: ComplianceReportResult, ctx: Repor
     },
     pressure: {
       minPressure: r.DeviceSettingsMetrics.therapyPressure?.min ?? undefined,
-      maxPressure: r.PressureMetrics.maxPressure ?? r.DeviceSettingsMetrics.therapyPressure?.max ?? undefined,
+      maxPressure:
+        r.PressureMetrics.maxPressure ?? r.DeviceSettingsMetrics.therapyPressure?.max ?? undefined,
       averagePressure: r.PressureMetrics.averagePressure ?? undefined,
       p90Pressure: r.PressureMetrics.p90Pressure,
     },

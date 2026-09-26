@@ -2,7 +2,13 @@
 
 import { Session } from "@/lib/mock-data";
 
-export default function UsageChart({ sessions, threshold = 4 }: { sessions: Session[]; threshold?: number }) {
+export default function UsageChart({
+  sessions,
+  threshold = 4,
+}: {
+  sessions: Session[];
+  threshold?: number;
+}) {
   const max = Math.max(...sessions.map((s) => s.hours), 10);
   const w = 600;
   const h = 180;

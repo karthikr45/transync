@@ -7,7 +7,8 @@
   --foreground: #0f172a;
 }
 
-html, body {
+html,
+body {
   background: var(--background);
   color: var(--foreground);
 }
@@ -57,7 +58,9 @@ html, body {
   text-decoration: none;
   transition: top 0.2s;
 }
-.skip-link:focus { top: 0.5rem; }
+.skip-link:focus {
+  top: 0.5rem;
+}
 
 @layer components {
   .card {
@@ -87,8 +90,16 @@ html, body {
   .badge {
     @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
   }
-  .badge-green { @apply bg-green-100 text-green-700; }
-  .badge-amber { @apply bg-amber-100 text-amber-700; }
-  .badge-red   { @apply bg-red-100 text-red-700; }
-  .badge-slate { @apply bg-slate-100 text-slate-700; }
+  .badge-green {
+    @apply bg-green-100 text-green-700;
+  }
+  .badge-amber {
+    @apply bg-amber-100 text-amber-700;
+  }
+  .badge-red {
+    @apply bg-red-100 text-red-700;
+  }
+  .badge-slate {
+    @apply bg-slate-100 text-slate-700;
+  }
 }

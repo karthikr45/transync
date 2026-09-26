@@ -10,9 +10,16 @@ const count = (value: ApiJson | undefined): number | undefined =>
 export function patientDisplayResponse(value: ApiJson): ApiJson {
   if (Array.isArray(value)) return value.map(patientDisplayResponse);
   if (!isObject(value)) return value;
-  return Object.fromEntries(Object.entries(value)
-    .filter(([key]) => !["id", "emailhashed", "hashedemail", "emailhash"].includes(key.replace(/[_-]/g, "").toLowerCase()))
-    .map(([key, field]) => [key, patientDisplayResponse(field)]));
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(
+        ([key]) =>
+          !["id", "emailhashed", "hashedemail", "emailhash"].includes(
+            key.replace(/[_-]/g, "").toLowerCase(),
+          ),
+      )
+      .map(([key, field]) => [key, patientDisplayResponse(field)]),
+  );
 }
 
 /** Accept common list envelopes without discarding any of the source response. */
@@ -31,22 +38,35 @@ export function patientList(response: ApiJson, page: number, limit: number) {
     ...(isObject(layer.pagination ?? null) ? [layer.pagination as JsonObject] : []),
     ...(isObject(layer.meta ?? null) ? [layer.meta as JsonObject] : []),
   ]);
-  const total = metadata.map((m) => count(m.total) ?? count(m.totalCount) ?? count(m.totalPatients)).find((n) => n !== undefined);
-  const totalPages = metadata.map((m) => count(m.totalPages)).find((n) => n !== undefined)
-    ?? (total !== undefined ? Math.ceil(total / limit) : undefined);
-  const hasNext = metadata.map((m) => m.hasNextPage ?? m.hasNext).find((n) => typeof n === "boolean");
+  const total = metadata
+    .map((m) => count(m.total) ?? count(m.totalCount) ?? count(m.totalPatients))
+    .find((n) => n !== undefined);
+  const totalPages =
+    metadata.map((m) => count(m.totalPages)).find((n) => n !== undefined) ??
+    (total !== undefined ? Math.ceil(total / limit) : undefined);
+  const hasNext = metadata
+    .map((m) => m.hasNextPage ?? m.hasNext)
+    .find((n) => typeof n === "boolean");
   return {
     rows,
     columns: rows ? Array.from(new Set(rows.flatMap((row) => Object.keys(row)))) : [],
     total,
     totalPages,
-    hasNext: rows !== null && rows.length > 0 && (typeof hasNext === "boolean" ? hasNext
-      : totalPages !== undefined ? page < totalPages : rows.length >= limit),
+    hasNext:
+      rows !== null &&
+      rows.length > 0 &&
+      (typeof hasNext === "boolean"
+        ? hasNext
+        : totalPages !== undefined
+          ? page < totalPages
+          : rows.length >= limit),
   };
 }
 
 export function patientFieldLabel(key: string): string {
   if (key === "_id") return "ID";
-  return key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]/g, " ")
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]/g, " ")
     .replace(/^./, (letter) => letter.toUpperCase());
 }

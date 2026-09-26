@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 export default function Logo({ className = "h-8 w-auto" }: { className?: string }) {
   return (
     <img

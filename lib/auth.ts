@@ -53,14 +53,22 @@ export function getCurrentUser(): AccountUser | null {
   if (getUserKind() !== "home-care") return null;
   const raw = storage()?.getItem(USER_KEY);
   if (!raw) return null;
-  try { return JSON.parse(raw) as AccountUser; } catch { return null; }
+  try {
+    return JSON.parse(raw) as AccountUser;
+  } catch {
+    return null;
+  }
 }
 
 export function getCurrentEndUser(): EndUser | null {
   if (getUserKind() !== "end-user") return null;
   const raw = storage()?.getItem(USER_KEY);
   if (!raw) return null;
-  try { return JSON.parse(raw) as EndUser; } catch { return null; }
+  try {
+    return JSON.parse(raw) as EndUser;
+  } catch {
+    return null;
+  }
 }
 
 export function destinationForUser(user: AccountUser): string {

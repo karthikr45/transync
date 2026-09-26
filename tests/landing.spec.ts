@@ -11,7 +11,10 @@ test.describe("Landing page", () => {
 
   test("Log on button goes to /login", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: /Log on/i }).first().click();
+    await page
+      .getByRole("link", { name: /Log on/i })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/login/);
   });
 });

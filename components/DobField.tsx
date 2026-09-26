@@ -29,7 +29,12 @@ export default function DobField({
     // showPicker() is the modern, gesture-safe API; fall back to focus/click.
     const anyEl = el as HTMLInputElement & { showPicker?: () => void };
     if (typeof anyEl.showPicker === "function") {
-      try { anyEl.showPicker(); return; } catch { /* fall through */ }
+      try {
+        anyEl.showPicker();
+        return;
+      } catch {
+        /* fall through */
+      }
     }
     el.focus();
     el.click();

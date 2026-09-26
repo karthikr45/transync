@@ -19,20 +19,27 @@ export default function ThirtyDayWindow({
         )}
         <div className="flex-1">
           <h3 className="text-base font-semibold text-slate-900">
-            {w.found ? `${rule.windowDays}-day Compliance Window found` : `No ${rule.windowDays}-day Compliance Window found`}
+            {w.found
+              ? `${rule.windowDays}-day Compliance Window found`
+              : `No ${rule.windowDays}-day Compliance Window found`}
           </h3>
           <p className="text-sm text-slate-600 mt-1">
-            Rule: ≥ {rule.minHoursPerNight} h on at least {rule.minNightsPercent}% of nights
-            ({w.requiredNights} of {rule.windowDays}) within any consecutive {rule.windowDays}-day window in the last 90 days.
+            Rule: ≥ {rule.minHoursPerNight} h on at least {rule.minNightsPercent}% of nights (
+            {w.requiredNights} of {rule.windowDays}) within any consecutive {rule.windowDays}-day
+            window in the last 90 days.
           </p>
           {w.found ? (
             <p className="text-sm text-slate-700 mt-2">
-              Qualifying window: <strong>{w.windowStart} → {w.windowEnd}</strong> ·{" "}
-              {w.compliantNights}/{w.totalNights} compliant nights.
+              Qualifying window:{" "}
+              <strong>
+                {w.windowStart} → {w.windowEnd}
+              </strong>{" "}
+              · {w.compliantNights}/{w.totalNights} compliant nights.
             </p>
           ) : (
             <p className="text-sm text-slate-700 mt-2">
-              Best window: {w.compliantNights}/{w.totalNights} compliant nights (needs {w.requiredNights}).
+              Best window: {w.compliantNights}/{w.totalNights} compliant nights (needs{" "}
+              {w.requiredNights}).
             </p>
           )}
         </div>

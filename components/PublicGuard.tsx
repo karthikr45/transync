@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  destinationForUser,
-  getCurrentEndUser,
-  getCurrentUser,
-  getUserKind,
-} from "@/lib/auth";
+import { destinationForUser, getCurrentEndUser, getCurrentUser, getUserKind } from "@/lib/auth";
 
 /**
  * Wraps a public auth page (login / register). If the user is already
@@ -28,10 +23,16 @@ export default function PublicGuard({ children }: { children: React.ReactNode })
     const kind = getUserKind();
     if (kind === "home-care") {
       const user = getCurrentUser();
-      if (user) { router.replace(safeNext ?? destinationForUser(user)); return; }
+      if (user) {
+        router.replace(safeNext ?? destinationForUser(user));
+        return;
+      }
     } else if (kind === "end-user") {
       const eu = getCurrentEndUser();
-      if (eu) { router.replace(safeNext ?? "/patient/dashboard"); return; }
+      if (eu) {
+        router.replace(safeNext ?? "/patient/dashboard");
+        return;
+      }
     }
     setReady(true);
   }, [router, search]);

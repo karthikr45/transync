@@ -1,64 +1,32 @@
 # Deployment
 
-## Environment
+Use Node 22.13 or newer within the Node 22 LTS line (`.nvmrc`). Install with `npm ci`.
 
-| Var | Required | Notes |
-|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | yes | Upstream backend. Must include scheme + host; trailing slash trimmed. The client calls this directly, so it ends up in browser bundles. |
-| `API_BASE_URL` | optional | Honoured as a fallback for legacy `.env` files only. Migrate to `NEXT_PUBLIC_API_BASE_URL`. |
-| `NODE_ENV` | yes | `production` for deployed builds. Controls `console.*` stripping and CSP `'unsafe-eval'`. |
-| `CSP_REPORT_FORWARD_URL` | optional | If set, `/api/csp-report` forwards reports to this URL too. |
-| `SECURITY_CONTACT_EMAIL` | optional | Shown in `/.well-known/security.txt`. |
-| `SENTRY_DSN` | optional | Activates the `instrumentation.ts` / `lib/observability.ts` Sentry hook once you uncomment the SDK init. |
+`NEXT_PUBLIC_API_BASE_URL` is required at build time and is public. Use an HTTPS upstream URL without credentials, query or fragment. HTTP is allowed only for loopback development. The former `API_BASE_URL` fallback is removed. Changing the upstream requires rebuilding the client bundle and CSP.
 
-## Backend requirements
-
-The backend at `NEXT_PUBLIC_API_BASE_URL` must:
-
-- **Allow CORS** from your web origin(s). Concretely:
-  - `Access-Control-Allow-Origin: https://<your-web-origin>`
-  - `Access-Control-Allow-Headers: Content-Type, Authorization, ngrok-skip-browser-warning`
-  - `Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS`
-  - `Access-Control-Allow-Credentials: false` (we send tokens via `Authorization`, not cookies)
-- **Accept** `Authorization: Bearer <jwt>` on protected endpoints.
-- **Tolerate** the `ngrok-skip-browser-warning: true` header (needed only while serving through an ngrok tunnel).
-
-## Build and run
-
-```bash
+```sh
 npm ci
-npm run check
-NODE_ENV=production npm run start
+NEXT_PUBLIC_API_BASE_URL=https://apijapan.mytranscend.com npm run check
+npm run format:check
+npm audit --audit-level=high
+npm run test:install
+npm test
+npm start
 ```
 
-`npm run check` is the recommended CI gate (typecheck + lint + build).
+The browser sends bearer authorization directly to the upstream. Configure CORS for the exact web origins, required methods and Content-Type/Authorization headers. Cookies are not sent by the current transport. Enforce all authorization on the backend.
 
-## Behind a reverse proxy
+## Container
 
-- Forward `Host` and `X-Forwarded-Proto: https` so `Strict-Transport-Security` behaves correctly.
-- TLS termination is the proxy's job; we serve plain HTTP behind it.
-
-## Tests
-
-```bash
-npm run test:install   # one-time: pulls chromium for Playwright
-npm run test
+```sh
+docker build --build-arg NEXT_PUBLIC_API_BASE_URL=https://apijapan.mytranscend.com -t transync-web .
+docker run --rm -p 3000:3000 transync-web
 ```
 
-Smoke tests don't depend on a live backend; they verify the marketing
-page, the login form, the multi-step registration, and that
-unauthenticated visits to portal routes redirect to `/login?next=…`.
+The multi-stage image runs Next standalone output as a non-root user. `/api/health` is a no-store liveness endpoint; it does not probe the backend. Terminate TLS at a trusted ingress and configure resource limits, health probes, restart policy and central monitoring in the deployment platform. Environment files and local build artifacts are excluded from the Docker context.
 
-## Common operational issues
+## Validation and rollback
 
-- **CSP blocks the API call** — Verify `NEXT_PUBLIC_API_BASE_URL` is set
-  *at build time*; the URL is baked into `connect-src` in
-  `next.config.mjs`.
-- **CORS error in the browser** — The backend isn't returning the
-  required headers for your web origin. Add it to the allow-list.
-- **Login succeeds but `/provider/dashboard` redirects to `/login`** —
-  `localStorage` was cleared between login and navigation (e.g.
-  cross-tab logout from `lib/auth.ts`). Sign in again.
-- **`API_BASE_URL is not set`** in the dev console — `.env.local` is
-  missing or the variable name is wrong. Use
-  `NEXT_PUBLIC_API_BASE_URL`.
+Run type generation/checking, lint, unit/architecture tests, formatting, dependency audit, production build and Playwright against production output. The existing CI runs type checks, lint, build and Playwright; the proposed expanded workflow requires workflow-write permission to apply. Browser tests mock API responses. Also run staging integration tests against the real backend before promotion. Retain the prior image and deployment configuration for rollback; coordinate API contract changes with backend releases.
+
+Read [production release gates](docs/PRODUCTION-READINESS.md) before deployment. Current bearer-token storage and proposed device APIs are unresolved integration/security dependencies.

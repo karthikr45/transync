@@ -218,8 +218,14 @@ export interface ComplianceReportResult {
 
 // ---------- End User API ----------
 
-export interface SignUpOtpDto { email: string; name: string; }
-export interface ValidateOtpDto { email: string; otp: number; }
+export interface SignUpOtpDto {
+  email: string;
+  name: string;
+}
+export interface ValidateOtpDto {
+  email: string;
+  otp: number;
+}
 
 export interface CreateUserDto {
   firstName: string;
@@ -248,7 +254,10 @@ export interface CreateUserDto {
   isFirmwareUpdate?: boolean;
 }
 
-export interface EndUserLoginDto { email: string; password: string; }
+export interface EndUserLoginDto {
+  email: string;
+  password: string;
+}
 
 export interface EndUser {
   _id: string;
@@ -278,7 +287,10 @@ export interface EndUser {
 
 export type SessionWindow = 0 | 1 | 2 | 3 | 4 | 5;
 
-export interface LastSyncQuery { email: string; deviceId: string; }
+export interface LastSyncQuery {
+  email: string;
+  deviceId: string;
+}
 export interface LastSyncResult {
   lastEvent: string;
   lastSyncDate: string;
@@ -334,14 +346,20 @@ export interface ReportBySessionResult {
   leakAvgRange: number;
 }
 
-export interface EventGraphDto { label: string; value: number; }
+export interface EventGraphDto {
+  label: string;
+  value: number;
+}
 
 // Bar-chart endpoints (event/getAverage*) — permissive: API may return
 // EventGraphDto[] directly or { data: EventGraphDto[] }, so we normalise
 // at the call site.
-export type BarChartResponse = EventGraphDto[] | { data?: EventGraphDto[]; values?: number[]; labels?: string[] };
+export type BarChartResponse =
+  EventGraphDto[] | { data?: EventGraphDto[]; values?: number[]; labels?: string[] };
 
-export interface TotalRuntimeDto { totalRunningTime: number }
+export interface TotalRuntimeDto {
+  totalRunningTime: number;
+}
 
 // Mirrors the mobile app's ReportTypeToShareOrDownload, indexed by the
 // selected report tab (standard/advanced/faa).
@@ -375,7 +393,10 @@ export interface GeneratePdfDto {
 //   EZEX (= AirRelief comfort control level)
 // Older firmware / mock builds shipped slightly different names —
 // kept as aliases so the consumer code keeps working everywhere.
-export interface ParameterQuery { email: string; deviceId: string }
+export interface ParameterQuery {
+  email: string;
+  deviceId: string;
+}
 export interface ParameterResult {
   _id?: string;
   email?: string;
@@ -423,34 +444,53 @@ export interface SleepScoreEventDto {
 // ---------- /metadata (patient signup dropdowns) ----------
 // Permissive: options may come as string[] OR { label, value }[] OR
 // { name, code }[]. The client normalises via lib/options.ts.
-export type MetadataOption = string | {
-  label?: string;
-  value?: string;
-  name?: string;
-  code?: string;
-  id?: string;
-};
+export type MetadataOption =
+  | string
+  | {
+      label?: string;
+      value?: string;
+      name?: string;
+      code?: string;
+      id?: string;
+    };
 export interface MetadataResponse {
   // Real API field names from /metadata
   occupation?: MetadataOption[];
-  userExpList?: MetadataOption[];          // "How long CPAP user"
-  devicePurposeList?: MetadataOption[];    // "How using Transcend"
-  devicePurchaseList?: MetadataOption[];   // "Where purchased"
+  userExpList?: MetadataOption[]; // "How long CPAP user"
+  devicePurposeList?: MetadataOption[]; // "How using Transcend"
+  devicePurchaseList?: MetadataOption[]; // "Where purchased"
   // Other common keys we may use later
   transcendDevice?: MetadataOption[];
   gender?: MetadataOption[];
   timeZones?: MetadataOption[];
   // Misc non-option payloads also returned by /metadata
   clinicalMode?: { delayTime?: string; disable?: boolean };
-  appUpdate?: { normalUpdate?: boolean; forceUpdate?: boolean; latestVersion?: string; updateMessage?: string; rm?: boolean };
+  appUpdate?: {
+    normalUpdate?: boolean;
+    forceUpdate?: boolean;
+    latestVersion?: string;
+    updateMessage?: string;
+    rm?: boolean;
+  };
   // Allow extra keys without TS noise
   [key: string]: unknown;
 }
 
 // ---------- /home-care/admin/markets ----------
-export interface MarketSummary { total: number; providers: number; payers: number }
-export interface MarketRow { country: string; providers: number; payers: number }
-export interface MarketsResponse { summary: MarketSummary; markets: MarketRow[] }
+export interface MarketSummary {
+  total: number;
+  providers: number;
+  payers: number;
+}
+export interface MarketRow {
+  country: string;
+  providers: number;
+  payers: number;
+}
+export interface MarketsResponse {
+  summary: MarketSummary;
+  markets: MarketRow[];
+}
 
 // ---------- /home-care/admin/dashboard ----------
 export interface AdminDashboardMetrics {
@@ -471,8 +511,12 @@ export interface AdminActivityEntry {
   date: string;
   actor: string;
 }
-export interface AdminActivityResult { activity: AdminActivityEntry[] }
-export interface AdminActivityQuery { limit?: number }
+export interface AdminActivityResult {
+  activity: AdminActivityEntry[];
+}
+export interface AdminActivityQuery {
+  limit?: number;
+}
 
 // ---------- /home-care/admin/clients ----------
 export type ClientStatus = "pending" | "approved" | "rejected" | "suspended";
@@ -499,7 +543,9 @@ export interface AdminClientsQuery {
   offset?: number;
 }
 
-export interface AdminSuspendDto { reason?: string }
+export interface AdminSuspendDto {
+  reason?: string;
+}
 export interface AdminSuspendResult {
   _id: string;
   status: ClientStatus | string;
@@ -507,7 +553,10 @@ export interface AdminSuspendResult {
   suspendedAt?: string;
   suspendedReason?: string;
 }
-export interface AdminReinstateResult { _id: string; status: ClientStatus | string }
+export interface AdminReinstateResult {
+  _id: string;
+  status: ClientStatus | string;
+}
 
 // ---------- /home-care/share-recipients & /home-care/shares ----------
 export type RecipientType = "home_care_provider" | "authorized_monitor";
@@ -519,7 +568,9 @@ export interface ShareRecipient {
   type: RecipientType;
   email: string;
 }
-export interface ShareRecipientsResponse { recipients: ShareRecipient[] }
+export interface ShareRecipientsResponse {
+  recipients: ShareRecipient[];
+}
 
 export interface CreateShareDto {
   recipientId: string;
@@ -534,7 +585,9 @@ export interface Share {
   validTill: string;
   grantedAt: string;
 }
-export interface MySharesResponse { shares: Share[] }
+export interface MySharesResponse {
+  shares: Share[];
+}
 
 // ---------- /home-care/provider/dashboard, /worklist, /reports ----------
 export type ComplianceStatus = "compliant" | "at_risk" | "non_compliant";
@@ -584,7 +637,10 @@ export interface ProviderWorklistResult {
   summary: Partial<Record<WorklistCategory, number>>;
   items: WorklistItem[];
 }
-export interface ProviderWorklistQuery { limit?: number; offset?: number }
+export interface ProviderWorklistQuery {
+  limit?: number;
+  offset?: number;
+}
 
 export type ComplianceWindow = "24h" | "7d" | "30d" | "90d";
 export interface ProviderReportRow {
@@ -636,7 +692,10 @@ export interface SharedReportDto {
 }
 
 // ---------- /users/delete-account ----------
-export interface DeleteAccountDto { email: string; deviceId: string }
+export interface DeleteAccountDto {
+  email: string;
+  deviceId: string;
+}
 export interface DeleteAccountResult {
   email: string;
   deviceId: string;
@@ -644,7 +703,10 @@ export interface DeleteAccountResult {
 }
 
 // ---------- /home-care/admin/patients ----------
-export interface AdminPatientsQuery { page?: number; limit?: number }
+export interface AdminPatientsQuery {
+  page?: number;
+  limit?: number;
+}
 // The published OpenAPI spec does not define a response schema. Preserve
 // returned fields rather than assuming the organization-scoped patient DTO.
 export type ApiJson = null | boolean | number | string | ApiJson[] | { [key: string]: ApiJson };

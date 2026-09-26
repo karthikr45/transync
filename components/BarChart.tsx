@@ -47,7 +47,12 @@ function fmt(v: number): string {
  * gridlines, value labels sit above each bar (mobile pattern).
  */
 export default function BarChart({
-  title, unit, points, tone = "brand", loading, empty,
+  title,
+  unit,
+  points,
+  tone = "brand",
+  loading,
+  empty,
 }: {
   title: string;
   unit?: string;
@@ -56,9 +61,7 @@ export default function BarChart({
   loading?: boolean;
   empty?: string;
 }) {
-  const numericValues = points
-    .map((p) => Number(p.value))
-    .filter((v) => Number.isFinite(v));
+  const numericValues = points.map((p) => Number(p.value)).filter((v) => Number.isFinite(v));
   const dataMax = numericValues.reduce((m, v) => Math.max(m, v), 0);
   const yMax = niceMax(dataMax);
   const ticks = ticksDownFrom(yMax);
@@ -68,14 +71,18 @@ export default function BarChart({
   if (loading) {
     return (
       <ChartFrame title={title} unit={unit}>
-        <div className={`${PLOT_H} flex items-center justify-center text-xs text-slate-400`}>Loading…</div>
+        <div className={`${PLOT_H} flex items-center justify-center text-xs text-slate-400`}>
+          Loading…
+        </div>
       </ChartFrame>
     );
   }
   if (points.length === 0) {
     return (
       <ChartFrame title={title} unit={unit}>
-        <div className={`${PLOT_H} flex items-center justify-center text-xs text-slate-400`}>{empty ?? "No data."}</div>
+        <div className={`${PLOT_H} flex items-center justify-center text-xs text-slate-400`}>
+          {empty ?? "No data."}
+        </div>
       </ChartFrame>
     );
   }
@@ -85,14 +92,18 @@ export default function BarChart({
       <div className={`${PLOT_H} flex`}>
         {/* Y-axis */}
         <div className="w-10 flex flex-col justify-between text-[10px] text-slate-400 pr-2 text-right tabular-nums">
-          {ticks.map((t, i) => <span key={i}>{fmt(t)}</span>)}
+          {ticks.map((t, i) => (
+            <span key={i}>{fmt(t)}</span>
+          ))}
         </div>
 
         {/* Plot area */}
         <div className="relative flex-1">
           {/* Horizontal gridlines */}
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            {ticks.map((_, i) => <div key={i} className="border-t border-slate-100" />)}
+            {ticks.map((_, i) => (
+              <div key={i} className="border-t border-slate-100" />
+            ))}
           </div>
           {/* Bars + value labels. Columns stretch to full plot height
               (default items-stretch) so child `height: %` resolves
@@ -105,13 +116,13 @@ export default function BarChart({
               // Cap bar fill at 90% so the value label always fits in
               // the top 10% of the plot area. Non-zero values clamped
               // to a 4 % min so they're never invisible.
-              const h = yMax > 0
-                ? safeV === 0
-                  ? 0
-                  : Math.max(4, Math.round((safeV / yMax) * 90))
-                : 0;
+              const h =
+                yMax > 0 ? (safeV === 0 ? 0 : Math.max(4, Math.round((safeV / yMax) * 90))) : 0;
               return (
-                <div key={`${p.label}-${i}`} className="flex-1 flex flex-col items-center justify-end min-w-0 h-full">
+                <div
+                  key={`${p.label}-${i}`}
+                  className="flex-1 flex flex-col items-center justify-end min-w-0 h-full"
+                >
                   <span className="text-[11px] text-slate-700 font-semibold leading-none mb-1 tabular-nums">
                     {fmt(safeV)}
                   </span>
@@ -141,15 +152,23 @@ export default function BarChart({
       </div>
 
       {allZero && (
-        <p className="mt-2 text-[10px] text-slate-400 text-center">No events recorded in this window.</p>
+        <p className="mt-2 text-[10px] text-slate-400 text-center">
+          No events recorded in this window.
+        </p>
       )}
     </ChartFrame>
   );
 }
 
 function ChartFrame({
-  title, unit, children,
-}: { title: string; unit?: string; children: React.ReactNode }) {
+  title,
+  unit,
+  children,
+}: {
+  title: string;
+  unit?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="card p-5">
       <div className="flex items-baseline justify-between mb-3">

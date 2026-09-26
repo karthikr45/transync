@@ -17,10 +17,10 @@ export default function StatCard({
     tone === "good"
       ? "text-green-600"
       : tone === "warn"
-      ? "text-amber-600"
-      : tone === "bad"
-      ? "text-red-600"
-      : "text-slate-900";
+        ? "text-amber-600"
+        : tone === "bad"
+          ? "text-red-600"
+          : "text-slate-900";
   return (
     <div className="card p-5">
       <div className="flex items-start justify-between">

@@ -27,7 +27,10 @@ export default function PortalShell({
   const pathname = usePathname();
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 self-start h-screen flex flex-col" aria-label={`${role} navigation`}>
+      <aside
+        className="w-64 shrink-0 bg-white border-r border-slate-200 sticky top-0 self-start h-screen flex flex-col"
+        aria-label={`${role} navigation`}
+      >
         <div className="px-5 py-5 border-b border-slate-200">
           <Link href="/" className="block" aria-label="Transcend home">
             <Logo className="h-7 w-auto" />
@@ -38,7 +41,11 @@ export default function PortalShell({
           {nav.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link key={item.href} href={item.href} className={active ? "nav-link-active" : "nav-link"}>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={active ? "nav-link-active" : "nav-link"}
+              >
                 {item.icon}
                 <span>{item.label}</span>
               </Link>

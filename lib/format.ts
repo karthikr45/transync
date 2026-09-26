@@ -5,8 +5,18 @@
 import { formatPhoneNumberIntl, isValidPhoneNumber } from "react-phone-number-input";
 
 const MONTHS_LONG = [
-  "january", "february", "march", "april", "may", "june",
-  "july", "august", "september", "october", "november", "december",
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
 ];
 
 function ymdToFriendly(y: number, monthIdx: number, day: number): string {
@@ -71,7 +81,11 @@ export function formatPhone(e164: string | null | undefined): string {
 
 export function isValidPhone(e164: string | null | undefined): boolean {
   if (!e164) return false;
-  try { return isValidPhoneNumber(e164); } catch { return false; }
+  try {
+    return isValidPhoneNumber(e164);
+  } catch {
+    return false;
+  }
 }
 
 // Kept for back-compat with code still importing displayDob.

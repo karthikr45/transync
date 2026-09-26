@@ -26,14 +26,19 @@ export default function GlobalError({
         </div>
         <h1 className="mt-4 text-lg font-semibold text-slate-900">Something went wrong</h1>
         <p className="text-sm text-slate-600 mt-2">
-          An unexpected error occurred. We&apos;ve logged it. You can try again or go back to the home page.
+          An unexpected error occurred. We&apos;ve logged it. You can try again or go back to the
+          home page.
         </p>
         {error.digest && (
           <p className="mt-3 text-xs text-slate-400 font-mono">Reference: {error.digest}</p>
         )}
         <div className="mt-6 flex justify-center gap-2">
-          <button className="btn-secondary" onClick={reset}>Try again</button>
-          <Link href="/" className="btn-primary">Go home</Link>
+          <button className="btn-secondary" onClick={reset}>
+            Try again
+          </button>
+          <Link href="/" className="btn-primary">
+            Go home
+          </Link>
         </div>
       </div>
     </div>
